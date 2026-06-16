@@ -15,6 +15,7 @@ type AuthContextValue = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  persistOAuthSession: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -77,6 +78,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       login: (email, password) => persistSession('/auth/login', { email, password }),
       register: (name, email, password) => persistSession('/auth/register', { name, email, password }),
+      persistOAuthSession: async (accessToken, refreshToken) => {
+        localStorage.setItem('codequest.accessToken', accessToken);
+        localStorage.setItem('codequest.refreshToken', refreshToken);
+        const { data } = await api.get<User>('/auth/me');
+        localStorage.setItem('codequest.user', JSON.stringify(data));
+        setUser(data);
+      },
       logout: () => {
         clearStoredSession();
         setUser(null);

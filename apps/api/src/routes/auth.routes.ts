@@ -12,3 +12,5 @@ authRoutes.post('/login', validateBody(loginSchema), asyncHandler(controller.log
 authRoutes.post('/refresh', asyncHandler(controller.refresh));
 authRoutes.post('/logout', asyncHandler(controller.logout));
 authRoutes.get('/me', requireAuth, asyncHandler(controller.me));
+authRoutes.get('/:provider(github|google)', asyncHandler(controller.oauthStart));
+authRoutes.get('/:provider(github|google)/callback', asyncHandler(controller.oauthCallback));

@@ -53,6 +53,13 @@ export function AuthProvider({ children }) {
         user,
         login: (email, password) => persistSession('/auth/login', { email, password }),
         register: (name, email, password) => persistSession('/auth/register', { name, email, password }),
+        persistOAuthSession: async (accessToken, refreshToken) => {
+            localStorage.setItem('codequest.accessToken', accessToken);
+            localStorage.setItem('codequest.refreshToken', refreshToken);
+            const { data } = await api.get('/auth/me');
+            localStorage.setItem('codequest.user', JSON.stringify(data));
+            setUser(data);
+        },
         logout: () => {
             clearStoredSession();
             setUser(null);

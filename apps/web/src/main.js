@@ -11,6 +11,8 @@ import { Arena } from './pages/Arena';
 import { Contribute } from './pages/Contribute';
 import { Dashboard } from './pages/Dashboard';
 import { ForgotPassword, Home, Login, Register } from './pages/AuthPages';
+import { AboutPage, CookiesPage, PrivacyPage, TermsPage } from './pages/InstitutionalPages';
+import { OAuthCallback } from './pages/OAuthCallback';
 import { Profile } from './pages/Profile';
 import { Quiz } from './pages/Quiz';
 import { QuizSetupPage } from './pages/QuizSetupPage';
@@ -21,6 +23,11 @@ const router = createBrowserRouter([
     { path: '/login', element: _jsx(Login, {}) },
     { path: '/register', element: _jsx(Register, {}) },
     { path: '/forgot-password', element: _jsx(ForgotPassword, {}) },
+    { path: '/oauth/callback', element: _jsx(OAuthCallback, {}) },
+    { path: '/sobre', element: _jsx(AboutPage, {}) },
+    { path: '/termos', element: _jsx(TermsPage, {}) },
+    { path: '/privacidade', element: _jsx(PrivacyPage, {}) },
+    { path: '/cookies', element: _jsx(CookiesPage, {}) },
     {
         element: _jsx(ProtectedRoute, {}),
         children: [
@@ -34,6 +41,7 @@ const router = createBrowserRouter([
                     { path: '/ranking', element: _jsx(Ranking, {}) },
                     { path: '/profile', element: _jsx(Profile, {}) },
                     { path: '/contribute', element: _jsx(Contribute, {}) },
+                    { path: '/contribuir', element: _jsx(Contribute, {}) },
                     { path: '/my-questions', element: _jsx(Contribute, {}) },
                     { path: '/admin', element: _jsx(Admin, {}) },
                     { path: '*', element: _jsx(Navigate, { to: "/dashboard", replace: true }) },

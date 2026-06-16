@@ -14,6 +14,8 @@ export function Quiz() {
     const navigate = useNavigate();
     const session = useMemo(() => readQuizSession(), []);
     const startedAtRef = useRef(Date.now());
+    const questionCardRef = useRef(null);
+    const hasQuestionChangedRef = useRef(false);
     const [index, setIndex] = useState(0);
     const [selectedAlternativeId, setSelectedAlternativeId] = useState(null);
     const [answers, setAnswers] = useState([]);
@@ -35,6 +37,13 @@ export function Quiz() {
             });
         }
     }, [navigate, session]);
+    useEffect(() => {
+        if (!hasQuestionChangedRef.current) {
+            hasQuestionChangedRef.current = true;
+            return;
+        }
+        questionCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [index]);
     const submitMutation = useMutation({
         mutationFn: async (pendingAnswers) => {
             if (!session)
@@ -64,7 +73,7 @@ export function Quiz() {
                                         navigate('/dashboard');
                                     }, children: "Voltar ao dashboard" })] })] })] }));
     }
-    return (_jsxs("div", { className: "mx-auto max-w-5xl space-y-6", children: [_jsxs(Card, { className: "overflow-hidden p-6", children: [_jsx("div", { className: "absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(108,99,255,0.16),transparent_18rem)]" }), _jsxs("div", { className: "relative", children: [_jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "section-kicker", children: "quiz.session" }), _jsxs("h2", { className: "mt-3 text-3xl font-extrabold tracking-[-0.04em] text-textPrimary", children: ["Pergunta ", index + 1, " de ", session.questions.length] }), _jsx("p", { className: "mt-2 max-w-2xl text-sm text-textSecondary", children: "Desafio em andamento com corre\u00E7\u00E3o apenas na submiss\u00E3o final." })] }), _jsxs("div", { className: "grid gap-3 sm:grid-cols-3 lg:min-w-[360px]", children: [_jsx(SessionBadge, { label: "Dificuldade", value: currentDifficulty.label }), _jsx(SessionBadge, { label: "Categorias", value: `${session.setup.categoryIds.length} selecionada${session.setup.categoryIds.length > 1 ? 's' : ''}` }), _jsx(SessionBadge, { label: "Progresso", value: `${answers.length}/${session.questions.length}` })] })] }), _jsx("div", { className: "mt-6", children: _jsx(ProgressBar, { value: progress }) })] })] }), _jsxs("div", { className: "grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]", children: [_jsx("section", { className: "space-y-6", children: _jsxs(Card, { className: "p-6", children: [_jsxs("div", { className: "mb-5 flex items-start justify-between gap-4", children: [_jsxs("div", { children: [_jsx("p", { className: "section-kicker", children: question?.category }), _jsx("h3", { className: "mt-3 text-3xl font-bold leading-tight tracking-[-0.04em] text-textPrimary", children: question?.prompt })] }), _jsxs("div", { className: "rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-right", children: [_jsxs("div", { className: "font-mono text-sm text-textSecondary", children: [index + 1, "/", session.questions.length] }), _jsx("div", { className: "mt-1 text-xs uppercase tracking-[0.18em] text-textMuted", children: "quest\u00E3o" })] })] }), _jsx("div", { className: "grid gap-3", children: question?.alternatives.map((alternative) => {
+    return (_jsxs("div", { className: "mx-auto max-w-5xl space-y-6", children: [_jsxs(Card, { className: "overflow-hidden p-6", children: [_jsx("div", { className: "absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(108,99,255,0.16),transparent_18rem)]" }), _jsxs("div", { className: "relative", children: [_jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "section-kicker", children: "quiz.session" }), _jsxs("h2", { className: "mt-3 text-3xl font-extrabold tracking-[-0.04em] text-textPrimary", children: ["Pergunta ", index + 1, " de ", session.questions.length] }), _jsx("p", { className: "mt-2 max-w-2xl text-sm text-textSecondary", children: "Desafio em andamento com corre\u00E7\u00E3o apenas na submiss\u00E3o final." })] }), _jsxs("div", { className: "grid gap-3 sm:grid-cols-3 lg:min-w-[360px]", children: [_jsx(SessionBadge, { label: "Dificuldade", value: currentDifficulty.label }), _jsx(SessionBadge, { label: "Categorias", value: `${session.setup.categoryIds.length} selecionada${session.setup.categoryIds.length > 1 ? 's' : ''}` }), _jsx(SessionBadge, { label: "Progresso", value: `${answers.length}/${session.questions.length}` })] })] }), _jsx("div", { className: "mt-6", children: _jsx(ProgressBar, { value: progress }) })] })] }), _jsxs("div", { className: "grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]", children: [_jsx("section", { className: "space-y-6", children: _jsxs(Card, { ref: questionCardRef, className: "scroll-mt-24 p-6", children: [_jsxs("div", { className: "mb-5 flex items-start justify-between gap-4", children: [_jsxs("div", { children: [_jsx("p", { className: "section-kicker", children: question?.category }), _jsx("h3", { className: "mt-3 text-3xl font-bold leading-tight tracking-[-0.04em] text-textPrimary", children: question?.prompt })] }), _jsxs("div", { className: "rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-right", children: [_jsxs("div", { className: "font-mono text-sm text-textSecondary", children: [index + 1, "/", session.questions.length] }), _jsx("div", { className: "mt-1 text-xs uppercase tracking-[0.18em] text-textMuted", children: "quest\u00E3o" })] })] }), _jsx("div", { className: "grid gap-3", children: question?.alternatives.map((alternative) => {
                                         const selected = selectedAlternativeId === alternative.id;
                                         return (_jsxs("button", { type: "button", onClick: () => setSelectedAlternativeId(alternative.id), className: `flex min-h-16 items-center justify-between gap-4 rounded-[1.25rem] border px-5 py-4 text-left transition duration-150 ease-premium ${selected
                                                 ? 'border-primary/35 bg-primary/10 text-textPrimary shadow-[0_0_0_1px_rgba(108,99,255,0.14)]'

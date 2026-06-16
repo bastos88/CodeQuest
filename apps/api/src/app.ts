@@ -16,6 +16,7 @@ import { quizRoutes } from './routes/quiz.routes.js';
 import { rankingRoutes } from './routes/ranking.routes.js';
 import { reportRoutes } from './routes/report.routes.js';
 import { reviewRoutes } from './routes/review.routes.js';
+import { publicRoutes } from './routes/public.routes.js';
 
 export const app = express();
 
@@ -29,6 +30,7 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 25, standardHea
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/auth', authLimiter, authRoutes);
+app.use('/public', publicRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/quizzes', quizRoutes);
 app.use('/questions', questionRoutes);

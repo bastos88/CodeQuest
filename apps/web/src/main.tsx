@@ -10,6 +10,8 @@ import { Arena } from './pages/Arena';
 import { Contribute } from './pages/Contribute';
 import { Dashboard } from './pages/Dashboard';
 import { ForgotPassword, Home, Login, Register } from './pages/AuthPages';
+import { AboutPage, CookiesPage, PrivacyPage, TermsPage } from './pages/InstitutionalPages';
+import { OAuthCallback } from './pages/OAuthCallback';
 import { Profile } from './pages/Profile';
 import { Quiz } from './pages/Quiz';
 import { QuizSetupPage } from './pages/QuizSetupPage';
@@ -21,6 +23,11 @@ const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/forgot-password', element: <ForgotPassword /> },
+  { path: '/oauth/callback', element: <OAuthCallback /> },
+  { path: '/sobre', element: <AboutPage /> },
+  { path: '/termos', element: <TermsPage /> },
+  { path: '/privacidade', element: <PrivacyPage /> },
+  { path: '/cookies', element: <CookiesPage /> },
   {
     element: <ProtectedRoute />,
     children: [
@@ -34,6 +41,7 @@ const router = createBrowserRouter([
           { path: '/ranking', element: <Ranking /> },
           { path: '/profile', element: <Profile /> },
           { path: '/contribute', element: <Contribute /> },
+          { path: '/contribuir', element: <Contribute /> },
           { path: '/my-questions', element: <Contribute /> },
           { path: '/admin', element: <Admin /> },
           { path: '*', element: <Navigate to="/dashboard" replace /> },
