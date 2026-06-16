@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'node:path';
+import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { PrismaClient, type Difficulty } from '@prisma/client';
 
@@ -4706,8 +4707,20 @@ const prompts: Array<{ category: string; difficulty: Difficulty; prompt: string;
 ];
 
 async function main() {
-  const adminPassword = await bcrypt.hash('Admin12345!', 12);
-  const userPassword = await bcrypt.hash('User12345!', 12);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const generatedAdminPassword = randomBytes(18).toString('base64url');
+  const generatedStudentPassword = randomBytes(18).toString('base64url');
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? (isProduction ? undefined : 'admin@codequest.dev');
+  const adminPlainPassword = process.env.SEED_ADMIN_PASSWORD ?? (isProduction ? undefined : generatedAdminPassword);
+  const studentEmail = process.env.SEED_STUDENT_EMAIL ?? (isProduction ? undefined : 'student@codequest.dev');
+  const studentPlainPassword = process.env.SEED_STUDENT_PASSWORD ?? (isProduction ? undefined : generatedStudentPassword);
+
+  if (!adminEmail || !adminPlainPassword || !studentEmail || !studentPlainPassword) {
+    throw new Error('Production seed requires SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, SEED_STUDENT_EMAIL and SEED_STUDENT_PASSWORD.');
+  }
+
+  const adminPassword = await bcrypt.hash(adminPlainPassword, 12);
+  const userPassword = await bcrypt.hash(studentPlainPassword, 12);
 
   const [starterTitle] = await Promise.all([
     prisma.title.upsert({
@@ -4734,11 +4747,11 @@ async function main() {
   ]);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@codequest.dev' },
+    where: { email: adminEmail },
     update: {},
     create: {
       name: 'Admin CodeQuest',
-      email: 'admin@codequest.dev',
+      email: adminEmail,
       passwordHash: adminPassword,
       role: 'ADMIN',
       activeTitleId: starterTitle.id,
@@ -4748,11 +4761,11 @@ async function main() {
   });
 
   const user = await prisma.user.upsert({
-    where: { email: 'student@codequest.dev' },
+    where: { email: studentEmail },
     update: {},
     create: {
       name: 'Leo Student',
-      email: 'student@codequest.dev',
+      email: studentEmail,
       passwordHash: userPassword,
       activeTitleId: starterTitle.id,
       xp: 640,
@@ -4937,8 +4950,12 @@ async function main() {
   }
 
   console.log(`Seed completed. ${prompts.length} perguntas inseridas/atualizadas.`);
-  console.log('Admin: admin@codequest.dev / Admin12345!');
-  console.log('Student: student@codequest.dev / User12345!');
+  console.log(`Admin seed user: ${adminEmail}`);
+  console.log(`Student seed user: ${studentEmail}`);
+  if (!isProduction) {
+    console.log(`Admin seed password: ${adminPlainPassword}`);
+    console.log(`Student seed password: ${studentPlainPassword}`);
+  }
 }
 
 main()

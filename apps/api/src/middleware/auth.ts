@@ -16,14 +16,10 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
     req.header('Authorization') ||
     req.header('authorization');
 
-  console.log('AUTH HEADER:', authorization);
-
   const token =
     typeof authorization === 'string' && authorization.startsWith('Bearer ')
       ? authorization.slice(7)
       : undefined;
-
-  console.log('TOKEN EXISTS:', Boolean(token));
 
   if (!token) {
     throw new HttpError(401, 'Missing access token');
@@ -32,8 +28,6 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   try {
     const payload = verifyAccessToken(token);
 
-    console.log('JWT PAYLOAD:', payload);
-
     (req as AuthenticatedRequest).user = {
       id: payload.sub,
       role: payload.role,
@@ -41,8 +35,6 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 
     next();
   } catch (error) {
-    console.error('JWT ERROR:', error);
-
     if (
       error instanceof jwt.JsonWebTokenError ||
       error instanceof jwt.TokenExpiredError

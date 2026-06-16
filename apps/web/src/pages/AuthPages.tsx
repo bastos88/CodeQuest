@@ -473,7 +473,7 @@ export function Login() {
       : '/dashboard';
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'student@codequest.dev', password: 'User12345!' },
+    defaultValues: { email: '', password: '' },
   });
 
   const githubAuthUrl = import.meta.env.VITE_AUTH_GITHUB_URL as string | undefined;
@@ -528,6 +528,7 @@ export function Login() {
           <Input
             id="email"
             type="email"
+            autoComplete="email"
             placeholder="voce@exemplo.com"
             aria-invalid={form.formState.errors.email ? 'true' : 'false'}
             aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
@@ -542,6 +543,7 @@ export function Login() {
           <Input
             id="password"
             type="password"
+            autoComplete="current-password"
             placeholder="••••••••"
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
             aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
@@ -622,6 +624,7 @@ export function Register() {
           <Input
             id="register-email"
             type="email"
+            autoComplete="email"
             placeholder="voce@exemplo.com"
             aria-invalid={form.formState.errors.email ? 'true' : 'false'}
             {...form.register('email')}
@@ -631,6 +634,7 @@ export function Register() {
           <Input
             id="register-password"
             type="password"
+            autoComplete="new-password"
             placeholder="••••••••"
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
             {...form.register('password')}

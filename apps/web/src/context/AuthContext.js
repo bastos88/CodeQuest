@@ -1,13 +1,31 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import axios from 'axios';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
 const AuthContext = createContext(undefined);
+function clearStoredSession() {
+    localStorage.removeItem('codequest.accessToken');
+    localStorage.removeItem('codequest.refreshToken');
+    localStorage.removeItem('codequest.user');
+}
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => {
         const raw = localStorage.getItem('codequest.user');
-        return raw ? JSON.parse(raw) : null;
+        if (!raw)
+            return null;
+        try {
+            return JSON.parse(raw);
+        }
+        catch {
+            clearStoredSession();
+            return null;
+        }
     });
+    useEffect(() => {
+        const handleExpiredSession = () => setUser(null);
+        window.addEventListener('codequest:session-expired', handleExpiredSession);
+        return () => window.removeEventListener('codequest:session-expired', handleExpiredSession);
+    }, []);
     async function persistSession(path, payload) {
         try {
             const { data } = await api.post(path, payload);
@@ -36,9 +54,7 @@ export function AuthProvider({ children }) {
         login: (email, password) => persistSession('/auth/login', { email, password }),
         register: (name, email, password) => persistSession('/auth/register', { name, email, password }),
         logout: () => {
-            localStorage.removeItem('codequest.accessToken');
-            localStorage.removeItem('codequest.refreshToken');
-            localStorage.removeItem('codequest.user');
+            clearStoredSession();
             setUser(null);
         },
     }), [user]);

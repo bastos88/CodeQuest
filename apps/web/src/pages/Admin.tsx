@@ -607,11 +607,11 @@ export function Admin() {
               onChange={(event) => setRejectState((current) => (current ? { ...current, reason: event.target.value } : current))}
               rows={5}
               className="field-area"
-              placeholder="Explique o motivo com pelo menos 5 caracteres."
+              placeholder="Explique o motivo com pelo menos 10 caracteres."
             />
             <p className="mt-2 text-xs text-textMuted">
-  Mínimo de 10 caracteres. Atual: {rejectState.reason.trim().length}/5
-</p>
+              Mínimo de 10 caracteres. Atual: {rejectState.reason.trim().length}/10
+            </p>
           </label>
           <label className="mt-4 block">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Notas internas</span>
@@ -629,7 +629,7 @@ export function Admin() {
               variant="danger"
               loading={rejectMutation.isPending}
               loadingText="Rejeitando..."
-              disabled={rejectState.reason.trim().length < 5}
+              disabled={rejectState.reason.trim().length < 10}
               onClick={async () => {
                 try {
                   setActionError(null);
