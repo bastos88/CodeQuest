@@ -1,0 +1,58 @@
+﻿
+Path                                                                                 LineNumber Line                                                                                                                    
+----                                                                                 ---------- ----                                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                                620     correct: 'GET, PUT, DELETE',                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2070     prompt: 'Em APIs REST, qual afirmação descreve corretamente DELETE?',                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2483     prompt: 'Em Database, qual afirmação descreve corretamente cascade delete?',                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2490     prompt: 'Em Database, qual afirmação descreve corretamente soft delete?',                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               3064     prompt: 'Em Git, qual afirmação descreve corretamente git restore?',                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4527     prompt: 'Em SQL, qual afirmação descreve corretamente DELETE?',                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4816           isActive: true,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4820             deleteMany: {},                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4834           isActive: true,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4848       isActive: true,                                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         29   await questionService.deleteQuestion(requireParam(req, 'id'), req.user.id);                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         33 export async function archive(req: AuthenticatedRequest, res: Response) {                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         34   res.json(await questionService.archiveQuestion(requireParam(req, 'id'), req.user.id));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         37 export async function restore(req: AuthenticatedRequest, res: Response) {                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         38   res.json(await questionService.restoreQuestion(requireParam(req, 'id'), req.user.id));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  15 questionRoutes.delete('/:id', requireRole('ADMIN'), asyncHandler(controller.destroy));                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  16 questionRoutes.post('/:id/archive', requireRole('ADMIN', 'REVIEWER'), asyncHandler(controller.archive));                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  17 questionRoutes.post('/:id/restore', requireRole('ADMIN'), asyncHandler(controller.restore));                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts                7     ...(includeUnapproved ? {} : { where: { status: 'APPROVED', isActive: true, archivedAt: null } }),                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               22       isActive: status === 'APPROVED',                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               42               deleteMany: {},                                                                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               52 export async function deleteQuestion(id: string, actorId: string) {                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               58     throw new HttpError(409, 'Question already has quiz history; archive it instead');                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               62     await tx.report.deleteMany({ where: { questionId: id } });                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               63     await tx.review.deleteMany({ where: { questionId: id } });                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               64     await tx.alternative.deleteMany({ where: { questionId: id } });                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               68         action: 'question.deleted',                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               72     await tx.question.delete({ where: { id } });                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               76 export async function archiveQuestion(id: string, actorId: string) {                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               79   if (question.status === 'ARCHIVED') throw new HttpError(409, 'Question already archived');                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               82     const archived = await tx.question.update({                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               85         status: 'ARCHIVED',                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               86         isActive: false,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               87         archivedAt: new Date(),                                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               96         action: 'question.archived',                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              101     return archived;                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              105 export async function restoreQuestion(id: string, actorId: string) {                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              108   if (question.status !== 'ARCHIVED') throw new HttpError(409, 'Only archived questions can be restored');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              111     const restored = await tx.question.update({                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              115         isActive: true,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              116         archivedAt: null,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              126         action: 'question.restored',                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              131     return restored;                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              146     if (existing.status === 'APPROVED' && existing.isActive) throw new HttpError(409, 'Question already approved');     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              147     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be approved');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              153         isActive: true,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              157         archivedAt: null,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              196     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be rejected');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              202         isActive: false,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                   21       isActive: true,                                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                   22       archivedAt: null,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                  125     await tx.question.updateMany({ where: { id: { in: session.questionIds } }, data: { usedCount: { increment: 1 } } });
+
+
+

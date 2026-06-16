@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  REVIEWER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+enum MissionType {
+  DAILY
+  WEEKLY
+}
+
+enum MissionStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum ReportStatus {
+  OPEN
+  TRIAGED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  passwordHash    String
+  role            Role              @default(USER)
+  avatarUrl       String?
+  xp              Int               @default(0)
+  rating          Int               @default(1000)
+  quizzesCompleted Int              @default(0)
+  correctAnswers  Int               @default(0)
+  totalAnswers    Int               @default(0)
+  streakDays      Int               @default(0)
+  activeTitleId   String?
+  activeTitle     Title?            @relation("ActiveTitle", fields: [activeTitleId], references: [id])
+  refreshTokens   RefreshToken[]
+  quizResults     QuizResult[]
+  submittedQuestions Question[]     @relation("SubmittedQuestions")
+  reviews         Review[]          @relation("ReviewerReviews")
+  reports         Report[]
+  achievements    UserAchievement[]
+  titles          UserTitle[]
+  missions        UserMission[]
+  arenaAsA        ArenaMatch[]      @relation("ArenaA")
+  arenaAsB        ArenaMatch[]      @relation("ArenaB")
+  activities      ActivityLog[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  tokenHash   String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  replacedBy  String?
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id          String               @id @default(uuid())
+  name        String               @unique
+  slug        String               @unique
+  description String?
+  questions   Question[]
+  tracks      SkillTrackCategory[]
+  createdAt   DateTime             @default(now())
+}
+
+model Question {
+  id              String         @id @default(uuid())
+  categoryId      String
+  category        Category       @relation(fields: [categoryId], references: [id])
+  authorId        String?
+  author          User?          @relation("SubmittedQuestions", fields: [authorId], references: [id])
+  prompt          String
+  explanation     String?
+  difficulty      Difficulty
+  status          QuestionStatus @default(PENDING_REVIEW)
+  isActive        Boolean        @default(false)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  usedCount       Int            @default(0)
+  alternatives    Alternative[]
+  quizAnswers     QuizAnswer[]
+  reviews         Review[]
+  reports         Report[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+}
+
+model Alternative {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text        String
+  isCorrect   Boolean  @default(false)
+}
+
+model QuizSession {
+  id          String       @id @default(uuid())
+  userId      String
+  categoryId  String?
+  difficulty  Difficulty?
+  questionIds String[]
+  submittedAt DateTime?
+  createdAt   DateTime     @default(now())
+  result       QuizResult?
+}
+
+model QuizResult {
+  id              String       @id @default(uuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId       String       @unique
+  session         QuizSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  totalQuestions  Int
+  correctCount    Int
+  accuracy        Int
+  xpEarned        Int
+  durationSeconds Int
+  answers         QuizAnswer[]
+  createdAt       DateTime     @default(now())
+}
+
+model QuizAnswer {
+  id               String     @id @default(uuid())
+  quizResultId     String
+  quizResult       QuizResult @relation(fields: [quizResultId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question   @relation(fields: [questionId], references: [id])
+  selectedOptionId String
+  isCorrect        Boolean
+  timeSpentSeconds Int
+}
+
+model Review {
+  id          String         @id @default(uuid())
+  questionId  String
+  question    Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewer    User           @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  decision    ReviewDecision
+  checklist   Json?
+  reason      String?
+  createdAt   DateTime       @default(now())
+}
+
+model Report {
+  id          String       @id @default(uuid())
+  questionId  String
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason      String
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Achievement {
+  id          String            @id @default(uuid())
+  key         String            @unique
+  name        String
+  description String
+  category    String
+  tier        String?
+  xpBonus     Int               @default(0)
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model Title {
+  id          String      @id @default(uuid())
+  key         String      @unique
+  name        String
+  description String
+  users       UserTitle[]
+  activeUsers User[]      @relation("ActiveTitle")
+}
+
+model UserTitle {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titleId   String
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, titleId])
+}
+
+model SkillTrack {
+  id          String               @id @default(uuid())
+  name        String               @unique
+  description String
+  finalBadge  String
+  categories  SkillTrackCategory[]
+}
+
+model SkillTrackCategory {
+  id          String     @id @default(uuid())
+  trackId     String
+  track       SkillTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  order       Int
+
+  @@unique([trackId, categoryId])
+}
+
+model Mission {
+  id          String        @id @default(uuid())
+  key         String        @unique
+  type        MissionType
+  title       String
+  target      Int
+  xpReward    Int
+  categorySlug String?
+  users       UserMission[]
+}
+
+model UserMission {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId   String
+  mission     Mission       @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  progress    Int           @default(0)
+  status      MissionStatus @default(ACTIVE)
+  expiresAt   DateTime
+  completedAt DateTime?
+
+  @@unique([userId, missionId, expiresAt])
+}
+
+model ArenaMatch {
+  id              String   @id @default(uuid())
+  playerAId       String
+  playerA         User     @relation("ArenaA", fields: [playerAId], references: [id])
+  playerBId       String?
+  playerB         User?    @relation("ArenaB", fields: [playerBId], references: [id])
+  winnerId        String?
+  ratingDeltaA    Int      @default(0)
+  ratingDeltaB    Int      @default(0)
+  correctA        Int      @default(0)
+  correctB        Int      @default(0)
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model Season {
+  id        String   @id @default(uuid())
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime
+  rewards   Json?
+  createdAt DateTime @default(now())
+}

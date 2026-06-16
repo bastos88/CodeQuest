@@ -1,0 +1,178 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - link "CQ CodeQuest edu.quiz.system" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e7]: CQ
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: CodeQuest
+        - paragraph [ref=e10]: edu.quiz.system
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Perfil ativo
+      - paragraph [ref=e13]: Leo Student
+      - paragraph [ref=e14]: USER
+      - generic [ref=e15]:
+        - generic [ref=e16]: 1165 XP
+        - generic [ref=e17]: 1020 rating
+    - navigation [ref=e18]:
+      - link "Dashboard" [ref=e19] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Quiz" [ref=e25] [cursor=pointer]:
+        - /url: /quiz
+        - img [ref=e26]
+        - text: Quiz
+      - link "Arena" [ref=e29] [cursor=pointer]:
+        - /url: /arena
+        - img [ref=e30]
+        - text: Arena
+      - link "Ranking" [ref=e39] [cursor=pointer]:
+        - /url: /ranking
+        - img [ref=e40]
+        - text: Ranking
+      - link "Profile" [ref=e46] [cursor=pointer]:
+        - /url: /profile
+        - img [ref=e47]
+        - text: Profile
+      - link "Contribute" [ref=e53] [cursor=pointer]:
+        - /url: /contribute
+        - img [ref=e54]
+        - text: Contribute
+    - generic [ref=e57]:
+      - paragraph [ref=e58]: Missão do dia
+      - paragraph [ref=e59]: Responder 10 perguntas de React sem perder a sequência.
+  - banner [ref=e60]:
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - paragraph [ref=e63]: quiz
+        - heading "CodeQuest" [level=1] [ref=e64]
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - generic [ref=e69]: 1165 XP
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - generic [ref=e73]: 1020 rating
+        - button "Sair" [ref=e74] [cursor=pointer]:
+          - img [ref=e75]
+  - main [ref=e78]:
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: quiz.setup
+            - generic [ref=e87]: Pré-configuração
+          - heading "Prepare seu desafio" [level=2] [ref=e88]
+          - paragraph [ref=e89]: Escolha categorias, dificuldade e quantidade de perguntas antes de iniciar sua simulação.
+        - generic [ref=e91]:
+          - paragraph [ref=e92]: Seção 1
+          - heading "Categorias" [level=3] [ref=e93]
+          - paragraph [ref=e94]: Combine trilhas para montar um desafio mais amplo ou mantenha foco em um único tema.
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - paragraph [ref=e104]: Seção 2
+            - heading "Dificuldade" [level=3] [ref=e105]
+            - paragraph [ref=e106]: Ajuste o nível do desafio conforme o objetivo de estudo ou ritmo de revisão.
+          - generic [ref=e107]:
+            - button "Iniciante Conceitos básicos e fundamentos. Base sólida" [ref=e108] [cursor=pointer]:
+              - img [ref=e110]
+              - generic [ref=e112]:
+                - generic [ref=e114]:
+                  - paragraph [ref=e115]: Iniciante
+                  - paragraph [ref=e116]: Conceitos básicos e fundamentos.
+                - generic [ref=e122]: Base sólida
+            - button "Intermediário Situações reais e aplicação prática. Contexto real" [ref=e123] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e127]:
+                - generic [ref=e129]:
+                  - paragraph [ref=e130]: Intermediário
+                  - paragraph [ref=e131]: Situações reais e aplicação prática.
+                - generic [ref=e137]: Contexto real
+            - button "Avançado Entrevistas técnicas e cenários complexos. Alta pressão" [ref=e138] [cursor=pointer]:
+              - img [ref=e140]
+              - generic [ref=e142]:
+                - generic [ref=e144]:
+                  - paragraph [ref=e145]: Avançado
+                  - paragraph [ref=e146]: Entrevistas técnicas e cenários complexos.
+                - generic [ref=e152]: Alta pressão
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - paragraph [ref=e155]: Seção 3
+            - heading "Quantidade de perguntas" [level=3] [ref=e156]
+            - paragraph [ref=e157]: Escolha a duração da simulação sem cair em um formulário genérico.
+          - generic [ref=e158]:
+            - button "5 perguntas Tempo estimado ~3 min Ritmo sugerido" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e163]:
+                - generic [ref=e165]:
+                  - paragraph [ref=e166]: 5 perguntas
+                  - paragraph [ref=e167]: Tempo estimado ~3 min
+                - generic [ref=e173]: Ritmo sugerido
+            - button "10 perguntas Tempo estimado ~6 min Ritmo sugerido" [ref=e174] [cursor=pointer]:
+              - img [ref=e176]
+              - generic [ref=e178]:
+                - generic [ref=e180]:
+                  - paragraph [ref=e181]: 10 perguntas
+                  - paragraph [ref=e182]: Tempo estimado ~6 min
+                - generic [ref=e188]: Ritmo sugerido
+            - button "15 perguntas Tempo estimado ~10 min Ritmo sugerido" [ref=e189] [cursor=pointer]:
+              - img [ref=e191]
+              - generic [ref=e193]:
+                - generic [ref=e195]:
+                  - paragraph [ref=e196]: 15 perguntas
+                  - paragraph [ref=e197]: Tempo estimado ~10 min
+                - generic [ref=e203]: Ritmo sugerido
+            - button "20 perguntas Tempo estimado ~15 min Ritmo sugerido" [ref=e204] [cursor=pointer]:
+              - img [ref=e206]
+              - generic [ref=e208]:
+                - generic [ref=e210]:
+                  - paragraph [ref=e211]: 20 perguntas
+                  - paragraph [ref=e212]: Tempo estimado ~15 min
+                - generic [ref=e218]: Ritmo sugerido
+      - complementary [ref=e219]:
+        - generic [ref=e220]:
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - paragraph [ref=e223]: Resumo
+              - heading "Configuração atual" [level=3] [ref=e224]
+            - img [ref=e226]
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - img [ref=e233]
+              - generic [ref=e239]:
+                - paragraph [ref=e240]: Categoria(s)
+                - paragraph [ref=e241]: Selecione uma ou mais categorias
+            - generic [ref=e242]:
+              - img [ref=e244]
+              - generic [ref=e246]:
+                - paragraph [ref=e247]: Dificuldade
+                - paragraph [ref=e248]: Selecione a dificuldade
+            - generic [ref=e249]:
+              - img [ref=e251]
+              - generic [ref=e255]:
+                - paragraph [ref=e256]: Quantidade
+                - paragraph [ref=e257]: Escolha a quantidade
+            - generic [ref=e258]:
+              - img [ref=e260]
+              - generic [ref=e263]:
+                - paragraph [ref=e264]: Tempo estimado
+                - paragraph [ref=e265]: "-"
+          - generic [ref=e266]:
+            - paragraph [ref=e267]: XP potencial
+            - paragraph [ref=e268]: "+0"
+            - paragraph [ref=e269]: Projeção baseada em acerto máximo para a configuração selecionada.
+          - generic [ref=e270]:
+            - paragraph [ref=e271]: Antes de iniciar
+            - list [ref=e272]:
+              - listitem [ref=e273]:
+                - img [ref=e274]
+                - text: A seleção é validada antes de criar a sessão.
+              - listitem [ref=e277]:
+                - img [ref=e278]
+                - text: As respostas corretas continuam protegidas no backend.
+              - listitem [ref=e281]:
+                - img [ref=e282]
+                - text: Se faltarem perguntas, você recebe orientação para ajustar os filtros.
+          - button "Iniciar Desafio" [disabled] [ref=e285]:
+            - generic [ref=e286]: Iniciar Desafio
+            - img [ref=e287]

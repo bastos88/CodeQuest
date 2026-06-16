@@ -1,0 +1,30 @@
+{
+  "name": "codequest",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @codequest/api & npm run dev --workspace @codequest/web",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:migrate": "npm run db:migrate --workspace @codequest/api",
+    "db:seed": "npm run db:seed --workspace @codequest/api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@tailwindcss/cli": "^4.3.1",
+    "@tailwindcss/vite": "^4.3.1",
+    "prettier": "^3.3.3",
+    "tsx": "^4.22.4",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.11.0"
+  },
+  "prisma": {
+    "schema": "apps/api/prisma/schema.prisma",
+    "seed": "tsx apps/api/prisma/seed.ts"
+  }
+}

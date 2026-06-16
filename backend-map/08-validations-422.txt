@@ -1,0 +1,41 @@
+﻿
+Path                                                                               LineNumber Line                                                                                                                 
+----                                                                               ---------- ----                                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                              109     correct: 'Adia a execução do script até o HTML ser parseado',                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                              970     correct: 'async baixa em paralelo e executa imediatamente; defer baixa em paralelo e executa após HTML parseado',
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             1488     correct: 'Parser→AST→Ignition(bytecode interpreter)→TurboFan(compilador JIT otimizado)→código máquina',          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             1636     prompt: 'Em HTML, qual afirmação descreve corretamente required?',                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             2959     prompt: 'Em API, qual afirmação descreve corretamente status 422?',                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\config\env.ts                             2 import { z } from 'zod';                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\config\env.ts                            12 export const env = envSchema.parse(process.env);                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\report.controller.ts         12         reason: String(req.body.reason),                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       2 import { ZodError } from 'zod';                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       6   if (error instanceof ZodError) {                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       7     res.status(422).json({ message: 'Validation failed', issues: error.flatten() });                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    2 import type { ZodSchema } from 'zod';                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    4 export function validateBody(schema: ZodSchema) {                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    6     req.body = schema.parse(req.body);                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                     5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                    10 authRoutes.post('/register', validateBody(registerSchema), asyncHandler(controller.register));                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                    11 authRoutes.post('/login', validateBody(loginSchema), asyncHandler(controller.login));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                 5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                13 questionRoutes.post('/', validateBody(questionSchema), asyncHandler(controller.create));                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                     5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                    11 quizRoutes.post('/start', validateBody(quizStartSchema), asyncHandler(controller.start));                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                    12 quizRoutes.post('/submit', validateBody(quizSubmitSchema), asyncHandler(controller.submit));                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                   5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                  12 reviewRoutes.post('/:questionId/approve', validateBody(approveReviewSchema), asyncHandler(controller.approve));      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                  13 reviewRoutes.post('/:questionId/reject', validateBody(rejectReviewSchema), asyncHandler(controller.reject));         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            141   if (!Object.values(checklist).every(Boolean)) throw new HttpError(422, 'Approval checklist must be complete');     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            154         rejectionReason: null,                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            167         reason: notes ?? null,                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            189   const { rejectionReason, notes } = input;                                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            190   if (!rejectionReason.trim()) throw new HttpError(422, 'Rejection reason is required');                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            203         rejectionReason,                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            214         reason: rejectionReason,                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            223         metadata: { questionId, rejectionReason, notes: notes ?? null },                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                    2 import cookieParser from 'cookie-parser';                                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                   25 app.use(cookieParser());                                                                                             
+
+
+

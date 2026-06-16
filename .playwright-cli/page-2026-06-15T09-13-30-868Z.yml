@@ -1,0 +1,133 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - link "CQ CodeQuest edu.quiz.system" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e7]: CQ
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: CodeQuest
+        - paragraph [ref=e10]: edu.quiz.system
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Perfil ativo
+      - paragraph [ref=e13]: Leo Student
+      - paragraph [ref=e14]: USER
+      - generic [ref=e15]:
+        - generic [ref=e16]: 640 XP
+        - generic [ref=e17]: 1020 rating
+    - navigation [ref=e18]:
+      - link "Dashboard" [ref=e19] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Quiz" [ref=e25] [cursor=pointer]:
+        - /url: /quiz
+        - img [ref=e26]
+        - text: Quiz
+      - link "Arena" [ref=e29] [cursor=pointer]:
+        - /url: /arena
+        - img [ref=e30]
+        - text: Arena
+      - link "Ranking" [ref=e39] [cursor=pointer]:
+        - /url: /ranking
+        - img [ref=e40]
+        - text: Ranking
+      - link "Profile" [ref=e46] [cursor=pointer]:
+        - /url: /profile
+        - img [ref=e47]
+        - text: Profile
+      - link "Contribute" [ref=e53] [cursor=pointer]:
+        - /url: /contribute
+        - img [ref=e54]
+        - text: Contribute
+      - link "Admin" [ref=e57] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=e58]
+        - text: Admin
+    - generic [ref=e61]:
+      - paragraph [ref=e62]: Missão do dia
+      - paragraph [ref=e63]: Responder 10 perguntas de React sem perder a sequência.
+  - banner [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - paragraph [ref=e67]: quiz/session
+        - heading "CodeQuest" [level=1] [ref=e68]
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - generic [ref=e73]: 640 XP
+        - generic [ref=e74]:
+          - img [ref=e75]
+          - generic [ref=e77]: 1020 rating
+        - button "Sair" [ref=e78] [cursor=pointer]:
+          - img [ref=e79]
+  - main [ref=e82]:
+    - generic [ref=e532]:
+      - generic [ref=e536]:
+        - generic [ref=e537]:
+          - paragraph [ref=e538]: quiz.session
+          - heading "Pergunta 1 de 5" [level=2] [ref=e539]
+          - paragraph [ref=e540]: Desafio em andamento com correção apenas na submissão final.
+        - generic [ref=e541]:
+          - generic [ref=e542]:
+            - paragraph [ref=e543]: Dificuldade
+            - paragraph [ref=e544]: Iniciante
+          - generic [ref=e545]:
+            - paragraph [ref=e546]: Categorias
+            - paragraph [ref=e547]: 5 selecionadas
+          - generic [ref=e548]:
+            - paragraph [ref=e549]: Progresso
+            - paragraph [ref=e550]: 0/5
+      - generic [ref=e553]:
+        - generic [ref=e555]:
+          - generic [ref=e556]:
+            - generic [ref=e557]:
+              - paragraph [ref=e558]: APIs REST
+              - heading "Qual verbo HTTP e usado tipicamente para buscar dados sem alterar o recurso?" [level=3] [ref=e559]
+            - generic [ref=e560]:
+              - generic [ref=e561]: 1/5
+              - generic [ref=e562]: questão
+          - generic [ref=e563]:
+            - button "DELETE" [ref=e564] [cursor=pointer]:
+              - generic [ref=e565]:
+                - img [ref=e566]
+                - generic [ref=e568]: DELETE
+            - button "POST" [ref=e569] [cursor=pointer]:
+              - generic [ref=e570]:
+                - img [ref=e571]
+                - generic [ref=e573]: POST
+            - button "GET" [ref=e574] [cursor=pointer]:
+              - generic [ref=e575]:
+                - img [ref=e576]
+                - generic [ref=e578]: GET
+            - button "PATCH" [ref=e579] [cursor=pointer]:
+              - generic [ref=e580]:
+                - img [ref=e581]
+                - generic [ref=e583]: PATCH
+          - generic [ref=e584]: Sua resposta fica registrada, mas a validação acontece somente após a submissão final.
+          - generic [ref=e585]:
+            - button "Reconfigurar" [ref=e586] [cursor=pointer]:
+              - img [ref=e587]
+              - text: Reconfigurar
+            - button "Próxima pergunta" [disabled] [ref=e589]:
+              - text: Próxima pergunta
+              - img [ref=e590]
+        - complementary [ref=e592]:
+          - generic [ref=e593]:
+            - paragraph [ref=e594]: Sessão
+            - heading "Leitura rápida" [level=3] [ref=e595]
+            - generic [ref=e596]:
+              - generic [ref=e597]:
+                - generic [ref=e598]: Questões totais
+                - generic [ref=e599]: "5"
+              - generic [ref=e600]:
+                - generic [ref=e601]: Respondidas
+                - generic [ref=e602]: "0"
+              - generic [ref=e603]:
+                - generic [ref=e604]: Restantes
+                - generic [ref=e605]: "5"
+              - generic [ref=e606]:
+                - generic [ref=e607]: Categoria atual
+                - generic [ref=e608]: APIs REST
+          - generic [ref=e609]:
+            - paragraph [ref=e610]: Anti-cheat
+            - heading "Correção protegida" [level=3] [ref=e611]
+            - paragraph [ref=e612]: Nenhuma resposta correta é enviada antes da submissão. O frontend só registra escolhas e tempos de resposta.

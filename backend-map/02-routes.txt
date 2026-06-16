@@ -1,0 +1,7 @@
+﻿
+Path                                                     LineNumber Line                                                          
+----                                                     ---------- ----                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts         30 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+
+

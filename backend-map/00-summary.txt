@@ -1,0 +1,61 @@
+﻿BACKEND MAP - CODEQUEST
+
+Raiz:
+C:\Users\leozi\Desktop\frontend-quiz
+
+API:
+C:\Users\leozi\Desktop\frontend-quiz\apps\api
+
+Arquivos analisados:
+39
+
+Arquivos gerados:
+
+01-backend-files.txt
+Lista todos os arquivos encontrados no backend.
+
+02-routes.txt
+Mostra todas as rotas Express encontradas.
+
+03-critical-endpoints.txt
+Mostra endpoints crÃ­ticos: reviews, questions, categories, quizzes, admin, profile, auth.
+
+04-reviews-flow.txt
+Ajuda a localizar approve/reject/pending/review.
+
+05-delete-archive-restore.txt
+Ajuda a localizar delete/archive/restore/isActive/archivedAt/usedCount.
+
+06-prisma-usage.txt
+Mostra chamadas Prisma: findMany, create, update, delete, transaction, etc.
+
+07-auth-middleware.txt
+Mostra autenticaÃ§Ã£o, JWT, Bearer token e middleware.
+
+08-validations-422.txt
+Mostra validaÃ§Ãµes que podem causar 422.
+
+09-status-codes.txt
+Mostra onde o backend retorna 400, 401, 403, 404, 409, 422, 500.
+
+10-quiz-categories-flow.txt
+Mostra fluxo de categorias e start de quiz.
+
+11-contribute-flow.txt
+Mostra fluxo de contribuiÃ§Ã£o de perguntas.
+
+12-schema.prisma
+CÃ³pia do schema Prisma.
+
+13-api-package.json
+CÃ³pia do package da API.
+
+important-files/
+CÃ³pia dos arquivos mais provÃ¡veis de precisarem alteraÃ§Ã£o.
+
+PrÃ³ximos focos:
+1. Ver 04-reviews-flow.txt para entender /reviews/:id/reject.
+2. Ver 08-validations-422.txt para descobrir qual campo estÃ¡ faltando no reject.
+3. Ver 05-delete-archive-restore.txt para separar rejeitar de excluir.
+4. Ver 10-quiz-categories-flow.txt para corrigir categorias e /quizzes/start.
+5. Ver 07-auth-middleware.txt para tratar token expirado.

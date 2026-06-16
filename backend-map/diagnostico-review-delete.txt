@@ -1,0 +1,503 @@
+﻿
+Path                                                                                 LineNumber Line                                                                                                               
+----                                                                                 ---------- ----                                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2021     prompt: 'Em Git/GitHub, qual afirmação descreve corretamente review?',                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               3743     prompt: 'Em Best Practices, qual afirmação descreve corretamente code review?',                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4815           status: 'APPROVED',                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4817           reviewedById: admin.id,                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4818           reviewedAt: new Date(),                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4833           status: 'APPROVED',                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4835           reviewedById: admin.id,                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4836           reviewedAt: new Date(),                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4846     where: { status: 'APPROVED' },                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4849       reviewedById: admin.id,                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4850       reviewedAt: new Date(),                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts             6   const [users, questions, pending, reports, quizzes] = await Promise.all([                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts             9     prisma.question.count({ where: { status: 'PENDING_REVIEW' } }),                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts            13   res.json({ users, questions, pending, reports, quizzes });                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts            23         reviews: {                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts            26           include: { reviewer: { select: { id: true, name: true, role: true } } },                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         20   const status = req.user.role === 'ADMIN' ? 'APPROVED' : 'PENDING_REVIEW';                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts            7 export async function pending(_req: AuthenticatedRequest, res: Response) {                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts           10       where: { status: 'PENDING_REVIEW' },                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts           21 export async function approve(req: AuthenticatedRequest, res: Response) {                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts           22   res.json(await questionService.approveQuestion(requireParam(req, 'questionId'), req.user.id, req.body));         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts           25 export async function reject(req: AuthenticatedRequest, res: Response) {                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts           26   res.json(await questionService.rejectQuestion(requireParam(req, 'questionId'), req.user.id, req.body));          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\auth.ts                          9     role: 'USER' | 'REVIEWER' | 'ADMIN';                                                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\auth.ts                         57 export function requireRole(...roles: Array<'REVIEWER' | 'ADMIN'>) {                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\auth.ts                         65     if (!roles.includes(user.role as 'REVIEWER' | 'ADMIN')) {                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  14 questionRoutes.patch('/:id', requireRole('ADMIN', 'REVIEWER'), asyncHandler(controller.update));                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  16 questionRoutes.post('/:id/archive', requireRole('ADMIN', 'REVIEWER'), asyncHandler(controller.archive));           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                     2 import { approveReviewSchema, rejectReviewSchema } from '@codequest/shared';                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                     3 import * as controller from '../controllers/review.controller.js';                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                     8 export const reviewRoutes = Router();                                                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                    10 reviewRoutes.use(requireAuth, requireRole('ADMIN', 'REVIEWER'));                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                    11 reviewRoutes.get('/pending', asyncHandler(controller.pending));                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                    12 reviewRoutes.post('/:questionId/approve', validateBody(approveReviewSchema), asyncHandler(controller.approve));    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                    13 reviewRoutes.post('/:questionId/reject', validateBody(rejectReviewSchema), asyncHandler(controller.reject));       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\auth.service.ts                   11   role: 'USER' | 'REVIEWER' | 'ADMIN';                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts                1 import type { ApproveReviewInput, QuestionInput, RejectReviewInput } from '@codequest/shared';                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts                5 export async function listQuestions(includeUnapproved: boolean) {                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts                7     ...(includeUnapproved ? {} : { where: { status: 'APPROVED', isActive: true, archivedAt: null } }),             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               13 export async function createQuestion(userId: string, input: QuestionInput, status: 'PENDING_REVIEW' | 'APPROVED') {
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               22       isActive: status === 'APPROVED',                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               23       reviewedById: status === 'APPROVED' ? userId : null,                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               24       reviewedAt: status === 'APPROVED' ? new Date() : null,                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               63     await tx.review.deleteMany({ where: { questionId: id } });                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               88         reviewedById: actorId,                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               89         reviewedAt: new Date(),                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              114         status: 'APPROVED',                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              117         reviewedById: actorId,                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              118         reviewedAt: new Date(),                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              135 export async function approveQuestion(                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              137   reviewerId: string,                                                                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              138   input: ApproveReviewInput,                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              146     if (existing.status === 'APPROVED' && existing.isActive) throw new HttpError(409, 'Question already approved');
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              147     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be approved');         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              152         status: 'APPROVED',                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              154         rejectionReason: null,                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              155         reviewedById: reviewerId,                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              156         reviewedAt: new Date(),                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              161     await tx.review.create({                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              164         reviewerId,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              165         decision: 'APPROVED',                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              173         userId: reviewerId,                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              174         action: 'question.approved',                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              184 export async function rejectQuestion(                                                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              186   reviewerId: string,                                                                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              187   input: RejectReviewInput,                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              189   const { rejectionReason, notes } = input;                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              190   if (!rejectionReason.trim()) throw new HttpError(422, 'Rejection reason is required');                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              195     if (existing.status === 'REJECTED') throw new HttpError(409, 'Question already rejected');                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              196     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be rejected');         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              201         status: 'REJECTED',                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              203         rejectionReason,                                                                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              204         reviewedById: reviewerId,                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              205         reviewedAt: new Date(),                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              209     await tx.review.create({                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              212         reviewerId,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              213         decision: 'REJECTED',                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              214         reason: rejectionReason,                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              221         userId: reviewerId,                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              222         action: 'question.rejected',                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              223         metadata: { questionId, rejectionReason, notes: notes ?? null },                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                   20       status: 'APPROVED',                                                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\utils\tokens.ts                             7   role: 'USER' | 'REVIEWER' | 'ADMIN';                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     18 import { reviewRoutes } from './routes/review.routes.js';                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     35 app.use('/reviews', reviewRoutes);                                                                                 
+
+
+
+
+Path                                                                                 LineNumber Line                                                                                                                    
+----                                                                                 ---------- ----                                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                                620     correct: 'GET, PUT, DELETE',                                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2070     prompt: 'Em APIs REST, qual afirmação descreve corretamente DELETE?',                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2483     prompt: 'Em Database, qual afirmação descreve corretamente cascade delete?',                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               2490     prompt: 'Em Database, qual afirmação descreve corretamente soft delete?',                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               3064     prompt: 'Em Git, qual afirmação descreve corretamente git restore?',                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4527     prompt: 'Em SQL, qual afirmação descreve corretamente DELETE?',                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4816           isActive: true,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4820             deleteMany: {},                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4834           isActive: true,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                               4848       isActive: true,                                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         29   await questionService.deleteQuestion(requireParam(req, 'id'), req.user.id);                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         33 export async function archive(req: AuthenticatedRequest, res: Response) {                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         34   res.json(await questionService.archiveQuestion(requireParam(req, 'id'), req.user.id));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         37 export async function restore(req: AuthenticatedRequest, res: Response) {                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts         38   res.json(await questionService.restoreQuestion(requireParam(req, 'id'), req.user.id));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  15 questionRoutes.delete('/:id', requireRole('ADMIN'), asyncHandler(controller.destroy));                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  16 questionRoutes.post('/:id/archive', requireRole('ADMIN', 'REVIEWER'), asyncHandler(controller.archive));                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                  17 questionRoutes.post('/:id/restore', requireRole('ADMIN'), asyncHandler(controller.restore));                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts                7     ...(includeUnapproved ? {} : { where: { status: 'APPROVED', isActive: true, archivedAt: null } }),                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               22       isActive: status === 'APPROVED',                                                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               42               deleteMany: {},                                                                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               52 export async function deleteQuestion(id: string, actorId: string) {                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               58     throw new HttpError(409, 'Question already has quiz history; archive it instead');                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               62     await tx.report.deleteMany({ where: { questionId: id } });                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               63     await tx.review.deleteMany({ where: { questionId: id } });                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               64     await tx.alternative.deleteMany({ where: { questionId: id } });                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               68         action: 'question.deleted',                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               72     await tx.question.delete({ where: { id } });                                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               76 export async function archiveQuestion(id: string, actorId: string) {                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               79   if (question.status === 'ARCHIVED') throw new HttpError(409, 'Question already archived');                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               82     const archived = await tx.question.update({                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               85         status: 'ARCHIVED',                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               86         isActive: false,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               87         archivedAt: new Date(),                                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts               96         action: 'question.archived',                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              101     return archived;                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              105 export async function restoreQuestion(id: string, actorId: string) {                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              108   if (question.status !== 'ARCHIVED') throw new HttpError(409, 'Only archived questions can be restored');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              111     const restored = await tx.question.update({                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              115         isActive: true,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              116         archivedAt: null,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              126         action: 'question.restored',                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              131     return restored;                                                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              146     if (existing.status === 'APPROVED' && existing.isActive) throw new HttpError(409, 'Question already approved');     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              147     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be approved');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              153         isActive: true,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              157         archivedAt: null,                                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              196     if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be rejected');              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts              202         isActive: false,                                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                   21       isActive: true,                                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                   22       archivedAt: null,                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\quiz.service.ts                  125     await tx.question.updateMany({ where: { id: { in: session.questionIds } }, data: { usedCount: { increment: 1 } } });
+
+
+
+
+Path                                                                               LineNumber Line                                                                                                                 
+----                                                                               ---------- ----                                                                                                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                              109     correct: 'Adia a execução do script até o HTML ser parseado',                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                              970     correct: 'async baixa em paralelo e executa imediatamente; defer baixa em paralelo e executa após HTML parseado',
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             1488     correct: 'Parser→AST→Ignition(bytecode interpreter)→TurboFan(compilador JIT otimizado)→código máquina',          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             1636     prompt: 'Em HTML, qual afirmação descreve corretamente required?',                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\prisma\seed.ts                             2959     prompt: 'Em API, qual afirmação descreve corretamente status 422?',                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\config\env.ts                             2 import { z } from 'zod';                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\config\env.ts                            12 export const env = envSchema.parse(process.env);                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\report.controller.ts         12         reason: String(req.body.reason),                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       2 import { ZodError } from 'zod';                                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       6   if (error instanceof ZodError) {                                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts                       7     res.status(422).json({ message: 'Validation failed', issues: error.flatten() });                                 
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    2 import type { ZodSchema } from 'zod';                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    4 export function validateBody(schema: ZodSchema) {                                                                    
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\validate.ts                    6     req.body = schema.parse(req.body);                                                                               
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                     5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                    10 authRoutes.post('/register', validateBody(registerSchema), asyncHandler(controller.register));                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                    11 authRoutes.post('/login', validateBody(loginSchema), asyncHandler(controller.login));                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                 5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                13 questionRoutes.post('/', validateBody(questionSchema), asyncHandler(controller.create));                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                     5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                    11 quizRoutes.post('/start', validateBody(quizStartSchema), asyncHandler(controller.start));                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                    12 quizRoutes.post('/submit', validateBody(quizSubmitSchema), asyncHandler(controller.submit));                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                   5 import { validateBody } from '../middleware/validate.js';                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                  12 reviewRoutes.post('/:questionId/approve', validateBody(approveReviewSchema), asyncHandler(controller.approve));      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                  13 reviewRoutes.post('/:questionId/reject', validateBody(rejectReviewSchema), asyncHandler(controller.reject));         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            141   if (!Object.values(checklist).every(Boolean)) throw new HttpError(422, 'Approval checklist must be complete');     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            154         rejectionReason: null,                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            167         reason: notes ?? null,                                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            189   const { rejectionReason, notes } = input;                                                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            190   if (!rejectionReason.trim()) throw new HttpError(422, 'Rejection reason is required');                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            203         rejectionReason,                                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            214         reason: rejectionReason,                                                                                     
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\services\question.service.ts            223         metadata: { questionId, rejectionReason, notes: notes ?? null },                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                    2 import cookieParser from 'cookie-parser';                                                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                   25 app.use(cookieParser());                                                                                             
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  REVIEWER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+enum MissionType {
+  DAILY
+  WEEKLY
+}
+
+enum MissionStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum ReportStatus {
+  OPEN
+  TRIAGED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  passwordHash    String
+  role            Role              @default(USER)
+  avatarUrl       String?
+  xp              Int               @default(0)
+  rating          Int               @default(1000)
+  quizzesCompleted Int              @default(0)
+  correctAnswers  Int               @default(0)
+  totalAnswers    Int               @default(0)
+  streakDays      Int               @default(0)
+  activeTitleId   String?
+  activeTitle     Title?            @relation("ActiveTitle", fields: [activeTitleId], references: [id])
+  refreshTokens   RefreshToken[]
+  quizResults     QuizResult[]
+  submittedQuestions Question[]     @relation("SubmittedQuestions")
+  reviews         Review[]          @relation("ReviewerReviews")
+  reports         Report[]
+  achievements    UserAchievement[]
+  titles          UserTitle[]
+  missions        UserMission[]
+  arenaAsA        ArenaMatch[]      @relation("ArenaA")
+  arenaAsB        ArenaMatch[]      @relation("ArenaB")
+  activities      ActivityLog[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  tokenHash   String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  replacedBy  String?
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id          String               @id @default(uuid())
+  name        String               @unique
+  slug        String               @unique
+  description String?
+  questions   Question[]
+  tracks      SkillTrackCategory[]
+  createdAt   DateTime             @default(now())
+}
+
+model Question {
+  id              String         @id @default(uuid())
+  categoryId      String
+  category        Category       @relation(fields: [categoryId], references: [id])
+  authorId        String?
+  author          User?          @relation("SubmittedQuestions", fields: [authorId], references: [id])
+  prompt          String
+  explanation     String?
+  difficulty      Difficulty
+  status          QuestionStatus @default(PENDING_REVIEW)
+  isActive        Boolean        @default(false)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  usedCount       Int            @default(0)
+  alternatives    Alternative[]
+  quizAnswers     QuizAnswer[]
+  reviews         Review[]
+  reports         Report[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+}
+
+model Alternative {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text        String
+  isCorrect   Boolean  @default(false)
+}
+
+model QuizSession {
+  id          String       @id @default(uuid())
+  userId      String
+  categoryId  String?
+  difficulty  Difficulty?
+  questionIds String[]
+  submittedAt DateTime?
+  createdAt   DateTime     @default(now())
+  result       QuizResult?
+}
+
+model QuizResult {
+  id              String       @id @default(uuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId       String       @unique
+  session         QuizSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  totalQuestions  Int
+  correctCount    Int
+  accuracy        Int
+  xpEarned        Int
+  durationSeconds Int
+  answers         QuizAnswer[]
+  createdAt       DateTime     @default(now())
+}
+
+model QuizAnswer {
+  id               String     @id @default(uuid())
+  quizResultId     String
+  quizResult       QuizResult @relation(fields: [quizResultId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question   @relation(fields: [questionId], references: [id])
+  selectedOptionId String
+  isCorrect        Boolean
+  timeSpentSeconds Int
+}
+
+model Review {
+  id          String         @id @default(uuid())
+  questionId  String
+  question    Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewer    User           @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  decision    ReviewDecision
+  checklist   Json?
+  reason      String?
+  createdAt   DateTime       @default(now())
+}
+
+model Report {
+  id          String       @id @default(uuid())
+  questionId  String
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason      String
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Achievement {
+  id          String            @id @default(uuid())
+  key         String            @unique
+  name        String
+  description String
+  category    String
+  tier        String?
+  xpBonus     Int               @default(0)
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model Title {
+  id          String      @id @default(uuid())
+  key         String      @unique
+  name        String
+  description String
+  users       UserTitle[]
+  activeUsers User[]      @relation("ActiveTitle")
+}
+
+model UserTitle {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titleId   String
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, titleId])
+}
+
+model SkillTrack {
+  id          String               @id @default(uuid())
+  name        String               @unique
+  description String
+  finalBadge  String
+  categories  SkillTrackCategory[]
+}
+
+model SkillTrackCategory {
+  id          String     @id @default(uuid())
+  trackId     String
+  track       SkillTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  order       Int
+
+  @@unique([trackId, categoryId])
+}
+
+model Mission {
+  id          String        @id @default(uuid())
+  key         String        @unique
+  type        MissionType
+  title       String
+  target      Int
+  xpReward    Int
+  categorySlug String?
+  users       UserMission[]
+}
+
+model UserMission {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId   String
+  mission     Mission       @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  progress    Int           @default(0)
+  status      MissionStatus @default(ACTIVE)
+  expiresAt   DateTime
+  completedAt DateTime?
+
+  @@unique([userId, missionId, expiresAt])
+}
+
+model ArenaMatch {
+  id              String   @id @default(uuid())
+  playerAId       String
+  playerA         User     @relation("ArenaA", fields: [playerAId], references: [id])
+  playerBId       String?
+  playerB         User?    @relation("ArenaB", fields: [playerBId], references: [id])
+  winnerId        String?
+  ratingDeltaA    Int      @default(0)
+  ratingDeltaB    Int      @default(0)
+  correctA        Int      @default(0)
+  correctB        Int      @default(0)
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model Season {
+  id        String   @id @default(uuid())
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime
+  rewards   Json?
+  createdAt DateTime @default(now())
+}

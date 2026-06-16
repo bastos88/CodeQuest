@@ -1,0 +1,36 @@
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - link "CQ CodeQuest Halo Dark Auth" [ref=e8] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]: CQ
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: CodeQuest
+        - paragraph [ref=e12]: Halo Dark Auth
+    - generic [ref=e13]: Halo Dark
+  - generic [ref=e14]:
+    - heading "Login" [level=1] [ref=e15]
+    - paragraph [ref=e16]: Acesse sua conta para continuar treinando, revisar questões e acompanhar seu progresso.
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: Email
+      - textbox "Email" [ref=e20]:
+        - /placeholder: voce@exemplo.com
+        - text: student@codequest.dev
+    - generic [ref=e21]:
+      - generic [ref=e22]: Senha
+      - textbox "Senha" [ref=e23]:
+        - /placeholder: ••••••••
+        - text: User12345!
+    - link "Esqueci minha senha" [ref=e25] [cursor=pointer]:
+      - /url: /forgot-password
+    - button "Entrar" [ref=e26] [cursor=pointer]
+    - generic [ref=e29]: Login com redes sociais
+    - generic [ref=e31]:
+      - button "Continuar com GitHub" [ref=e32] [cursor=pointer]:
+        - img [ref=e34]
+      - button "Continuar com Discord" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+  - paragraph [ref=e41]:
+    - text: Não tem conta?
+    - link "Criar conta" [ref=e42] [cursor=pointer]:
+      - /url: /register

@@ -1,0 +1,214 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - link "CQ CodeQuest edu.quiz.system" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e7]: CQ
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: CodeQuest
+        - paragraph [ref=e10]: edu.quiz.system
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Perfil ativo
+      - paragraph [ref=e13]: Leo Student
+      - paragraph [ref=e14]: USER
+      - generic [ref=e15]:
+        - generic [ref=e16]: 1165 XP
+        - generic [ref=e17]: 1020 rating
+    - navigation [ref=e18]:
+      - link "Dashboard" [ref=e19] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Quiz" [ref=e25] [cursor=pointer]:
+        - /url: /quiz
+        - img [ref=e26]
+        - text: Quiz
+      - link "Arena" [ref=e29] [cursor=pointer]:
+        - /url: /arena
+        - img [ref=e30]
+        - text: Arena
+      - link "Ranking" [ref=e39] [cursor=pointer]:
+        - /url: /ranking
+        - img [ref=e40]
+        - text: Ranking
+      - link "Profile" [ref=e46] [cursor=pointer]:
+        - /url: /profile
+        - img [ref=e47]
+        - text: Profile
+      - link "Contribute" [ref=e53] [cursor=pointer]:
+        - /url: /contribute
+        - img [ref=e54]
+        - text: Contribute
+    - generic [ref=e57]:
+      - paragraph [ref=e58]: Missão do dia
+      - paragraph [ref=e59]: Responder 10 perguntas de React sem perder a sequência.
+  - banner [ref=e60]:
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - paragraph [ref=e63]: dashboard
+        - heading "CodeQuest" [level=1] [ref=e64]
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - generic [ref=e69]: 1165 XP
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - generic [ref=e73]: 1020 rating
+        - button "Sair" [ref=e74] [cursor=pointer]:
+          - img [ref=e75]
+  - main [ref=e78]:
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - paragraph [ref=e87]: student.progression
+            - heading "Olá, Leo Student" [level=2] [ref=e88]
+            - paragraph [ref=e89]: Arquiteto Front-End
+            - generic [ref=e90]:
+              - generic [ref=e91]: 2840 XP total
+              - generic [ref=e92]: 1020 rating
+              - generic [ref=e93]: 6 dias de sequência
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: Level 6
+              - generic [ref=e97]: 2840 XP
+            - paragraph [ref=e100]: 760 XP até o próximo nível
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - img [ref=e104]
+            - paragraph [ref=e110]: "42"
+            - paragraph [ref=e111]: Quizzes concluídos
+          - generic [ref=e112]:
+            - img [ref=e114]
+            - paragraph [ref=e118]: 82%
+            - paragraph [ref=e119]: Precisão média
+          - generic [ref=e120]:
+            - img [ref=e122]
+            - paragraph [ref=e124]: 6 dias
+            - paragraph [ref=e125]: Sequência atual
+          - generic [ref=e126]:
+            - img [ref=e128]
+            - paragraph [ref=e132]: React
+            - paragraph [ref=e133]: Melhor categoria
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - heading "Nova sessão de quiz" [level=3] [ref=e138]
+                - paragraph [ref=e139]: Escolha filtros rápidos e continue o treino sem sair do fluxo.
+              - generic [ref=e140]: Study mode
+            - generic [ref=e141]:
+              - generic [ref=e142]:
+                - generic [ref=e143]: Categoria
+                - generic [ref=e144]: React
+              - generic [ref=e145]:
+                - generic [ref=e146]: Dificuldade
+                - generic [ref=e147]: Médio
+              - generic [ref=e148]:
+                - generic [ref=e149]: Perguntas
+                - generic [ref=e150]: "10"
+            - button "Iniciar sessão" [ref=e151] [cursor=pointer]:
+              - link "Iniciar sessão" [ref=e152]:
+                - /url: /quiz
+              - img [ref=e153]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - heading "Mapa de habilidades" [level=3] [ref=e158]
+                - paragraph [ref=e159]: Leitura rápida das categorias mais fortes e mais frágeis.
+              - generic [ref=e160]: Recência
+            - generic [ref=e161]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: React
+                - generic [ref=e165]: 82%
+              - generic [ref=e169]:
+                - generic [ref=e170]: TypeScript
+                - generic [ref=e171]: 67%
+              - generic [ref=e175]:
+                - generic [ref=e176]: SQL
+                - generic [ref=e177]: 41%
+              - generic [ref=e181]:
+                - generic [ref=e182]: Node.js
+                - generic [ref=e183]: 58%
+              - generic [ref=e187]:
+                - generic [ref=e188]: APIs REST
+                - generic [ref=e189]: 73%
+        - generic [ref=e192]:
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - heading "Medalhas e marcos" [level=3] [ref=e195]
+              - paragraph [ref=e196]: Recompensas por consistência, acerto e contribuição.
+            - generic [ref=e197]: Achievements
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - img [ref=e201]
+              - paragraph [ref=e204]: Primeiro quiz
+              - paragraph [ref=e205]: Desbloqueada
+            - generic [ref=e206]:
+              - img [ref=e208]
+              - paragraph [ref=e211]: React II
+              - paragraph [ref=e212]: 82/100 acertos
+            - generic [ref=e213]:
+              - img [ref=e215]
+              - paragraph [ref=e218]: Top 10 Ranking
+              - paragraph [ref=e219]: Desbloqueada
+            - generic [ref=e220]:
+              - img [ref=e222]
+              - paragraph [ref=e225]: Mestre da Arena
+              - paragraph [ref=e226]: Bloqueada
+      - complementary [ref=e227]:
+        - generic [ref=e228]:
+          - generic [ref=e229]:
+            - generic [ref=e230]:
+              - heading "Missões diárias" [level=3] [ref=e231]
+              - paragraph [ref=e232]: Metas curtas para manter tração contínua.
+            - img [ref=e233]
+          - generic [ref=e236]:
+            - generic [ref=e238]:
+              - paragraph [ref=e239]: Responder 10 perguntas
+              - generic [ref=e240]: +80 XP
+            - generic [ref=e244]:
+              - paragraph [ref=e245]: Completar 1 quiz médio
+              - generic [ref=e246]: +60 XP
+            - generic [ref=e250]:
+              - paragraph [ref=e251]: Vencer 1 desafio na Arena
+              - generic [ref=e252]: +220 XP
+        - generic [ref=e254]:
+          - generic [ref=e255]:
+            - generic [ref=e256]:
+              - heading "Top 10" [level=3] [ref=e257]
+              - paragraph [ref=e258]: Visão rápida do ranking geral.
+            - generic [ref=e259]: Geral
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - generic [ref=e262]: "1"
+              - generic [ref=e263]:
+                - paragraph [ref=e264]: Maya
+                - paragraph [ref=e265]: Lenda da Arena
+              - generic [ref=e266]: "9120"
+            - generic [ref=e267]:
+              - generic [ref=e268]: "2"
+              - generic [ref=e269]:
+                - paragraph [ref=e270]: Rafael
+                - paragraph [ref=e271]: Mestre do TypeScript
+              - generic [ref=e272]: "8140"
+            - generic [ref=e273]:
+              - generic [ref=e274]: "3"
+              - generic [ref=e275]:
+                - paragraph [ref=e276]: Clara
+                - paragraph [ref=e277]: Especialista em React
+              - generic [ref=e278]: "7980"
+            - generic [ref=e279]:
+              - generic [ref=e280]: "4"
+              - generic [ref=e281]:
+                - paragraph [ref=e282]: Leo
+                - paragraph [ref=e283]: Arquiteto Front-End
+              - generic [ref=e284]: "2840"
+        - generic [ref=e285]:
+          - generic [ref=e286]:
+            - img [ref=e288]
+            - generic [ref=e291]:
+              - heading "Fila de revisão" [level=3] [ref=e292]
+              - paragraph [ref=e293]: 12 perguntas aguardando checklist editorial e técnico.
+          - button "Abrir admin" [ref=e294] [cursor=pointer]:
+            - link "Abrir admin" [ref=e295]:
+              - /url: /admin

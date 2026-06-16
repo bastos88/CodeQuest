@@ -1,0 +1,8 @@
+﻿
+Path                                                                  LineNumber Line                                                                                
+----                                                                  ---------- ----                                                                                
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts          7     res.status(422).json({ message: 'Validation failed', issues: error.flatten() });
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\middleware\error.ts         17   res.status(500).json({ message: 'Internal server error' });                       
+
+
+

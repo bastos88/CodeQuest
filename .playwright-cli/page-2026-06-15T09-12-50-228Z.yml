@@ -1,0 +1,210 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - link "CQ CodeQuest edu.quiz.system" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e7]: CQ
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: CodeQuest
+        - paragraph [ref=e10]: edu.quiz.system
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Perfil ativo
+      - paragraph [ref=e13]: Leo Student
+      - paragraph [ref=e14]: USER
+      - generic [ref=e15]:
+        - generic [ref=e16]: 640 XP
+        - generic [ref=e17]: 1020 rating
+    - navigation [ref=e18]:
+      - link "Dashboard" [ref=e19] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Quiz" [active] [ref=e25] [cursor=pointer]:
+        - /url: /quiz
+        - img [ref=e26]
+        - text: Quiz
+      - link "Arena" [ref=e29] [cursor=pointer]:
+        - /url: /arena
+        - img [ref=e30]
+        - text: Arena
+      - link "Ranking" [ref=e39] [cursor=pointer]:
+        - /url: /ranking
+        - img [ref=e40]
+        - text: Ranking
+      - link "Profile" [ref=e46] [cursor=pointer]:
+        - /url: /profile
+        - img [ref=e47]
+        - text: Profile
+      - link "Contribute" [ref=e53] [cursor=pointer]:
+        - /url: /contribute
+        - img [ref=e54]
+        - text: Contribute
+      - link "Admin" [ref=e57] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=e58]
+        - text: Admin
+    - generic [ref=e61]:
+      - paragraph [ref=e62]: Missão do dia
+      - paragraph [ref=e63]: Responder 10 perguntas de React sem perder a sequência.
+  - banner [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - paragraph [ref=e67]: quiz
+        - heading "CodeQuest" [level=1] [ref=e68]
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - generic [ref=e73]: 640 XP
+        - generic [ref=e74]:
+          - img [ref=e75]
+          - generic [ref=e77]: 1020 rating
+        - button "Sair" [ref=e78] [cursor=pointer]:
+          - img [ref=e79]
+  - main [ref=e82]:
+    - generic [ref=e300]:
+      - generic [ref=e301]:
+        - generic [ref=e304]:
+          - generic [ref=e305]:
+            - generic [ref=e306]: quiz.setup
+            - generic [ref=e307]: Pré-configuração
+          - heading "Prepare seu desafio" [level=2] [ref=e308]
+          - paragraph [ref=e309]: Escolha categorias, dificuldade e quantidade de perguntas antes de iniciar sua simulação.
+        - generic [ref=e310]:
+          - generic [ref=e311]:
+            - paragraph [ref=e312]: Seção 1
+            - heading "Categorias" [level=3] [ref=e313]
+            - paragraph [ref=e314]: Combine trilhas para montar um desafio mais amplo ou mantenha foco em um único tema.
+          - generic [ref=e315]:
+            - button "HTML Semântica, estrutura e acessibilidade. Disponível" [ref=e316] [cursor=pointer]:
+              - generic [ref=e318]:
+                - paragraph [ref=e319]: HTML
+                - paragraph [ref=e320]: Semântica, estrutura e acessibilidade.
+              - generic [ref=e323]: Disponível
+            - button "CSS Layout, responsividade e acabamento visual. Disponível" [ref=e324] [cursor=pointer]:
+              - generic [ref=e326]:
+                - paragraph [ref=e327]: CSS
+                - paragraph [ref=e328]: Layout, responsividade e acabamento visual.
+              - generic [ref=e331]: Disponível
+            - button "JavaScript Linguagem, runtime e padrões de uso. Disponível" [ref=e332] [cursor=pointer]:
+              - generic [ref=e334]:
+                - paragraph [ref=e335]: JavaScript
+                - paragraph [ref=e336]: Linguagem, runtime e padrões de uso.
+              - generic [ref=e339]: Disponível
+            - button "TypeScript Tipagem segura, unions e domínio explícito. Disponível" [ref=e340] [cursor=pointer]:
+              - generic [ref=e342]:
+                - paragraph [ref=e343]: TypeScript
+                - paragraph [ref=e344]: Tipagem segura, unions e domínio explícito.
+              - generic [ref=e347]: Disponível
+            - button "React Componentes, fluxo, estado e composição. Disponível" [ref=e348] [cursor=pointer]:
+              - generic [ref=e350]:
+                - paragraph [ref=e351]: React
+                - paragraph [ref=e352]: Componentes, fluxo, estado e composição.
+              - generic [ref=e355]: Disponível
+            - button "Node.js Back-end, APIs e arquitetura de serviços. Disponível" [ref=e356] [cursor=pointer]:
+              - generic [ref=e358]:
+                - paragraph [ref=e359]: Node.js
+                - paragraph [ref=e360]: Back-end, APIs e arquitetura de serviços.
+              - generic [ref=e363]: Disponível
+            - button "SQL Consultas, modelagem e performance de dados. Disponível" [ref=e364] [cursor=pointer]:
+              - generic [ref=e366]:
+                - paragraph [ref=e367]: SQL
+                - paragraph [ref=e368]: Consultas, modelagem e performance de dados.
+              - generic [ref=e371]: Disponível
+            - button "APIs REST Contratos, HTTP e integração entre sistemas. Disponível" [ref=e372] [cursor=pointer]:
+              - generic [ref=e374]:
+                - paragraph [ref=e375]: APIs REST
+                - paragraph [ref=e376]: Contratos, HTTP e integração entre sistemas.
+              - generic [ref=e379]: Disponível
+        - generic [ref=e380]:
+          - generic [ref=e381]:
+            - paragraph [ref=e382]: Seção 2
+            - heading "Dificuldade" [level=3] [ref=e383]
+            - paragraph [ref=e384]: Ajuste o nível do desafio conforme o objetivo de estudo ou ritmo de revisão.
+          - generic [ref=e385]:
+            - button "Iniciante Conceitos básicos e fundamentos. Base sólida" [ref=e386] [cursor=pointer]:
+              - generic [ref=e388]:
+                - paragraph [ref=e389]: Iniciante
+                - paragraph [ref=e390]: Conceitos básicos e fundamentos.
+              - generic [ref=e393]: Base sólida
+            - button "Intermediário Situações reais e aplicação prática. Contexto real" [ref=e394] [cursor=pointer]:
+              - generic [ref=e396]:
+                - paragraph [ref=e397]: Intermediário
+                - paragraph [ref=e398]: Situações reais e aplicação prática.
+              - generic [ref=e401]: Contexto real
+            - button "Avançado Entrevistas técnicas e cenários complexos. Alta pressão" [ref=e402] [cursor=pointer]:
+              - generic [ref=e404]:
+                - paragraph [ref=e405]: Avançado
+                - paragraph [ref=e406]: Entrevistas técnicas e cenários complexos.
+              - generic [ref=e409]: Alta pressão
+        - generic [ref=e410]:
+          - generic [ref=e411]:
+            - paragraph [ref=e412]: Seção 3
+            - heading "Quantidade de perguntas" [level=3] [ref=e413]
+            - paragraph [ref=e414]: Escolha a duração da simulação sem cair em um formulário genérico.
+          - generic [ref=e415]:
+            - button "5 perguntas Tempo estimado ~3 min Ritmo sugerido" [ref=e416] [cursor=pointer]:
+              - generic [ref=e418]:
+                - paragraph [ref=e419]: 5 perguntas
+                - paragraph [ref=e420]: Tempo estimado ~3 min
+              - generic [ref=e423]: Ritmo sugerido
+            - button "10 perguntas Tempo estimado ~6 min Ritmo sugerido" [ref=e424] [cursor=pointer]:
+              - generic [ref=e426]:
+                - paragraph [ref=e427]: 10 perguntas
+                - paragraph [ref=e428]: Tempo estimado ~6 min
+              - generic [ref=e431]: Ritmo sugerido
+            - button "15 perguntas Tempo estimado ~10 min Ritmo sugerido" [ref=e432] [cursor=pointer]:
+              - generic [ref=e434]:
+                - paragraph [ref=e435]: 15 perguntas
+                - paragraph [ref=e436]: Tempo estimado ~10 min
+              - generic [ref=e439]: Ritmo sugerido
+            - button "20 perguntas Tempo estimado ~15 min Ritmo sugerido" [ref=e440] [cursor=pointer]:
+              - generic [ref=e442]:
+                - paragraph [ref=e443]: 20 perguntas
+                - paragraph [ref=e444]: Tempo estimado ~15 min
+              - generic [ref=e447]: Ritmo sugerido
+      - complementary [ref=e448]:
+        - generic [ref=e449]:
+          - generic [ref=e450]:
+            - generic [ref=e451]:
+              - paragraph [ref=e452]: Resumo
+              - heading "Configuração atual" [level=3] [ref=e453]
+            - img [ref=e455]
+          - generic [ref=e459]:
+            - generic [ref=e460]:
+              - img [ref=e462]
+              - generic [ref=e468]:
+                - paragraph [ref=e469]: Categoria(s)
+                - paragraph [ref=e470]: Selecione uma ou mais categorias
+            - generic [ref=e471]:
+              - img [ref=e473]
+              - generic [ref=e475]:
+                - paragraph [ref=e476]: Dificuldade
+                - paragraph [ref=e477]: Selecione a dificuldade
+            - generic [ref=e478]:
+              - img [ref=e480]
+              - generic [ref=e484]:
+                - paragraph [ref=e485]: Quantidade
+                - paragraph [ref=e486]: Escolha a quantidade
+            - generic [ref=e487]:
+              - img [ref=e489]
+              - generic [ref=e492]:
+                - paragraph [ref=e493]: Tempo estimado
+                - paragraph [ref=e494]: "-"
+          - generic [ref=e495]:
+            - paragraph [ref=e496]: XP potencial
+            - paragraph [ref=e497]: "+0"
+            - paragraph [ref=e498]: Projeção baseada em acerto máximo para a configuração selecionada.
+          - generic [ref=e499]:
+            - paragraph [ref=e500]: Antes de iniciar
+            - list [ref=e501]:
+              - listitem [ref=e502]:
+                - img [ref=e503]
+                - text: A seleção é validada antes de criar a sessão.
+              - listitem [ref=e506]:
+                - img [ref=e507]
+                - text: As respostas corretas continuam protegidas no backend.
+              - listitem [ref=e510]:
+                - img [ref=e511]
+                - text: Se faltarem perguntas, você recebe orientação para ajustar os filtros.
+          - button "Iniciar Desafio" [disabled] [ref=e514]:
+            - generic [ref=e515]: Iniciar Desafio
+            - img [ref=e516]

@@ -1,0 +1,44 @@
+﻿
+Path                                                                                 LineNumber Line                                                                                                         
+----                                                                                 ---------- ----                                                                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\admin.controller.ts             3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\arena.controller.ts             3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\auth.controller.ts              3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\auth.controller.ts              4 import * as authService from '../services/auth.service.js';                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\category.controller.ts          3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\profile.controller.ts           3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\profile.controller.ts           4 import * as profileService from '../services/profile.service.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\question.controller.ts          2 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\quiz.controller.ts              2 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\ranking.controller.ts           3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\report.controller.ts            3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\controllers\review.controller.ts            3 import type { AuthenticatedRequest } from '../middleware/auth.js';                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\admin.routes.ts                      2 import * as controller from '../controllers/admin.controller.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\admin.routes.ts                      3 import { requireAuth, requireRole } from '../middleware/auth.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\admin.routes.ts                     10 adminRoutes.get('/questions', asyncHandler(controller.questions));                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\arena.routes.ts                      3 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                       3 import * as controller from '../controllers/auth.controller.js';                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\auth.routes.ts                       4 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\category.routes.ts                   3 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\profile.routes.ts                    2 import * as controller from '../controllers/profile.controller.js';                                          
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\profile.routes.ts                    3 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\question.routes.ts                   4 import { requireAuth, requireRole } from '../middleware/auth.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\quiz.routes.ts                       4 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\ranking.routes.ts                    3 import { requireAuth } from '../middleware/auth.js';                                                         
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\report.routes.ts                     3 import { requireAuth, requireRole } from '../middleware/auth.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\report.routes.ts                     9 reportRoutes.get('/admin/reports', requireAuth, requireRole('ADMIN'), asyncHandler(controller.adminIndex));  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\report.routes.ts                    10 reportRoutes.patch('/admin/reports/:id', requireAuth, requireRole('ADMIN'), asyncHandler(controller.update));
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\routes\review.routes.ts                     4 import { requireAuth, requireRole } from '../middleware/auth.js';                                            
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                      9 import { adminRoutes } from './routes/admin.routes.js';                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     11 import { authRoutes } from './routes/auth.routes.js';                                                        
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     13 import { profileRoutes } from './routes/profile.routes.js';                                                  
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     31 app.use('/auth', authLimiter, authRoutes);                                                                   
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     32 app.use('/categories', categoryRoutes);                                                                      
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     33 app.use('/quizzes', quizRoutes);                                                                             
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     34 app.use('/questions', questionRoutes);                                                                       
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     35 app.use('/reviews', reviewRoutes);                                                                           
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     36 app.use('/admin', adminRoutes);                                                                              
+C:\Users\leozi\Desktop\frontend-quiz\apps\api\src\app.ts                                     37 app.use('/profile', profileRoutes);                                                                          
+
+
+
