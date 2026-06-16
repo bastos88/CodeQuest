@@ -1,10 +1,14 @@
-import { useState, type HTMLAttributes, type ReactNode } from 'react';
+import { useMemo, type HTMLAttributes, type ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ValidationError, useForm as useFormspree } from '@formspree/react';
+import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, Users } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@codequest/shared';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
+import { BrandLogo } from '../components/BrandLogo';
 import TechMarqueeSection from '../components/TechMarqueeSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import { Button } from '../components/ui/Button';
@@ -12,7 +16,7 @@ import { Card } from '../components/ui/Card';
 import { HomeSection } from '../components/ui/HomeSection';
 import { Input } from '../components/ui/Input';
 import { SectionDivider } from '../components/ui/SectionDivider';
-import SocialButtons, { DiscordIcon, GithubIcon, type SocialButton } from '../components/ui/SocialButtons';
+import SocialButtons, { GithubIcon, GoogleIcon, type SocialButton } from '../components/ui/SocialButtons';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';
@@ -75,14 +79,74 @@ const contributionFlow = [
   { status: 'Rejected', tone: 'text-danger', description: 'Revise pontos indicados.' },
 ];
 
-const metrics = [
-  { label: 'Perguntas', value: '223', note: 'curadas', tone: 'text-success' },
-  { label: 'Categorias', value: '34', note: 'ativas', tone: 'text-primary' },
-  { label: 'Usuários', value: '5', note: 'ativos', tone: 'text-success' },
-  { label: 'Quizzes', value: '82k', note: 'realizados', tone: 'text-success' },
-  { label: 'XP distribuído', value: '4.8M', note: 'pontos', tone: 'text-warning' },
-  { label: 'Contribuições', value: '2.4k', note: 'aprovadas', tone: 'text-success' },
+type HomeStats = {
+  questions: number;
+  categories: number;
+  users: number;
+  quizzes: number;
+  challenges: number;
+  contributions: number;
+};
+
+const fallbackStats: HomeStats = {
+  questions: 0,
+  categories: 0,
+  users: 0,
+  quizzes: 0,
+  challenges: 0,
+  contributions: 0,
+};
+
+const footerSections = [
+  {
+    title: 'Plataforma',
+    links: [
+      { label: 'Quiz', to: '/quiz' },
+      { label: 'Arena', to: '/arena' },
+      { label: 'Ranking', to: '/ranking' },
+      { label: 'Contribuir', to: '/contribuir' },
+    ],
+  },
+  {
+    title: 'Empresa',
+    links: [
+      { label: 'Sobre', to: '/sobre' },
+      { label: 'Termos', to: '/termos' },
+      { label: 'Privacidade', to: '/privacidade' },
+      { label: 'GitHub', href: 'https://github.com/bastos88' },
+    ],
+  },
 ];
+
+const publicNavItems = [
+  { label: 'Home', to: '/' },
+  { label: 'Quiz', to: '/quiz' },
+  { label: 'Arena', to: '/arena' },
+  { label: 'Ranking', to: '/ranking' },
+  { label: 'Contribuir', to: '/contribuir' },
+  { label: 'Sobre', to: '/sobre' },
+  { label: 'Dashboard', to: '/dashboard' },
+];
+
+function navLinkClass({ isActive }: { isActive: boolean }) {
+  return [
+    'rounded-full border px-3.5 py-2 transition-[background,border-color,color] duration-200',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+    isActive
+      ? 'border-primary/30 bg-primary/15 text-white'
+      : 'border-transparent text-textSecondary hover:bg-primary/10 hover:text-white',
+  ].join(' ');
+}
+
+function formatCount(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
+  return String(value);
+}
+
+function getAuthUrl(provider: 'github' | 'google') {
+  return `${String(api.defaults.baseURL ?? 'http://localhost:3333').replace(/\/$/, '')}/auth/${provider}`;
+}
 
 function MarqueeSurface({
   children,
@@ -104,6 +168,37 @@ function MarqueeSurface({
 }
 
 export function Home() {
+  const { data: statsData } = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: async () => {
+      const { data } = await api.get<HomeStats>('/public/stats');
+      return data;
+    },
+    staleTime: 60_000,
+  });
+
+  const stats = statsData ?? fallbackStats;
+  const heroMetrics = useMemo(
+    () => [
+      { value: formatCount(stats.questions), label: 'perguntas' },
+      { value: formatCount(stats.challenges), label: 'desafios' },
+      { value: formatCount(stats.categories), label: 'categorias' },
+      { value: formatCount(stats.users), label: 'usuarios' },
+    ],
+    [stats],
+  );
+  const metrics = useMemo(
+    () => [
+      { label: 'Perguntas', value: formatCount(stats.questions), note: 'curadas', tone: 'text-success' },
+      { label: 'Categorias', value: formatCount(stats.categories), note: 'ativas', tone: 'text-primary' },
+      { label: 'Usuarios', value: formatCount(stats.users), note: 'cadastrados', tone: 'text-success' },
+      { label: 'Quizzes', value: formatCount(stats.quizzes), note: 'realizados', tone: 'text-success' },
+      { label: 'Desafios', value: formatCount(stats.challenges), note: 'na arena', tone: 'text-warning' },
+      { label: 'Contribuicoes', value: formatCount(stats.contributions), note: 'aprovadas', tone: 'text-success' },
+    ],
+    [stats],
+  );
+
   return (
     <div className="min-h-screen bg-background text-textPrimary">
       <div className="relative overflow-hidden">
@@ -111,22 +206,24 @@ export function Home() {
 
         <header className="relative border-b border-white/6">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="grid h-5 w-5 place-items-center rounded bg-primary text-[10px] font-black text-white">P</span>
-              <span className="text-sm font-semibold tracking-tight">QuizPro</span>
-            </Link>
-            <nav className="hidden items-center gap-6 text-[11px] font-medium text-textSecondary lg:flex">
-              <a href="#dashboard" className="transition hover:text-textPrimary">Dashboard</a>
-              <a href="#quiz" className="transition hover:text-textPrimary">Quiz</a>
-              <a href="#arena" className="transition hover:text-textPrimary">Arena</a>
-              <a href="#contribuir" className="transition hover:text-textPrimary">Contribuir</a>
-              <a href="#metricas" className="transition hover:text-textPrimary">Mais</a>
+            <BrandLogo compact imageClassName="h-9 w-36" />
+            <nav className="hidden items-center gap-1 text-[11px] font-semibold lg:flex">
+              {publicNavItems.map((item) => (
+                <NavLink key={item.to} to={item.to} className={navLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
             </nav>
             <div className="flex items-center gap-3">
-              <Link to="/login" className="hidden text-xs font-semibold text-textPrimary sm:inline-flex">Entrar</Link>
+              <Link
+                to="/login"
+                className="hidden rounded-full px-3.5 py-2 text-xs font-semibold text-textPrimary transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 sm:inline-flex"
+              >
+                Entrar
+              </Link>
               <Link
                 to="/register"
-                className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-[0_0_26px_rgba(91,107,255,0.45)] transition hover:bg-primaryHover"
+                className="inline-flex h-9 items-center rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Começar agora
               </Link>
@@ -166,12 +263,7 @@ export function Home() {
               </div>
               <SectionDivider variant="default" className="mt-10" />
               <div className="grid gap-3 pt-6 sm:grid-cols-4">
-                {[
-                  { value: '12k+', label: 'perguntas' },
-                  { value: '48h', label: 'competições' },
-                  { value: '180+', label: 'desafios' },
-                  { value: '18k+', label: 'usuários' },
-                ].map((item) => (
+                {heroMetrics.map((item) => (
                   <MarqueeSurface key={item.label} className="px-4 py-4">
                     <div className="text-lg font-bold text-white">{item.value}</div>
                     <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-textMuted">{item.label}</div>
@@ -272,8 +364,8 @@ export function Home() {
                 ))}
               </div>
               <div className="mt-10 grid gap-4 sm:grid-cols-2">
-                <MetricPanel label="Perguntas" value="223" note="aprovadas" />
-                <MetricPanel label="Categorias" value="34" note="ativas" />
+                <MetricPanel label="Perguntas" value={formatCount(stats.questions)} note="aprovadas" />
+                <MetricPanel label="Categorias" value={formatCount(stats.categories)} note="ativas" />
               </div>
             </MarqueeSurface>
           </div>
@@ -304,8 +396,8 @@ export function Home() {
               </div>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-4">
-              <MetricPanel label="Desafios" value="100+" note="ativos" compact />
-              <MetricPanel label="Ranking global" value="10k+" note="online" compact />
+              <MetricPanel label="Desafios" value={formatCount(stats.challenges)} note="ativos" compact />
+              <MetricPanel label="Ranking global" value={formatCount(stats.users)} note="online" compact />
               <MetricPanel label="Sequência" value="14" note="vitórias" compact />
               <MetricPanel label="XP" value="120" note="por race" compact />
             </div>
@@ -368,6 +460,8 @@ export function Home() {
             />
           </div>
           <MarqueeSurface className="rounded-[1.75rem] p-6">
+            <ContactForm />
+            {/*
             <form className="space-y-4">
               <Field id="contact-name" label="Nome">
                 <Input id="contact-name" placeholder="Eden Johnson" />
@@ -394,6 +488,7 @@ export function Home() {
                 </button>
               </div>
             </form>
+            */}
           </MarqueeSurface>
         </div>
       </HomeSection>
@@ -418,12 +513,12 @@ export function Home() {
                 >
                   Começar agora
                 </Link>
-                <a
-                  href="#dashboard"
+                <Link
+                  to="/dashboard"
                   className="inline-flex h-11 items-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
                 >
                   Explorar plataforma
-                </a>
+                </Link>
               </div>
             </div>
           </MarqueeSurface>
@@ -432,27 +527,25 @@ export function Home() {
             <SectionDivider variant="default" className="mb-10" />
             <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="grid h-5 w-5 place-items-center rounded bg-primary text-[10px] font-black text-white">P</span>
-                  <span className="text-sm font-semibold">QuizPro</span>
-                </div>
+                <BrandLogo compact imageClassName="h-9 w-36" />
                 <p className="mt-4 max-w-sm text-sm leading-6 text-textSecondary">
                   Treino inteligente para devs praticarem entrevistas, revisarem conceitos e acompanharem evolução real.
                 </p>
                 <SocialButtons className="mt-6" />
               </div>
 
-              <FooterColumn title="Plataforma" links={['Quiz', 'Arena', 'Ranking', 'Contribuir']} />
-              <FooterColumn title="Empresa" links={['Sobre', 'Termos', 'Privacidade', 'Github']} />
+              {footerSections.map((section) => (
+                <FooterColumn key={section.title} title={section.title} links={section.links} />
+              ))}
             </div>
 
             <SectionDivider variant="default" className="mt-10" />
             <div className="flex flex-col gap-4 pt-6 text-xs text-textMuted sm:flex-row sm:items-center sm:justify-between">
-              <span>© 2026 QuizPro. Todos os direitos reservados.</span>
+              <span>© 2026 CodeQuest. Todos os direitos reservados.</span>
               <div className="flex gap-4">
-                <span>Privacidade</span>
-                <span>Termos</span>
-                <span>Cookies</span>
+                <Link to="/privacidade" className="transition hover:text-textPrimary">Privacidade</Link>
+                <Link to="/termos" className="transition hover:text-textPrimary">Termos</Link>
+                <Link to="/cookies" className="transition hover:text-textPrimary">Cookies</Link>
               </div>
             </div>
           </footer>
@@ -466,31 +559,27 @@ export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [socialMessage, setSocialMessage] = useState<string | null>(null);
   const redirectTo =
     typeof location.state === 'object' && location.state && 'redirectTo' in location.state
       ? String(location.state.redirectTo)
       : '/dashboard';
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'student@codequest.dev', password: 'User12345!' },
+    defaultValues: { email: '', password: '' },
   });
 
-  const githubAuthUrl = import.meta.env.VITE_AUTH_GITHUB_URL as string | undefined;
   const socialProviders: SocialButton[] = [
+    {
+      type: 'google',
+      label: 'Continuar com Google',
+      icon: <GoogleIcon />,
+      href: getAuthUrl('google'),
+    },
     {
       type: 'github',
       label: 'Continuar com GitHub',
       icon: <GithubIcon />,
-      ...(githubAuthUrl
-        ? { href: githubAuthUrl }
-        : { onClick: () => setSocialMessage('Login com GitHub ainda nao esta configurado.') }),
-    },
-    {
-      type: 'discord',
-      label: 'Continuar com Discord',
-      icon: <DiscordIcon />,
-      onClick: () => setSocialMessage('Login com Discord ainda nao esta configurado.'),
+      href: getAuthUrl('github'),
     },
   ];
 
@@ -512,7 +601,6 @@ export function Login() {
         className="space-y-4"
         onSubmit={form.handleSubmit(async (values) => {
           try {
-            setSocialMessage(null);
             await login(values.email, values.password);
             navigate(redirectTo, { replace: true });
           } catch (error) {
@@ -528,6 +616,7 @@ export function Login() {
           <Input
             id="email"
             type="email"
+            autoComplete="email"
             placeholder="voce@exemplo.com"
             aria-invalid={form.formState.errors.email ? 'true' : 'false'}
             aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
@@ -542,6 +631,7 @@ export function Login() {
           <Input
             id="password"
             type="password"
+            autoComplete="current-password"
             placeholder="••••••••"
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
             aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
@@ -556,12 +646,11 @@ export function Login() {
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        {socialMessage ? <InlineError tone="info" message={socialMessage} /> : null}
         <Button className="w-full" type="submit" loading={form.formState.isSubmitting} loadingText="Entrando...">
           Entrar
         </Button>
         <Divider label="Login com redes sociais" />
-        <SocialButtons buttons={socialProviders} className="justify-center" />
+        <SocialButtons buttons={socialProviders} variant="auth" />
       </form>
     </AuthCard>
   );
@@ -570,23 +659,19 @@ export function Login() {
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [socialMessage, setSocialMessage] = useState<string | null>(null);
   const form = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
-  const githubAuthUrl = import.meta.env.VITE_AUTH_GITHUB_URL as string | undefined;
   const socialProviders: SocialButton[] = [
     {
-      type: 'github',
-      label: 'Criar conta com GitHub',
-      icon: <GithubIcon />,
-      ...(githubAuthUrl
-        ? { href: githubAuthUrl }
-        : { onClick: () => setSocialMessage('Cadastro com GitHub ainda nao esta configurado.') }),
+      type: 'google',
+      label: 'Continuar com Google',
+      icon: <GoogleIcon />,
+      href: getAuthUrl('google'),
     },
     {
-      type: 'discord',
-      label: 'Criar conta com Discord',
-      icon: <DiscordIcon />,
-      onClick: () => setSocialMessage('Cadastro com Discord ainda nao esta configurado.'),
+      type: 'github',
+      label: 'Continuar com GitHub',
+      icon: <GithubIcon />,
+      href: getAuthUrl('github'),
     },
   ];
 
@@ -611,7 +696,12 @@ export function Register() {
             await register(values.name, values.email, values.password);
             navigate('/dashboard');
           } catch (error) {
-            form.setError('root', { message: getErrorMessage(error) });
+            const message = getErrorMessage(error);
+            if (message.toLowerCase().includes('email') || message.toLowerCase().includes('e-mail')) {
+              form.setError('email', { message });
+            } else {
+              form.setError('root', { message });
+            }
           }
         })}
       >
@@ -622,6 +712,7 @@ export function Register() {
           <Input
             id="register-email"
             type="email"
+            autoComplete="email"
             placeholder="voce@exemplo.com"
             aria-invalid={form.formState.errors.email ? 'true' : 'false'}
             {...form.register('email')}
@@ -631,6 +722,7 @@ export function Register() {
           <Input
             id="register-password"
             type="password"
+            autoComplete="new-password"
             placeholder="••••••••"
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
             {...form.register('password')}
@@ -639,12 +731,11 @@ export function Register() {
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        {socialMessage ? <InlineError tone="info" message={socialMessage} /> : null}
         <Button className="w-full" type="submit" loading={form.formState.isSubmitting} loadingText="Criando conta...">
           Criar conta
         </Button>
         <Divider label="Cadastro com redes sociais" />
-        <SocialButtons buttons={socialProviders} className="justify-center" />
+        <SocialButtons buttons={socialProviders} variant="auth" />
       </form>
     </AuthCard>
   );
@@ -688,15 +779,10 @@ function AuthCard({
 
       <Card className="relative w-full max-w-[420px] border-[#2A2D38] bg-[rgba(20,21,28,0.9)] p-7 shadow-[0_32px_80px_rgba(0,0,0,0.42)] sm:p-8">
         <div className="mb-8 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#5B6BFF] text-sm font-black text-white shadow-[0_0_24px_rgba(91,107,255,0.42)]">
-              CQ
-            </span>
-            <div>
-              <p className="text-sm font-bold tracking-tight text-[#F2F4F8]">CodeQuest</p>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#5C6170]">{eyebrow}</p>
-            </div>
-          </Link>
+          <div>
+            <BrandLogo imageClassName="h-11 w-44 rounded-md" />
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5C6170]">{eyebrow}</p>
+          </div>
           <BadgeChip>Halo Dark</BadgeChip>
         </div>
 
@@ -807,6 +893,59 @@ function InlineError({ message, tone = 'danger' }: { message: string; tone?: 'da
   );
 }
 
+function ContactForm() {
+  const [state, handleSubmit] = useFormspree('xjgdzpkq');
+
+  if (state.succeeded) {
+    return (
+      <div className="rounded-2xl border border-success/25 bg-success/10 px-4 py-5 text-sm text-success">
+        Mensagem enviada. Obrigado pelo contato.
+      </div>
+    );
+  }
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <Field id="contact-name" label="Nome">
+        <Input id="contact-name" name="name" autoComplete="name" placeholder="Leonardo Bastos" required />
+      </Field>
+      <Field id="contact-email" label="Email">
+        <Input id="contact-email" name="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" required />
+      </Field>
+      <Field id="contact-subject" label="Assunto">
+        <Input id="contact-subject" name="subject" placeholder="Parceria, sugestao ou melhoria" required />
+      </Field>
+      <Field id="contact-message" label="Mensagem">
+        <textarea
+          id="contact-message"
+          name="message"
+          required
+          minLength={10}
+          className="min-h-[120px] w-full rounded-xl border border-border bg-background px-3 py-3 text-sm text-textPrimary outline-none transition placeholder:text-textMuted focus:border-primary"
+          placeholder="Escreva sua mensagem..."
+        />
+      </Field>
+      <ValidationError prefix="Email" field="email" errors={state.errors} className="text-sm text-danger" />
+      <ValidationError prefix="Mensagem" field="message" errors={state.errors} className="text-sm text-danger" />
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <p className="text-[11px] text-textMuted">
+          Ao enviar, voce concorda com nossos{' '}
+          <Link to="/termos" className="text-textPrimary hover:text-primary">Termos</Link>
+          {' '}e{' '}
+          <Link to="/privacidade" className="text-textPrimary hover:text-primary">Privacidade</Link>.
+        </p>
+        <button
+          type="submit"
+          disabled={state.submitting}
+          className="inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {state.submitting ? 'Enviando...' : 'Enviar'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function BadgeChip({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9AA0AE]">
@@ -815,13 +954,25 @@ function BadgeChip({ children }: { children: ReactNode }) {
   );
 }
 
-function FooterColumn({ title, links }: { title: string; links: string[] }) {
+type FooterLink = { label: string; to?: string; href?: string };
+
+function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
       <div className="text-sm font-semibold text-white">{title}</div>
       <div className="mt-4 space-y-3 text-sm text-textSecondary">
         {links.map((link) => (
-          <div key={link}>{link}</div>
+          <div key={link.label}>
+            {link.to ? (
+              <Link to={link.to} className="transition hover:text-textPrimary">
+                {link.label}
+              </Link>
+            ) : (
+              <a href={link.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-textPrimary">
+                {link.label}
+              </a>
+            )}
+          </div>
         ))}
       </div>
     </div>

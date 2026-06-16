@@ -1,6 +1,7 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { BookOpenCheck, Bot, Crown, Flame, LayoutDashboard, LogOut, Medal, ShieldCheck, Swords, Trophy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { BrandLogo } from './BrandLogo';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
@@ -24,13 +25,9 @@ export function PageShell() {
     <div className="min-h-screen bg-background text-textPrimary">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/6 bg-[linear-gradient(180deg,rgba(10,11,15,0.98),rgba(15,16,23,0.94))] px-5 py-6 backdrop-blur-xl xl:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(108,99,255,0.18),transparent_15rem)]" />
-        <Link to="/dashboard" className="relative mb-8 flex items-center gap-3 px-2">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#a855f7)] text-sm font-black shadow-[0_10px_26px_rgba(108,99,255,0.28)]">CQ</span>
-          <div>
-            <p className="text-sm font-bold tracking-[-0.02em] text-textPrimary">CodeQuest</p>
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">edu.quiz.system</p>
-          </div>
-        </Link>
+        <div className="relative mb-8 px-2">
+          <BrandLogo imageClassName="h-10 w-36" />
+        </div>
         <div className="relative mb-6 rounded-3xl border border-white/8 bg-white/[0.03] p-4 shadow-glass">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">Perfil ativo</p>
           <p className="mt-3 text-lg font-bold text-textPrimary">{user?.name ?? 'Dev trainee'}</p>

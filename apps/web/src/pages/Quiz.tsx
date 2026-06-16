@@ -33,6 +33,8 @@ export function Quiz() {
   const navigate = useNavigate();
   const session = useMemo(() => readQuizSession(), []);
   const startedAtRef = useRef(Date.now());
+  const questionCardRef = useRef<HTMLDivElement | null>(null);
+  const hasQuestionChangedRef = useRef(false);
   const [index, setIndex] = useState(0);
   const [selectedAlternativeId, setSelectedAlternativeId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<PendingAnswer[]>([]);
@@ -56,6 +58,15 @@ export function Quiz() {
       });
     }
   }, [navigate, session]);
+
+  useEffect(() => {
+    if (!hasQuestionChangedRef.current) {
+      hasQuestionChangedRef.current = true;
+      return;
+    }
+
+    questionCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [index]);
 
   const submitMutation = useMutation({
     mutationFn: async (pendingAnswers: PendingAnswer[]) => {
@@ -158,7 +169,7 @@ export function Quiz() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="space-y-6">
-          <Card className="p-6">
+          <Card ref={questionCardRef} className="scroll-mt-24 p-6">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="section-kicker">{question?.category}</p>

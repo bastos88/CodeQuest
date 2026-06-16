@@ -5,3 +5,11 @@ dist
 coverage
 *.log
 apps/api/prisma/migrations/dev.db
+output/
+playwright-report/
+test-results/
+*.tsbuildinfo
+apps/web/src/**/*.js
+apps/web/src/**/*.jsx
+
+
