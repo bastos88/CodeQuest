@@ -18,7 +18,12 @@ export async function stats(_req: Request, res: Response) {
       prisma.quizResult.count(),
       prisma.arenaMatch.count(),
       prisma.question.count({
-        where: { status: QuestionStatus.APPROVED, authorId: { not: null } },
+        where: {
+          status: QuestionStatus.APPROVED,
+          authorId: {
+            not: null,
+          },
+        },
       }),
     ]);
 
@@ -34,6 +39,7 @@ export async function stats(_req: Request, res: Response) {
 
 export async function ranking(req: Request, res: Response) {
   const requestedLimit = Number(req.query.limit);
+
   const limit =
     Number.isInteger(requestedLimit) && requestedLimit > 0
       ? Math.min(requestedLimit, 5)
@@ -45,41 +51,6 @@ export async function ranking(req: Request, res: Response) {
       { quizzesCompleted: 'desc' },
       { correctAnswers: 'desc' },
     ],
-    take: limit,
-    select: {
-      id: true,
-      name: true,
-      avatarUrl: true,
-      xp: true,
-      quizzesCompleted: true,
-      correctAnswers: true,
-      totalAnswers: true,
-    },
-  });
-
-  res.json(
-    users.map((user, index) => ({
-      id: user.id,
-      name: user.name,
-      avatarUrl: user.avatarUrl,
-      xp: user.xp,
-      level: getLevelFromXP(user.xp),
-      accuracy: calculateAccuracy(user.correctAnswers, user.totalAnswers),
-      quizzesCompleted: user.quizzesCompleted,
-      position: index + 1,
-    })),
-  );
-}
-
-export async function ranking(req: Request, res: Response) {
-  const requestedLimit = Number(req.query.limit);
-  const limit =
-    Number.isInteger(requestedLimit) && requestedLimit > 0
-      ? Math.min(requestedLimit, 5)
-      : 5;
-
-  const users = await prisma.user.findMany({
-    orderBy: [{ xp: 'desc' }, { quizzesCompleted: 'desc' }, { correctAnswers: 'desc' }],
     take: limit,
     select: {
       id: true,
