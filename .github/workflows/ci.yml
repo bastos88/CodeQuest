@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://codequest:codequest@localhost:5432/codequest_test
+      JWT_ACCESS_SECRET: ci-access-secret-change-me-please
+      JWT_REFRESH_SECRET: ci-refresh-secret-change-me-please
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate --schema apps/api/prisma/schema.prisma
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema apps/api/prisma/schema.prisma
+
+      - name: Build shared
+        run: npm run build --workspace @codequest/shared
+
+      - name: Build API
+        run: npm run build --workspace @codequest/api
+
+      - name: Build web
+        run: npm run build --workspace @codequest/web
+
+      - name: Run tests
+        run: npm run test --workspaces --if-present

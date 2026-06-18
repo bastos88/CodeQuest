@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-export const quizSetupDifficultySchema = z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']);
+export const quizSetupDifficultySchema = z.enum([
+  'BEGINNER',
+  'INTERMEDIATE',
+  'ADVANCED',
+]);
 
 export const registerSchema = z.object({
   name: z.string().min(2).max(80),
@@ -16,7 +20,11 @@ export const loginSchema = z.object({
 export const quizStartSchema = z.object({
   categoryIds: z.array(z.string().uuid()).min(1),
   difficulty: quizSetupDifficultySchema,
-  questionCount: z.union([z.literal(5), z.literal(10), z.literal(15), z.literal(20)]),
+  questionCount: z
+    .number()
+    .int()
+    .min(1, 'Quantidade de perguntas inválida. Escolha entre 1 e 30.')
+    .max(30, 'Quantidade de perguntas inválida. Escolha entre 1 e 30.'),
 });
 
 export const quizSubmitSchema = z.object({
@@ -35,7 +43,11 @@ export const questionSchema = z.object({
   difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']),
   prompt: z.string().min(12).max(1200),
   explanation: z.string().max(2000).optional(),
-  alternatives: z.array(z.object({ text: z.string().min(1).max(500), isCorrect: z.boolean() })).length(4),
+  alternatives: z
+    .array(
+      z.object({ text: z.string().min(1).max(500), isCorrect: z.boolean() }),
+    )
+    .length(4),
 });
 
 export const rejectReviewSchema = z.object({

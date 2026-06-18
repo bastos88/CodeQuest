@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { PageShell } from './components/PageShell';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { Admin } from './pages/Admin';
@@ -19,20 +20,22 @@ import { Ranking } from './pages/Ranking';
 import './index.css';
 
 const router = createBrowserRouter([
-  { path: '/', element: <Home /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/forgot-password', element: <ForgotPassword /> },
-  { path: '/oauth/callback', element: <OAuthCallback /> },
-  { path: '/sobre', element: <AboutPage /> },
-  { path: '/termos', element: <TermsPage /> },
-  { path: '/privacidade', element: <PrivacyPage /> },
-  { path: '/cookies', element: <CookiesPage /> },
+  { path: '/', element: <Home />, errorElement: <AppErrorBoundary /> },
+  { path: '/login', element: <Login />, errorElement: <AppErrorBoundary /> },
+  { path: '/register', element: <Register />, errorElement: <AppErrorBoundary /> },
+  { path: '/forgot-password', element: <ForgotPassword />, errorElement: <AppErrorBoundary /> },
+  { path: '/oauth/callback', element: <OAuthCallback />, errorElement: <AppErrorBoundary /> },
+  { path: '/sobre', element: <AboutPage />, errorElement: <AppErrorBoundary /> },
+  { path: '/termos', element: <TermsPage />, errorElement: <AppErrorBoundary /> },
+  { path: '/privacidade', element: <PrivacyPage />, errorElement: <AppErrorBoundary /> },
+  { path: '/cookies', element: <CookiesPage />, errorElement: <AppErrorBoundary /> },
   {
     element: <ProtectedRoute />,
+    errorElement: <AppErrorBoundary />,
     children: [
       {
         element: <PageShell />,
+        errorElement: <AppErrorBoundary />,
         children: [
           { path: '/dashboard', element: <Dashboard /> },
           { path: '/quiz', element: <QuizSetupPage /> },

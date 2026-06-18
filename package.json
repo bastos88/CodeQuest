@@ -9,8 +9,12 @@
   "scripts": {
     "dev": "npm run dev --workspace @codequest/api & npm run dev --workspace @codequest/web",
     "build": "npm run build --workspaces",
+    "typecheck": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "test:api": "npm run test --workspace @codequest/api",
+    "test:shared": "npm run test --workspace @codequest/shared",
     "lint": "npm run lint --workspaces --if-present",
+    "validate": "npm run build && npm run lint && npm run test --workspaces --if-present",
     "db:migrate": "npm run db:migrate --workspace @codequest/api",
     "db:seed": "npm run db:seed --workspace @codequest/api"
   },
