@@ -1,5 +1,12 @@
 import axios from 'axios';
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { api } from '../lib/api';
 
 type User = {
@@ -13,9 +20,13 @@ type User = {
 
 type AuthContextValue = {
   user: User | null;
+  isAuthReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  persistOAuthSession: (accessToken: string, refreshToken: string) => Promise<void>;
+  persistOAuthSession: (
+    accessToken: string,
+    refreshToken: string,
+  ) => Promise<void>;
   logout: () => void;
 };
 
@@ -28,31 +39,68 @@ function clearStoredSession() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const raw = localStorage.getItem('codequest.user');
-    if (!raw) return null;
-
-    try {
-      return JSON.parse(raw) as User;
-    } catch {
-      clearStoredSession();
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    const handleExpiredSession = () => setUser(null);
-    window.addEventListener('codequest:session-expired', handleExpiredSession);
-    return () => window.removeEventListener('codequest:session-expired', handleExpiredSession);
+    let active = true;
+
+    async function restoreSession() {
+      const token = localStorage.getItem('codequest.accessToken');
+      if (!token) {
+        clearStoredSession();
+        if (active) setIsAuthReady(true);
+        return;
+      }
+
+      try {
+        const { data } = await api.get<User>('/auth/me');
+        localStorage.setItem('codequest.user', JSON.stringify(data));
+        if (active) setUser(data);
+      } catch {
+        clearStoredSession();
+        if (active) setUser(null);
+      } finally {
+        if (active) setIsAuthReady(true);
+      }
+    }
+
+    void restoreSession();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  async function persistSession(path: '/auth/login' | '/auth/register', payload: Record<string, string>) {
+  useEffect(() => {
+    const handleExpiredSession = () => {
+      clearStoredSession();
+      setUser(null);
+      setIsAuthReady(true);
+    };
+    window.addEventListener('codequest:session-expired', handleExpiredSession);
+    return () =>
+      window.removeEventListener(
+        'codequest:session-expired',
+        handleExpiredSession,
+      );
+  }, []);
+
+  async function persistSession(
+    path: '/auth/login' | '/auth/register',
+    payload: Record<string, string>,
+  ) {
     try {
-      const { data } = await api.post<{ user: User; accessToken: string; refreshToken: string }>(path, payload);
+      const { data } = await api.post<{
+        user: User;
+        accessToken: string;
+        refreshToken: string;
+      }>(path, payload);
       localStorage.setItem('codequest.accessToken', data.accessToken);
       localStorage.setItem('codequest.refreshToken', data.refreshToken);
       localStorage.setItem('codequest.user', JSON.stringify(data.user));
       setUser(data.user);
+      setIsAuthReady(true);
     } catch (error) {
       if (axios.isAxiosError<{ message?: string }>(error)) {
         const status = error.response?.status;
@@ -66,7 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(apiMessage ?? 'Email ou senha inválidos.');
         }
 
-        throw new Error(apiMessage ?? 'Não foi possível concluir a autenticação.');
+        throw new Error(
+          apiMessage ?? 'Não foi possível concluir a autenticação.',
+        );
       }
 
       throw error;
@@ -76,21 +126,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      login: (email, password) => persistSession('/auth/login', { email, password }),
-      register: (name, email, password) => persistSession('/auth/register', { name, email, password }),
+      login: (email, password) =>
+        persistSession('/auth/login', { email, password }),
+      register: (name, email, password) =>
+        persistSession('/auth/register', { name, email, password }),
       persistOAuthSession: async (accessToken, refreshToken) => {
         localStorage.setItem('codequest.accessToken', accessToken);
         localStorage.setItem('codequest.refreshToken', refreshToken);
         const { data } = await api.get<User>('/auth/me');
         localStorage.setItem('codequest.user', JSON.stringify(data));
         setUser(data);
+        setIsAuthReady(true);
       },
       logout: () => {
         clearStoredSession();
         setUser(null);
+        setIsAuthReady(true);
       },
+      isAuthReady,
     }),
-    [user],
+    [isAuthReady, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
