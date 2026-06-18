@@ -1,9 +1,14 @@
-export type QuestionStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'ARCHIVED';
+export type QuestionStatus =
+  | 'PENDING_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ARCHIVED';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
 
 export type QuestionCategory = {
   id: string;
   name: string;
+  slug?: string;
 };
 
 export type QuestionAuthor = {
@@ -46,6 +51,16 @@ export type AdminQuestionRecord = {
   author: QuestionAuthor | null;
   alternatives: QuestionAlternative[];
   reviews: QuestionReview[];
+};
+
+export type AdminQuestionsResponse = {
+  items: AdminQuestionRecord[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 };
 
 export type PendingReviewRecord = {
@@ -99,7 +114,9 @@ export const statusLabel: Record<QuestionStatus, string> = {
   ARCHIVED: 'Arquivada',
 };
 
-export function getStatusTone(status: QuestionStatus): 'info' | 'success' | 'warning' | 'danger' {
+export function getStatusTone(
+  status: QuestionStatus,
+): 'info' | 'success' | 'warning' | 'danger' {
   if (status === 'APPROVED') return 'success';
   if (status === 'REJECTED') return 'danger';
   if (status === 'ARCHIVED') return 'info';
