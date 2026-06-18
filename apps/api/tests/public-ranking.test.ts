@@ -51,6 +51,7 @@ function createMockRankingUser() {
     updatedAt: new Date(),
   };
 }
+
 describe('public ranking route', () => {
   beforeEach(() => {
     vi.clearAllMocks();

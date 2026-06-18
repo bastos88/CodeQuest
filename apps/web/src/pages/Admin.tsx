@@ -1,7 +1,18 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Archive, Check, FileEdit, FileWarning, Gauge, RotateCcw, ShieldAlert, ShieldCheck, Trash2, X } from 'lucide-react';
+import {
+  Archive,
+  Check,
+  FileEdit,
+  FileWarning,
+  Gauge,
+  RotateCcw,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react';
 import type { ApproveReviewInput } from '@codequest/shared';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -22,8 +33,11 @@ import {
   statusLabel,
   type AdminDashboardMetrics,
   type AdminQuestionRecord,
+  type AdminQuestionsResponse,
   type AdminStatsResponse,
+  type Difficulty,
   type PendingReviewRecord,
+  type QuestionStatus,
 } from '../lib/admin';
 import { api } from '../lib/api';
 
@@ -37,7 +51,10 @@ const emptyApproveChecklist = (): ApproveReviewInput['checklist'] => ({
   usefulExplanation: false,
 });
 
-const checklistLabels: Array<{ key: keyof ApproveReviewInput['checklist']; label: string }> = [
+const checklistLabels: Array<{
+  key: keyof ApproveReviewInput['checklist'];
+  label: string;
+}> = [
   { key: 'clearStatement', label: 'Enunciado claro' },
   { key: 'onlyOneCorrect', label: 'Apenas uma correta' },
   { key: 'plausibleAlternatives', label: 'Alternativas plausíveis' },
@@ -63,41 +80,97 @@ type EditState = {
   categoryId: string;
 };
 
+type CategoryOption = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+};
+
 export function Admin() {
   const { user } = useAuth();
-  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
-  const [approveChecklist, setApproveChecklist] = useState<ApproveReviewInput['checklist']>(emptyApproveChecklist);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
+    null,
+  );
+  const [approveChecklist, setApproveChecklist] = useState<
+    ApproveReviewInput['checklist']
+  >(emptyApproveChecklist);
   const [approveNotes, setApproveNotes] = useState('');
-  const [rejectState, setRejectState] = useState<{ question: ModerationQuestion; reason: string; notes: string } | null>(null);
+  const [rejectState, setRejectState] = useState<{
+    question: ModerationQuestion;
+    reason: string;
+    notes: string;
+  } | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [adminPage, setAdminPage] = useState(1);
+  const [adminPageSize, setAdminPageSize] = useState(20);
+  const [adminStatus, setAdminStatus] = useState<QuestionStatus | 'ALL'>('ALL');
+  const [adminDifficulty, setAdminDifficulty] = useState<Difficulty | 'ALL'>(
+    'ALL',
+  );
+  const [adminCategory, setAdminCategory] = useState('');
+  const [adminSearch, setAdminSearch] = useState('');
 
   const canModerate = user?.role === 'ADMIN' || user?.role === 'REVIEWER';
   const isAdmin = user?.role === 'ADMIN';
 
   const pendingReviewsQuery = useQuery({
     queryKey: adminQueryKeys.pendingReviews,
-    queryFn: async () => (await api.get<PendingReviewRecord[]>('/reviews/pending')).data,
+    queryFn: async () =>
+      (await api.get<PendingReviewRecord[]>('/reviews/pending')).data,
     enabled: canModerate,
   });
 
   const adminDashboardQuery = useQuery({
     queryKey: adminQueryKeys.adminDashboard,
-    queryFn: async () => (await api.get<AdminDashboardMetrics>('/admin/dashboard')).data,
+    queryFn: async () =>
+      (await api.get<AdminDashboardMetrics>('/admin/dashboard')).data,
     enabled: isAdmin,
   });
 
   const adminQuestionsQuery = useQuery({
-    queryKey: adminQueryKeys.adminQuestions,
-    queryFn: async () => (await api.get<AdminQuestionRecord[]>('/admin/questions')).data,
+    queryKey: [
+      ...adminQueryKeys.adminQuestions,
+      {
+        page: adminPage,
+        pageSize: adminPageSize,
+        status: adminStatus,
+        difficulty: adminDifficulty,
+        category: adminCategory,
+        search: adminSearch,
+      },
+    ],
+    queryFn: async () =>
+      (
+        await api.get<AdminQuestionsResponse>('/admin/questions', {
+          params: {
+            page: adminPage,
+            pageSize: adminPageSize,
+            ...(adminStatus !== 'ALL' ? { status: adminStatus } : {}),
+            ...(adminDifficulty !== 'ALL'
+              ? { difficulty: adminDifficulty }
+              : {}),
+            ...(adminCategory ? { category: adminCategory } : {}),
+            ...(adminSearch.trim() ? { search: adminSearch.trim() } : {}),
+          },
+        })
+      ).data,
+    enabled: isAdmin,
+  });
+
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => (await api.get<CategoryOption[]>('/categories')).data,
     enabled: isAdmin,
   });
 
   const adminStatsQuery = useQuery({
     queryKey: adminQueryKeys.adminStats,
-    queryFn: async () => (await api.get<AdminStatsResponse>('/admin/stats')).data,
+    queryFn: async () =>
+      (await api.get<AdminStatsResponse>('/admin/stats')).data,
     enabled: isAdmin,
   });
 
@@ -109,8 +182,18 @@ export function Admin() {
   const updateMutation = useUpdateQuestionMutation();
 
   const pendingReviews = pendingReviewsQuery.data ?? [];
-  const adminQuestions = adminQuestionsQuery.data ?? [];
-  const selectedQuestion = pendingReviews.find((question) => question.id === selectedQuestionId) ?? pendingReviews[0] ?? null;
+  const adminQuestions = adminQuestionsQuery.data?.items ?? [];
+  const adminPagination = adminQuestionsQuery.data?.pagination ?? {
+    page: adminPage,
+    pageSize: adminPageSize,
+    total: 0,
+    totalPages: 1,
+  };
+  const categoryOptions = categoriesQuery.data ?? [];
+  const selectedQuestion =
+    pendingReviews.find((question) => question.id === selectedQuestionId) ??
+    pendingReviews[0] ??
+    null;
 
   useEffect(() => {
     if (!selectedQuestionId && pendingReviews.length > 0) {
@@ -119,7 +202,10 @@ export function Admin() {
       return;
     }
 
-    if (selectedQuestionId && !pendingReviews.some((question) => question.id === selectedQuestionId)) {
+    if (
+      selectedQuestionId &&
+      !pendingReviews.some((question) => question.id === selectedQuestionId)
+    ) {
       setSelectedQuestionId(pendingReviews[0]?.id ?? null);
     }
   }, [pendingReviews, selectedQuestionId]);
@@ -130,14 +216,6 @@ export function Admin() {
     setActionError(null);
   }, [selectedQuestion?.id]);
 
-  const categoryOptions = useMemo(() => {
-    const grouped = new Map<string, { id: string; name: string }>();
-    for (const question of adminQuestions) {
-      grouped.set(question.category.id, { id: question.category.id, name: question.category.name });
-    }
-    return [...grouped.values()].sort((left, right) => left.name.localeCompare(right.name));
-  }, [adminQuestions]);
-
   if (!canModerate) {
     return (
       <Card className="p-8">
@@ -146,9 +224,13 @@ export function Admin() {
             <ShieldAlert size={22} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">Acesso restrito</h2>
+            <h2 className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+              Acesso restrito
+            </h2>
             <p className="mt-2 text-sm text-textSecondary">
-              Esta área exige perfil <span className="text-textPrimary">ADMIN</span> ou <span className="text-textPrimary">REVIEWER</span>.
+              Esta área exige perfil{' '}
+              <span className="text-textPrimary">ADMIN</span> ou{' '}
+              <span className="text-textPrimary">REVIEWER</span>.
             </p>
           </div>
         </div>
@@ -176,10 +258,14 @@ export function Admin() {
           />
           <AdminMetric
             label="Pendentes"
-            value={String(adminDashboardQuery.data?.pending ?? pendingReviews.length)}
+            value={String(
+              adminDashboardQuery.data?.pending ?? pendingReviews.length,
+            )}
             icon={Archive}
             tone="warning"
-            loading={adminDashboardQuery.isLoading && pendingReviews.length === 0}
+            loading={
+              adminDashboardQuery.isLoading && pendingReviews.length === 0
+            }
           />
           <AdminMetric
             label="Reports"
@@ -201,7 +287,12 @@ export function Admin() {
         <Card className="border-success/20 p-4">
           <div className="flex items-start justify-between gap-3">
             <p className="text-sm text-success">{actionMessage}</p>
-            <Button variant="ghost" className="h-8 w-8 rounded-xl px-0" onClick={() => setActionMessage(null)} aria-label="Fechar mensagem">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 rounded-xl px-0"
+              onClick={() => setActionMessage(null)}
+              aria-label="Fechar mensagem"
+            >
               <X size={14} />
             </Button>
           </div>
@@ -213,9 +304,12 @@ export function Admin() {
           <div className="flex flex-col gap-4 border-b border-white/6 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="section-kicker">review.console</p>
-              <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-textPrimary">Admin review</h2>
+              <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-textPrimary">
+                Admin review
+              </h2>
               <p className="mt-2 text-sm text-textSecondary">
-                Aprovação exige checklist completo. Rejeição exige motivo. Arquivamento remove a pergunta do quiz sem apagar o histórico.
+                Aprovação exige checklist completo. Rejeição exige motivo.
+                Arquivamento remove a pergunta do quiz sem apagar o histórico.
               </p>
             </div>
             <Badge tone="warning">{pendingReviews.length} pendente(s)</Badge>
@@ -224,7 +318,10 @@ export function Admin() {
           {pendingReviewsQuery.isLoading ? (
             <div className="space-y-3 px-6 py-6">
               {Array.from({ length: 3 }, (_, index) => (
-                <div key={index} className="h-24 animate-pulse rounded-[1.5rem] border border-white/6 bg-white/[0.03]" />
+                <div
+                  key={index}
+                  className="h-24 animate-pulse rounded-[1.5rem] border border-white/6 bg-white/[0.03]"
+                />
               ))}
             </div>
           ) : pendingReviewsQuery.isError ? (
@@ -251,12 +348,19 @@ export function Admin() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <Badge tone="warning">{difficultyLabel[question.difficulty]}</Badge>
-                        <span className="text-xs text-textMuted">{question.category.name}</span>
+                        <Badge tone="warning">
+                          {difficultyLabel[question.difficulty]}
+                        </Badge>
+                        <span className="text-xs text-textMuted">
+                          {question.category.name}
+                        </span>
                       </div>
-                      <p className="mt-3 line-clamp-2 text-sm font-semibold text-textPrimary">{question.prompt}</p>
+                      <p className="mt-3 line-clamp-2 text-sm font-semibold text-textPrimary">
+                        {question.prompt}
+                      </p>
                       <p className="mt-2 text-xs text-textSecondary">
-                        {question.author?.name ?? 'Autor desconhecido'} · {question.alternatives.length} alternativas
+                        {question.author?.name ?? 'Autor desconhecido'} ·{' '}
+                        {question.alternatives.length} alternativas
                       </p>
                     </button>
                   );
@@ -268,37 +372,59 @@ export function Admin() {
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge tone="warning">Pendente</Badge>
-                      <Badge tone="info">{selectedQuestion.category.name}</Badge>
-                      <Badge tone="default">{difficultyLabel[selectedQuestion.difficulty]}</Badge>
+                      <Badge tone="info">
+                        {selectedQuestion.category.name}
+                      </Badge>
+                      <Badge tone="default">
+                        {difficultyLabel[selectedQuestion.difficulty]}
+                      </Badge>
                     </div>
-                    <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-textPrimary">{selectedQuestion.prompt}</h3>
+                    <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+                      {selectedQuestion.prompt}
+                    </h3>
                     <p className="mt-3 text-sm text-textSecondary">
-                      Autor: {selectedQuestion.author?.name ?? 'Sem autor'} · {selectedQuestion.author?.email ?? 'sem email'}
+                      Autor: {selectedQuestion.author?.name ?? 'Sem autor'} ·{' '}
+                      {selectedQuestion.author?.email ?? 'sem email'}
                     </p>
                     {selectedQuestion.explanation ? (
                       <div className="mt-4 rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-textMuted">Explicação</p>
-                        <p className="mt-2 text-sm leading-6 text-textSecondary">{selectedQuestion.explanation}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-textMuted">
+                          Explicação
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-textSecondary">
+                          {selectedQuestion.explanation}
+                        </p>
                       </div>
                     ) : null}
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-textPrimary">Alternativas</p>
+                    <p className="text-sm font-semibold text-textPrimary">
+                      Alternativas
+                    </p>
                     <div className="mt-3 grid gap-3">
-                      {selectedQuestion.alternatives.map((alternative, index) => (
-                        <div key={alternative.id} className="rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-                          <p className="text-sm text-textPrimary">
-                            <span className="mr-2 font-mono text-textMuted">{String.fromCharCode(65 + index)}.</span>
-                            {alternative.text}
-                          </p>
-                        </div>
-                      ))}
+                      {selectedQuestion.alternatives.map(
+                        (alternative, index) => (
+                          <div
+                            key={alternative.id}
+                            className="rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3"
+                          >
+                            <p className="text-sm text-textPrimary">
+                              <span className="mr-2 font-mono text-textMuted">
+                                {String.fromCharCode(65 + index)}.
+                              </span>
+                              {alternative.text}
+                            </p>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-textPrimary">Checklist obrigatório</p>
+                    <p className="text-sm font-semibold text-textPrimary">
+                      Checklist obrigatório
+                    </p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       {checklistLabels.map((item) => (
                         <label
@@ -321,10 +447,14 @@ export function Admin() {
                       ))}
                     </div>
                     <label className="mt-4 block">
-                      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Notas de aprovação</span>
+                      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                        Notas de aprovação
+                      </span>
                       <textarea
                         value={approveNotes}
-                        onChange={(event) => setApproveNotes(event.target.value)}
+                        onChange={(event) =>
+                          setApproveNotes(event.target.value)
+                        }
                         rows={4}
                         className="field-area"
                         placeholder="Notas internas opcionais para histórico de revisão."
@@ -334,7 +464,11 @@ export function Admin() {
 
                   <div className="flex flex-wrap gap-3">
                     <Button
-                      loading={approveMutation.isPending && approveMutation.variables?.questionId === selectedQuestion.id}
+                      loading={
+                        approveMutation.isPending &&
+                        approveMutation.variables?.questionId ===
+                          selectedQuestion.id
+                      }
                       loadingText="Aprovando..."
                       onClick={async () => {
                         try {
@@ -342,7 +476,10 @@ export function Admin() {
                           setActionMessage(null);
                           await approveMutation.mutateAsync({
                             questionId: selectedQuestion.id,
-                            payload: { checklist: approveChecklist, notes: approveNotes.trim() || undefined },
+                            payload: {
+                              checklist: approveChecklist,
+                              notes: approveNotes.trim() || undefined,
+                            },
                           });
                           setActionMessage('Pergunta aprovada com sucesso.');
                         } catch (error) {
@@ -355,7 +492,13 @@ export function Admin() {
                     </Button>
                     <Button
                       variant="secondary"
-                      onClick={() => setRejectState({ question: selectedQuestion, reason: '', notes: '' })}
+                      onClick={() =>
+                        setRejectState({
+                          question: selectedQuestion,
+                          reason: '',
+                          notes: '',
+                        })
+                      }
                     >
                       <X size={16} />
                       Rejeitar
@@ -366,7 +509,8 @@ export function Admin() {
                         setConfirmState({
                           question: selectedQuestion,
                           action: 'archive',
-                          message: 'Esta pergunta será removida do quiz, mas permanecerá no histórico.',
+                          message:
+                            'Esta pergunta será removida do quiz, mas permanecerá no histórico.',
                         })
                       }
                     >
@@ -387,9 +531,12 @@ export function Admin() {
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-[-0.03em] text-textPrimary">Regras do fluxo</h3>
+                <h3 className="text-lg font-bold tracking-[-0.03em] text-textPrimary">
+                  Regras do fluxo
+                </h3>
                 <p className="mt-2 text-sm text-textSecondary">
-                  Aprovação ativa a pergunta no quiz. Rejeição exige motivo. Arquivamento retira do quiz sem apagar histórico.
+                  Aprovação ativa a pergunta no quiz. Rejeição exige motivo.
+                  Arquivamento retira do quiz sem apagar histórico.
                 </p>
               </div>
             </div>
@@ -398,11 +545,25 @@ export function Admin() {
           {isAdmin ? (
             <Card className="p-6">
               <p className="section-kicker">status.summary</p>
-              <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-textPrimary">Distribuição atual</h3>
+              <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-textPrimary">
+                Distribuição atual
+              </h3>
               <div className="mt-5 grid gap-3">
-                {(['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'ARCHIVED'] as const).map((status) => (
-                  <div key={status} className="flex items-center justify-between rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-                    <span className="text-sm text-textSecondary">{statusLabel[status]}</span>
+                {(
+                  [
+                    'PENDING_REVIEW',
+                    'APPROVED',
+                    'REJECTED',
+                    'ARCHIVED',
+                  ] as const
+                ).map((status) => (
+                  <div
+                    key={status}
+                    className="flex items-center justify-between rounded-[1rem] border border-white/8 bg-white/[0.03] px-4 py-3"
+                  >
+                    <span className="text-sm text-textSecondary">
+                      {statusLabel[status]}
+                    </span>
                     <span className="font-mono text-sm font-semibold text-textPrimary">
                       {adminStatsQuery.data?.statusCounts[status] ?? 0}
                     </span>
@@ -413,9 +574,13 @@ export function Admin() {
           ) : (
             <Card className="p-6">
               <p className="section-kicker">role.scope</p>
-              <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-textPrimary">Perfil reviewer</h3>
+              <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-textPrimary">
+                Perfil reviewer
+              </h3>
               <p className="mt-3 text-sm leading-6 text-textSecondary">
-                Você pode aprovar, rejeitar e arquivar perguntas. Dashboard completo e exclusão definitiva continuam restritos ao perfil ADMIN.
+                Você pode aprovar, rejeitar e arquivar perguntas. Dashboard
+                completo e exclusão definitiva continuam restritos ao perfil
+                ADMIN.
               </p>
             </Card>
           )}
@@ -427,16 +592,114 @@ export function Admin() {
           <div className="flex items-center justify-between gap-4 border-b border-white/6 px-6 py-5">
             <div>
               <p className="section-kicker">admin.questions</p>
-              <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-textPrimary">Banco de perguntas</h2>
-              <p className="mt-2 text-sm text-textSecondary">Ações administrativas atualizam status, contadores e dashboard sem refresh manual.</p>
+              <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-textPrimary">
+                Banco de perguntas
+              </h2>
+              <p className="mt-2 text-sm text-textSecondary">
+                Ações administrativas atualizam status, contadores e dashboard
+                sem refresh manual.
+              </p>
             </div>
-            <Badge tone="info">{adminQuestions.length} total</Badge>
+            <Badge tone="info">{adminPagination.total} total</Badge>
+          </div>
+
+          <div className="grid gap-3 border-b border-white/6 px-6 py-4 md:grid-cols-[minmax(220px,1fr)_160px_160px_180px_120px]">
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Busca
+              </span>
+              <input
+                value={adminSearch}
+                onChange={(event) => {
+                  setAdminPage(1);
+                  setAdminSearch(event.target.value);
+                }}
+                className="field"
+                placeholder="Prompt ou explicação"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Status
+              </span>
+              <select
+                value={adminStatus}
+                onChange={(event) => {
+                  setAdminPage(1);
+                  setAdminStatus(event.target.value as QuestionStatus | 'ALL');
+                }}
+                className="field"
+              >
+                <option value="ALL">Todos</option>
+                <option value="PENDING_REVIEW">Pendente</option>
+                <option value="APPROVED">Aprovada</option>
+                <option value="REJECTED">Rejeitada</option>
+                <option value="ARCHIVED">Arquivada</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Dificuldade
+              </span>
+              <select
+                value={adminDifficulty}
+                onChange={(event) => {
+                  setAdminPage(1);
+                  setAdminDifficulty(event.target.value as Difficulty | 'ALL');
+                }}
+                className="field"
+              >
+                <option value="ALL">Todas</option>
+                <option value="EASY">Fácil</option>
+                <option value="MEDIUM">Média</option>
+                <option value="HARD">Difícil</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Categoria
+              </span>
+              <select
+                value={adminCategory}
+                onChange={(event) => {
+                  setAdminPage(1);
+                  setAdminCategory(event.target.value);
+                }}
+                className="field"
+              >
+                <option value="">Todas</option>
+                {categoryOptions.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Por página
+              </span>
+              <select
+                value={adminPageSize}
+                onChange={(event) => {
+                  setAdminPage(1);
+                  setAdminPageSize(Number(event.target.value));
+                }}
+                className="field"
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </label>
           </div>
 
           {adminQuestionsQuery.isLoading ? (
             <div className="space-y-3 px-6 py-6">
               {Array.from({ length: 4 }, (_, index) => (
-                <div key={index} className="h-16 animate-pulse rounded-[1rem] border border-white/6 bg-white/[0.03]" />
+                <div
+                  key={index}
+                  className="h-16 animate-pulse rounded-[1rem] border border-white/6 bg-white/[0.03]"
+                />
               ))}
             </div>
           ) : adminQuestionsQuery.isError ? (
@@ -445,150 +708,231 @@ export function Admin() {
               description={getErrorMessage(adminQuestionsQuery.error)}
               tone="danger"
             />
+          ) : adminQuestions.length === 0 ? (
+            <InlineState
+              title="Nenhuma pergunta encontrada."
+              description="Ajuste os filtros para ampliar a busca."
+              tone="warning"
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-separate border-spacing-0">
-                <thead>
-                  <tr className="text-left">
-                    {['Pergunta', 'Categoria', 'Dificuldade', 'Status', 'Uso', 'Ações'].map((heading) => (
-                      <th
-                        key={heading}
-                        className="border-b border-white/6 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted"
+            <div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-separate border-spacing-0">
+                  <thead>
+                    <tr className="text-left">
+                      {[
+                        'Pergunta',
+                        'Categoria',
+                        'Dificuldade',
+                        'Status',
+                        'Uso',
+                        'Ações',
+                      ].map((heading) => (
+                        <th
+                          key={heading}
+                          className="border-b border-white/6 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted"
+                        >
+                          {heading}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminQuestions.map((question) => (
+                      <tr
+                        key={question.id}
+                        className="glass-table-row align-top"
                       >
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminQuestions.map((question) => (
-                    <tr key={question.id} className="glass-table-row align-top">
-                      <td className="px-6 py-4">
-                        <p className="max-w-[420px] text-sm font-semibold text-textPrimary">{question.prompt}</p>
-                        <p className="mt-2 text-xs text-textSecondary">
-                          {question.author?.name ?? 'Sem autor'} · última revisão{' '}
-                          {question.reviewedAt ? new Date(question.reviewedAt).toLocaleDateString('pt-BR') : 'pendente'}
-                        </p>
-                        {question.rejectionReason ? (
-                          <p className="mt-2 text-xs text-danger">Motivo: {question.rejectionReason}</p>
-                        ) : null}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-textSecondary">{question.category.name}</td>
-                      <td className="px-6 py-4 text-sm text-textSecondary">{difficultyLabel[question.difficulty]}</td>
-                      <td className="px-6 py-4">
-                        <Badge tone={getStatusTone(question.status)}>{statusLabel[question.status]}</Badge>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-textSecondary">{question.usedCount}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-2">
-                          {question.status !== 'APPROVED' && question.status !== 'ARCHIVED' ? (
-                            <Button
-                              variant="secondary"
-                              className="h-9 rounded-xl px-3 text-xs"
-                              loading={approveMutation.isPending && approveMutation.variables?.questionId === question.id}
-                              loadingText="Aprovando..."
-                              onClick={async () => {
-                                try {
-                                  setActionError(null);
-                                  setActionMessage(null);
-                                  await approveMutation.mutateAsync({
-                                    questionId: question.id,
-                                    payload: {
-                                      checklist: {
-                                        clearStatement: true,
-                                        onlyOneCorrect: true,
-                                        plausibleAlternatives: true,
-                                        noTechnicalError: true,
-                                        correctCategory: true,
-                                        correctDifficulty: true,
-                                        usefulExplanation: true,
-                                      },
-                                    },
-                                  });
-                                  setActionMessage('Pergunta aprovada com sucesso.');
-                                } catch (error) {
-                                  setActionError(getErrorMessage(error));
+                        <td className="px-6 py-4">
+                          <p className="max-w-[420px] text-sm font-semibold text-textPrimary">
+                            {question.prompt}
+                          </p>
+                          <p className="mt-2 text-xs text-textSecondary">
+                            {question.author?.name ?? 'Sem autor'} · última
+                            revisão{' '}
+                            {question.reviewedAt
+                              ? new Date(
+                                  question.reviewedAt,
+                                ).toLocaleDateString('pt-BR')
+                              : 'pendente'}
+                          </p>
+                          {question.rejectionReason ? (
+                            <p className="mt-2 text-xs text-danger">
+                              Motivo: {question.rejectionReason}
+                            </p>
+                          ) : null}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-textSecondary">
+                          {question.category.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-textSecondary">
+                          {difficultyLabel[question.difficulty]}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge tone={getStatusTone(question.status)}>
+                            {statusLabel[question.status]}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-textSecondary">
+                          {question.usedCount}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            {question.status !== 'APPROVED' &&
+                            question.status !== 'ARCHIVED' ? (
+                              <Button
+                                variant="secondary"
+                                className="h-9 rounded-xl px-3 text-xs"
+                                loading={
+                                  approveMutation.isPending &&
+                                  approveMutation.variables?.questionId ===
+                                    question.id
                                 }
-                              }}
-                            >
-                              Aprovar
-                            </Button>
-                          ) : null}
-                          {question.status !== 'REJECTED' && question.status !== 'ARCHIVED' ? (
-                            <Button
-                              variant="secondary"
-                              className="h-9 rounded-xl px-3 text-xs"
-                              onClick={() => setRejectState({ question, reason: '', notes: '' })}
-                            >
-                              Rejeitar
-                            </Button>
-                          ) : null}
-                          {question.status !== 'ARCHIVED' ? (
+                                loadingText="Aprovando..."
+                                onClick={async () => {
+                                  try {
+                                    setActionError(null);
+                                    setActionMessage(null);
+                                    await approveMutation.mutateAsync({
+                                      questionId: question.id,
+                                      payload: {
+                                        checklist: {
+                                          clearStatement: true,
+                                          onlyOneCorrect: true,
+                                          plausibleAlternatives: true,
+                                          noTechnicalError: true,
+                                          correctCategory: true,
+                                          correctDifficulty: true,
+                                          usefulExplanation: true,
+                                        },
+                                      },
+                                    });
+                                    setActionMessage(
+                                      'Pergunta aprovada com sucesso.',
+                                    );
+                                  } catch (error) {
+                                    setActionError(getErrorMessage(error));
+                                  }
+                                }}
+                              >
+                                Aprovar
+                              </Button>
+                            ) : null}
+                            {question.status !== 'REJECTED' &&
+                            question.status !== 'ARCHIVED' ? (
+                              <Button
+                                variant="secondary"
+                                className="h-9 rounded-xl px-3 text-xs"
+                                onClick={() =>
+                                  setRejectState({
+                                    question,
+                                    reason: '',
+                                    notes: '',
+                                  })
+                                }
+                              >
+                                Rejeitar
+                              </Button>
+                            ) : null}
+                            {question.status !== 'ARCHIVED' ? (
+                              <Button
+                                variant="ghost"
+                                className="h-9 rounded-xl px-3 text-xs"
+                                onClick={() =>
+                                  setConfirmState({
+                                    question,
+                                    action: 'archive',
+                                    message:
+                                      'Esta pergunta será removida do quiz, mas permanecerá no histórico.',
+                                  })
+                                }
+                              >
+                                Arquivar
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                className="h-9 rounded-xl px-3 text-xs"
+                                onClick={() =>
+                                  setConfirmState({
+                                    question,
+                                    action: 'restore',
+                                    message:
+                                      'Esta pergunta voltará para o banco ativo de perguntas aprovadas.',
+                                  })
+                                }
+                              >
+                                <RotateCcw size={14} />
+                                Restaurar
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               className="h-9 rounded-xl px-3 text-xs"
                               onClick={() =>
-                                setConfirmState({
-                                  question,
-                                  action: 'archive',
-                                  message: 'Esta pergunta será removida do quiz, mas permanecerá no histórico.',
+                                setEditState({
+                                  questionId: question.id,
+                                  prompt: question.prompt,
+                                  explanation: question.explanation ?? '',
+                                  difficulty: question.difficulty,
+                                  categoryId: question.category.id,
                                 })
                               }
                             >
-                              Arquivar
+                              <FileEdit size={14} />
+                              Editar
                             </Button>
-                          ) : (
                             <Button
-                              variant="secondary"
+                              variant="danger"
                               className="h-9 rounded-xl px-3 text-xs"
                               onClick={() =>
                                 setConfirmState({
                                   question,
-                                  action: 'restore',
-                                  message: 'Esta pergunta voltará para o banco ativo de perguntas aprovadas.',
+                                  action: 'delete',
+                                  message:
+                                    'Tem certeza que deseja excluir esta pergunta? Essa ação não pode ser desfeita.',
                                 })
                               }
                             >
-                              <RotateCcw size={14} />
-                              Restaurar
+                              <Trash2 size={14} />
+                              Excluir
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            className="h-9 rounded-xl px-3 text-xs"
-                            onClick={() =>
-                              setEditState({
-                                questionId: question.id,
-                                prompt: question.prompt,
-                                explanation: question.explanation ?? '',
-                                difficulty: question.difficulty,
-                                categoryId: question.category.id,
-                              })
-                            }
-                          >
-                            <FileEdit size={14} />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="danger"
-                            className="h-9 rounded-xl px-3 text-xs"
-                            onClick={() =>
-                              setConfirmState({
-                                question,
-                                action: 'delete',
-                                message: 'Tem certeza que deseja excluir esta pergunta? Essa ação não pode ser desfeita.',
-                              })
-                            }
-                          >
-                            <Trash2 size={14} />
-                            Excluir
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex flex-col gap-3 border-t border-white/6 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-textSecondary">
+                  Página {adminPagination.page} de {adminPagination.totalPages}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    disabled={adminPagination.page <= 1}
+                    onClick={() =>
+                      setAdminPage((current) => Math.max(1, current - 1))
+                    }
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    disabled={
+                      adminPagination.page >= adminPagination.totalPages
+                    }
+                    onClick={() =>
+                      setAdminPage((current) =>
+                        Math.min(adminPagination.totalPages, current + 1),
+                      )
+                    }
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </Card>
@@ -601,30 +945,47 @@ export function Admin() {
           onClose={() => setRejectState(null)}
         >
           <label className="block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Motivo da rejeição</span>
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+              Motivo da rejeição
+            </span>
             <textarea
               value={rejectState.reason}
-              onChange={(event) => setRejectState((current) => (current ? { ...current, reason: event.target.value } : current))}
+              onChange={(event) =>
+                setRejectState((current) =>
+                  current
+                    ? { ...current, reason: event.target.value }
+                    : current,
+                )
+              }
               rows={5}
               className="field-area"
               placeholder="Explique o motivo com pelo menos 10 caracteres."
             />
             <p className="mt-2 text-xs text-textMuted">
-              Mínimo de 10 caracteres. Atual: {rejectState.reason.trim().length}/10
+              Mínimo de 10 caracteres. Atual: {rejectState.reason.trim().length}
+              /10
             </p>
           </label>
           <label className="mt-4 block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Notas internas</span>
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+              Notas internas
+            </span>
             <textarea
               value={rejectState.notes}
-              onChange={(event) => setRejectState((current) => (current ? { ...current, notes: event.target.value } : current))}
+              onChange={(event) =>
+                setRejectState((current) =>
+                  current ? { ...current, notes: event.target.value } : current,
+                )
+              }
               rows={3}
               className="field-area"
               placeholder="Notas opcionais para o histórico da revisão."
             />
           </label>
           <div className="mt-6 flex flex-wrap justify-end gap-3">
-            <Button variant="ghost" onClick={() => setRejectState(null)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setRejectState(null)}>
+              Cancelar
+            </Button>
             <Button
               variant="danger"
               loading={rejectMutation.isPending}
@@ -667,12 +1028,18 @@ export function Admin() {
           onClose={() => setConfirmState(null)}
         >
           <div className="mt-6 flex flex-wrap justify-end gap-3">
-            <Button variant="ghost" onClick={() => setConfirmState(null)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setConfirmState(null)}>
+              Cancelar
+            </Button>
             <Button
-              variant={confirmState.action === 'delete' ? 'danger' : 'secondary'}
+              variant={
+                confirmState.action === 'delete' ? 'danger' : 'secondary'
+              }
               loading={
-                (confirmState.action === 'delete' && deleteMutation.isPending) ||
-                (confirmState.action === 'archive' && archiveMutation.isPending) ||
+                (confirmState.action === 'delete' &&
+                  deleteMutation.isPending) ||
+                (confirmState.action === 'archive' &&
+                  archiveMutation.isPending) ||
                 (confirmState.action === 'restore' && restoreMutation.isPending)
               }
               loadingText={
@@ -709,7 +1076,8 @@ export function Admin() {
                     setConfirmState({
                       question: confirmState.question,
                       action: 'archive',
-                      message: 'Esta pergunta já foi usada. Ela não pode ser excluída e deve ser arquivada.',
+                      message:
+                        'Esta pergunta já foi usada. Ela não pode ser excluída e deve ser arquivada.',
                     });
                     return;
                   }
@@ -736,30 +1104,56 @@ export function Admin() {
         >
           <div className="grid gap-4">
             <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Prompt</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Prompt
+              </span>
               <textarea
                 value={editState.prompt}
-                onChange={(event) => setEditState((current) => (current ? { ...current, prompt: event.target.value } : current))}
+                onChange={(event) =>
+                  setEditState((current) =>
+                    current
+                      ? { ...current, prompt: event.target.value }
+                      : current,
+                  )
+                }
                 rows={5}
                 className="field-area"
               />
             </label>
             <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Explicação</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Explicação
+              </span>
               <textarea
                 value={editState.explanation}
-                onChange={(event) => setEditState((current) => (current ? { ...current, explanation: event.target.value } : current))}
+                onChange={(event) =>
+                  setEditState((current) =>
+                    current
+                      ? { ...current, explanation: event.target.value }
+                      : current,
+                  )
+                }
                 rows={4}
                 className="field-area"
               />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Dificuldade</span>
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                  Dificuldade
+                </span>
                 <select
                   value={editState.difficulty}
                   onChange={(event) =>
-                    setEditState((current) => (current ? { ...current, difficulty: event.target.value as EditState['difficulty'] } : current))
+                    setEditState((current) =>
+                      current
+                        ? {
+                            ...current,
+                            difficulty: event.target
+                              .value as EditState['difficulty'],
+                          }
+                        : current,
+                    )
                   }
                   className="field"
                 >
@@ -769,10 +1163,18 @@ export function Admin() {
                 </select>
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Categoria</span>
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                  Categoria
+                </span>
                 <select
                   value={editState.categoryId}
-                  onChange={(event) => setEditState((current) => (current ? { ...current, categoryId: event.target.value } : current))}
+                  onChange={(event) =>
+                    setEditState((current) =>
+                      current
+                        ? { ...current, categoryId: event.target.value }
+                        : current,
+                    )
+                  }
                   className="field"
                 >
                   {categoryOptions.map((category) => (
@@ -785,7 +1187,9 @@ export function Admin() {
             </div>
           </div>
           <div className="mt-6 flex flex-wrap justify-end gap-3">
-            <Button variant="ghost" onClick={() => setEditState(null)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setEditState(null)}>
+              Cancelar
+            </Button>
             <Button
               loading={updateMutation.isPending}
               loadingText="Salvando..."
@@ -800,7 +1204,9 @@ export function Admin() {
                       prompt: editState.prompt.trim(),
                       difficulty: editState.difficulty,
                       categoryId: editState.categoryId,
-                      ...(editState.explanation.trim() ? { explanation: editState.explanation.trim() } : {}),
+                      ...(editState.explanation.trim()
+                        ? { explanation: editState.explanation.trim() }
+                        : {}),
                     },
                   });
                   setEditState(null);
@@ -841,17 +1247,32 @@ function AdminMetric({
 
   return (
     <Card className="p-5">
-      <div className={`mb-5 grid h-11 w-11 place-items-center rounded-2xl ${tones[tone]}`}>
+      <div
+        className={`mb-5 grid h-11 w-11 place-items-center rounded-2xl ${tones[tone]}`}
+      >
         <Icon size={18} />
       </div>
-      <p className="font-mono text-3xl font-extrabold text-textPrimary">{loading ? '...' : value}</p>
+      <p className="font-mono text-3xl font-extrabold text-textPrimary">
+        {loading ? '...' : value}
+      </p>
       <p className="mt-2 text-sm text-textSecondary">{label}</p>
     </Card>
   );
 }
 
-function InlineState({ title, description, tone }: { title: string; description: string; tone: 'danger' | 'warning' }) {
-  const toneClasses = tone === 'danger' ? 'border-danger/25 bg-danger/10' : 'border-warning/25 bg-warning/10';
+function InlineState({
+  title,
+  description,
+  tone,
+}: {
+  title: string;
+  description: string;
+  tone: 'danger' | 'warning';
+}) {
+  const toneClasses =
+    tone === 'danger'
+      ? 'border-danger/25 bg-danger/10'
+      : 'border-warning/25 bg-warning/10';
 
   return (
     <div className={`rounded-[1.5rem] border px-5 py-4 ${toneClasses}`}>
@@ -867,7 +1288,9 @@ function EmptyReviewState() {
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-success/12 text-success">
         <Check size={24} />
       </div>
-      <h3 className="mt-5 text-xl font-bold text-textPrimary">Nenhuma pergunta pendente</h3>
+      <h3 className="mt-5 text-xl font-bold text-textPrimary">
+        Nenhuma pergunta pendente
+      </h3>
       <p className="mt-2 text-sm text-textSecondary">
         Quando usuários enviarem novas perguntas, elas aparecerão aqui.
       </p>
@@ -898,7 +1321,10 @@ function ModalShell({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 id={titleId} className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+            <h3
+              id={titleId}
+              className="text-2xl font-bold tracking-[-0.03em] text-textPrimary"
+            >
               {title}
             </h3>
             <p className="mt-2 text-sm text-textSecondary">{description}</p>
