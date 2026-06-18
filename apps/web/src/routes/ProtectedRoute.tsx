@@ -2,7 +2,22 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function ProtectedRoute() {
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
   const location = useLocation();
-  return user ? <Outlet /> : <Navigate to="/login" replace state={{ redirectTo: location.pathname + location.search + location.hash }} />;
+
+  if (!isAuthReady) {
+    return null;
+  }
+
+  return user ? (
+    <Outlet />
+  ) : (
+    <Navigate
+      to="/login"
+      replace
+      state={{
+        redirectTo: location.pathname + location.search + location.hash,
+      }}
+    />
+  );
 }

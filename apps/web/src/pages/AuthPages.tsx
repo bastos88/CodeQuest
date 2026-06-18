@@ -2,21 +2,56 @@ import { useMemo, type HTMLAttributes, type ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ValidationError, useForm as useFormspree } from '@formspree/react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, ArrowLeft, Users } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  Brain,
+  CheckCircle2,
+  ChevronRight,
+  Code2,
+  Layers3,
+  Lock,
+  LogIn,
+  Mail,
+  MessageSquarePlus,
+  Send,
+  Sparkles,
+  Swords,
+  Target,
+  Trophy,
+  UserPlus,
+  Users,
+  XCircle,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@codequest/shared';
+import {
+  loginSchema,
+  registerSchema,
+  type LoginInput,
+  type RegisterInput,
+} from '@codequest/shared';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { BrandLogo } from '../components/BrandLogo';
+import { HomeRankingSection } from '../components/home/HomeRankingSection';
 import TechMarqueeSection from '../components/TechMarqueeSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { HomeSection } from '../components/ui/HomeSection';
+import { IconBadge } from '../components/ui/IconBadge';
 import { Input } from '../components/ui/Input';
 import { SectionDivider } from '../components/ui/SectionDivider';
-import SocialButtons, { GithubIcon, GoogleIcon, type SocialButton } from '../components/ui/SocialButtons';
+import SocialButtons, {
+  GithubIcon,
+  GoogleIcon,
+  type SocialButton,
+} from '../components/ui/SocialButtons';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';
@@ -26,58 +61,122 @@ const steps = [
   {
     index: '01',
     title: 'Escolha uma categoria',
-    description: 'Selecione a trilha que faz sentido para sua entrevista, revisão ou rotina de estudo.',
+    description:
+      'Selecione a trilha que faz sentido para sua entrevista, revisão ou rotina de estudo.',
+    icon: Layers3,
+    variant: 'indigo',
   },
   {
     index: '02',
     title: 'Defina a dificuldade',
-    description: 'Ajuste o nível para iniciantes, intermediário ou avançado sem sair do fluxo.',
+    description:
+      'Ajuste o nível para iniciantes, intermediário ou avançado sem sair do fluxo.',
+    icon: Sparkles,
+    variant: 'violet',
   },
   {
     index: '03',
     title: 'Responda ao quiz',
-    description: 'Resolva perguntas objetivas, código e conceitos com feedback direto.',
+    description:
+      'Resolva perguntas objetivas, código e conceitos com feedback direto.',
+    icon: Brain,
+    variant: 'cyan',
   },
   {
     index: '04',
     title: 'Analise seu desempenho',
-    description: 'Veja acertos, erros, tempo, categorias fortes e pontos que pedem revisão.',
+    description:
+      'Veja acertos, erros, tempo, categorias fortes e pontos que pedem revisão.',
+    icon: BarChart3,
+    variant: 'emerald',
   },
-];
+] satisfies Array<{
+  index: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  variant: 'indigo' | 'violet' | 'cyan' | 'emerald';
+}>;
 
 const features = [
   {
     title: 'Quiz inteligente',
     subtitle: '40 perguntas',
-    description: 'Sessões guiadas por categoria, dificuldade, quantidade de perguntas e foco técnico.',
+    description:
+      'Sessões guiadas por categoria, dificuldade, quantidade de perguntas e foco técnico.',
     accent: true,
+    icon: Brain,
+    variant: 'indigo',
   },
   {
     title: 'Arena',
     subtitle: 'PvP sprint',
     description: 'Desafios competitivos para treinar sob pressão.',
     accent: false,
+    icon: Swords,
+    variant: 'red',
   },
   {
     title: 'Ranking',
     subtitle: 'Top 100',
     description: 'Evolução visível com Elo, posições e consistência.',
     accent: false,
+    icon: Trophy,
+    variant: 'amber',
   },
   {
     title: 'Contribuições',
     subtitle: 'Review flow',
     description: 'Crie perguntas e peça à comunidade para refinar melhor.',
     accent: false,
+    icon: MessageSquarePlus,
+    variant: 'emerald',
   },
-];
+] satisfies Array<{
+  title: string;
+  subtitle: string;
+  description: string;
+  accent: boolean;
+  icon: LucideIcon;
+  variant: 'indigo' | 'red' | 'amber' | 'emerald';
+}>;
 
 const contributionFlow = [
-  { status: 'Draft', tone: 'text-textSecondary', description: 'Crie e refine antes do envio.' },
-  { status: 'Pending Review', tone: 'text-warning', description: 'Aguarde curadoria e feedback.' },
-  { status: 'Approved', tone: 'text-success', description: 'A pergunta entra no sistema.' },
-  { status: 'Rejected', tone: 'text-danger', description: 'Revise pontos indicados.' },
-];
+  {
+    status: 'Draft',
+    tone: 'text-textSecondary',
+    description: 'Crie e refine antes do envio.',
+    icon: Code2,
+    variant: 'slate',
+  },
+  {
+    status: 'Pending Review',
+    tone: 'text-warning',
+    description: 'Aguarde curadoria e feedback.',
+    icon: AlertCircle,
+    variant: 'amber',
+  },
+  {
+    status: 'Approved',
+    tone: 'text-success',
+    description: 'A pergunta entra no sistema.',
+    icon: CheckCircle2,
+    variant: 'emerald',
+  },
+  {
+    status: 'Rejected',
+    tone: 'text-danger',
+    description: 'Revise pontos indicados.',
+    icon: XCircle,
+    variant: 'red',
+  },
+] satisfies Array<{
+  status: string;
+  tone: string;
+  description: string;
+  icon: LucideIcon;
+  variant: 'slate' | 'amber' | 'emerald' | 'red';
+}>;
 
 type HomeStats = {
   questions: number;
@@ -139,8 +238,10 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 }
 
 function formatCount(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
+  if (value >= 1_000_000)
+    return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
+  if (value >= 1_000)
+    return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
   return String(value);
 }
 
@@ -187,18 +288,6 @@ export function Home() {
     ],
     [stats],
   );
-  const metrics = useMemo(
-    () => [
-      { label: 'Perguntas', value: formatCount(stats.questions), note: 'curadas', tone: 'text-success' },
-      { label: 'Categorias', value: formatCount(stats.categories), note: 'ativas', tone: 'text-primary' },
-      { label: 'Usuarios', value: formatCount(stats.users), note: 'cadastrados', tone: 'text-success' },
-      { label: 'Quizzes', value: formatCount(stats.quizzes), note: 'realizados', tone: 'text-success' },
-      { label: 'Desafios', value: formatCount(stats.challenges), note: 'na arena', tone: 'text-warning' },
-      { label: 'Contribuicoes', value: formatCount(stats.contributions), note: 'aprovadas', tone: 'text-success' },
-    ],
-    [stats],
-  );
-
   return (
     <div className="min-h-screen bg-background text-textPrimary">
       <div className="relative overflow-hidden">
@@ -223,9 +312,13 @@ export function Home() {
               </Link>
               <Link
                 to="/register"
-                className="inline-flex h-9 items-center rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group inline-flex h-9 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Começar agora
+                <ArrowRight
+                  className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </Link>
             </div>
           </div>
@@ -245,28 +338,38 @@ export function Home() {
                 <span className="text-[#9c8cff]">Evolua.</span>
               </h1>
               <p className="mt-6 max-w-lg text-sm leading-7 text-textSecondary sm:text-base">
-                Pratique com quizzes inteligentes, participe da Arena, suba no Ranking e evolua através de XP, revisão e comunidade.
+                Pratique com quizzes inteligentes, participe da Arena, suba no
+                Ranking e evolua através de XP, revisão e comunidade.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   to="/register"
-                  className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_34px_rgba(91,107,255,0.45)] transition hover:bg-primaryHover"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_34px_rgba(91,107,255,0.45)] transition hover:bg-primaryHover"
                 >
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
                   Começar agora
                 </Link>
                 <a
                   href="#funcionalidades"
-                  className="inline-flex h-11 items-center rounded-full border border-white/10 bg-white/5 px-5 text-sm font-semibold text-textPrimary transition hover:border-white/20 hover:bg-white/[0.08]"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 text-sm font-semibold text-textPrimary transition hover:border-white/20 hover:bg-white/[0.08]"
                 >
                   Explorar perguntas
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
                 </a>
               </div>
               <SectionDivider variant="default" className="mt-10" />
               <div className="grid gap-3 pt-6 sm:grid-cols-4">
                 {heroMetrics.map((item) => (
                   <MarqueeSurface key={item.label} className="px-4 py-4">
-                    <div className="text-lg font-bold text-white">{item.value}</div>
-                    <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-textMuted">{item.label}</div>
+                    <div className="text-lg font-bold text-white">
+                      {item.value}
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-textMuted">
+                      {item.label}
+                    </div>
                   </MarqueeSurface>
                 ))}
               </div>
@@ -313,9 +416,22 @@ export function Home() {
           <div className="mt-12 grid gap-4 lg:grid-cols-4">
             {steps.map((step) => (
               <MarqueeSurface key={step.index} className="p-6">
-                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#a38dff]">{step.index}</div>
-                <h3 className="mt-6 text-lg font-semibold text-white">{step.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-textSecondary">{step.description}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#a38dff]">
+                    {step.index}
+                  </div>
+                  <IconBadge
+                    icon={step.icon}
+                    variant={step.variant}
+                    size="sm"
+                  />
+                </div>
+                <h3 className="mt-6 text-lg font-semibold text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-textSecondary">
+                  {step.description}
+                </p>
               </MarqueeSurface>
             ))}
           </div>
@@ -341,31 +457,68 @@ export function Home() {
                       : '',
                   ].join(' ')}
                 >
-                  <div className="text-[11px] font-semibold text-[#9f8fff]">{feature.title}</div>
-                  <div className="mt-1 text-xs font-medium text-textSecondary">{feature.subtitle}</div>
-                  <p className="mt-6 max-w-[18rem] text-sm leading-6 text-textSecondary">{feature.description}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-semibold text-[#9f8fff]">
+                        {feature.title}
+                      </div>
+                      <div className="mt-1 text-xs font-medium text-textSecondary">
+                        {feature.subtitle}
+                      </div>
+                    </div>
+                    <IconBadge
+                      icon={feature.icon}
+                      variant={feature.variant}
+                      size="sm"
+                    />
+                  </div>
+                  <p className="mt-6 max-w-[18rem] text-sm leading-6 text-textSecondary">
+                    {feature.description}
+                  </p>
                 </MarqueeSurface>
               ))}
             </div>
 
             <MarqueeSurface className="p-7">
-              <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9f8fff]">Quiz inteligente</div>
+              <div className="flex items-center gap-3">
+                <IconBadge icon={Brain} variant="indigo" size="sm" />
+                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9f8fff]">
+                  Quiz inteligente
+                </div>
+              </div>
               <h3 className="mt-4 max-w-lg text-2xl font-bold text-white">
-                Monte simulações rápidas ou completas, receba feedback visual e transforme respostas em histórico mensurável.
+                Monte simulações rápidas ou completas, receba feedback visual e
+                transforme respostas em histórico mensurável.
               </h3>
               <p className="mt-5 max-w-xl text-sm leading-7 text-textSecondary">
-                O mesmo design system conecta páginas, cards, tabelas e feedback para manter a experiência previsível e profissional.
+                O mesmo design system conecta páginas, cards, tabelas e feedback
+                para manter a experiência previsível e profissional.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
-                {['Filtros claros', 'Feedback direto', 'Sessões flexíveis'].map((chip) => (
-                  <span key={chip} className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-textSecondary">
-                    {chip}
-                  </span>
-                ))}
+                {['Filtros claros', 'Feedback direto', 'Sessões flexíveis'].map(
+                  (chip) => (
+                    <span
+                      key={chip}
+                      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-textSecondary"
+                    >
+                      {chip}
+                    </span>
+                  ),
+                )}
               </div>
               <div className="mt-10 grid gap-4 sm:grid-cols-2">
-                <MetricPanel label="Perguntas" value={formatCount(stats.questions)} note="aprovadas" />
-                <MetricPanel label="Categorias" value={formatCount(stats.categories)} note="ativas" />
+                <MetricPanel
+                  label="Perguntas"
+                  value={formatCount(stats.questions)}
+                  note="aprovadas"
+                  icon={Brain}
+                />
+                <MetricPanel
+                  label="Categorias"
+                  value={formatCount(stats.categories)}
+                  note="ativas"
+                  icon={Layers3}
+                />
               </div>
             </MarqueeSurface>
           </div>
@@ -389,17 +542,45 @@ export function Home() {
             <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <div className="flex h-24 items-end gap-3">
                 {[72, 54, 86, 63, 76].map((height, index) => (
-                  <div key={height} className="flex-1 rounded-t-md bg-[linear-gradient(180deg,#6985ff,#5b6bff)]" style={{ height: `${height}%` }}>
+                  <div
+                    key={height}
+                    className="flex-1 rounded-t-md bg-[linear-gradient(180deg,#6985ff,#5b6bff)]"
+                    style={{ height: `${height}%` }}
+                  >
                     <div className="sr-only">Barra {index + 1}</div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-4">
-              <MetricPanel label="Desafios" value={formatCount(stats.challenges)} note="ativos" compact />
-              <MetricPanel label="Ranking global" value={formatCount(stats.users)} note="online" compact />
-              <MetricPanel label="Sequência" value="14" note="vitórias" compact />
-              <MetricPanel label="XP" value="120" note="por race" compact />
+              <MetricPanel
+                label="Desafios"
+                value={formatCount(stats.challenges)}
+                note="ativos"
+                icon={Swords}
+                compact
+              />
+              <MetricPanel
+                label="Ranking global"
+                value={formatCount(stats.users)}
+                note="online"
+                icon={Trophy}
+                compact
+              />
+              <MetricPanel
+                label="Sequência"
+                value="14"
+                note="vitórias"
+                icon={Target}
+                compact
+              />
+              <MetricPanel
+                label="XP"
+                value="120"
+                note="por race"
+                icon={Zap}
+                compact
+              />
             </div>
           </MarqueeSurface>
         </div>
@@ -418,8 +599,19 @@ export function Home() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {contributionFlow.map((item) => (
                 <MarqueeSurface key={item.status} className="p-5">
-                  <div className={`text-[11px] font-bold ${item.tone}`}>{item.status}</div>
-                  <p className="mt-5 text-sm leading-6 text-textSecondary">{item.description}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`text-[11px] font-bold ${item.tone}`}>
+                      {item.status}
+                    </div>
+                    <IconBadge
+                      icon={item.icon}
+                      variant={item.variant}
+                      size="sm"
+                    />
+                  </div>
+                  <p className="mt-5 text-sm leading-6 text-textSecondary">
+                    {item.description}
+                  </p>
                 </MarqueeSurface>
               ))}
             </div>
@@ -427,18 +619,9 @@ export function Home() {
         </div>
       </HomeSection>
 
-      <HomeSection id="metricas">
+      <HomeSection id="ranking">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <SectionHeading eyebrow="Estatísticas" title="Métricas de produto que reforçam progresso" description="" />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {metrics.map((metric) => (
-              <MarqueeSurface key={metric.label} className="p-5">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-textMuted">{metric.label}</div>
-                <div className="mt-3 text-4xl font-bold text-white">{metric.value}</div>
-                <div className={`mt-1 text-xs font-semibold ${metric.tone}`}>{metric.note}</div>
-              </MarqueeSurface>
-            ))}
-          </div>
+          <HomeRankingSection />
         </div>
       </HomeSection>
 
@@ -449,7 +632,7 @@ export function Home() {
       <HomeSection className="bg-[radial-gradient(circle_at_30%_30%,rgba(41,133,91,0.18),transparent_24rem)]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.9fr_1fr] lg:px-8">
           <div className="flex flex-col justify-center">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-success/20 bg-success/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-success">
+            <div className="inline-flex w-fit items-center gap-2 mb-5 rounded-full border border-success/20 bg-success/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-success">
               <Users className="h-3 w-3" />
               Junte-se à comunidade de devs em evolução
             </div>
@@ -498,7 +681,9 @@ export function Home() {
           <MarqueeSurface className="rounded-[1.75rem] border-primary/20 px-8 py-10 shadow-[0_24px_80px_rgba(71,48,140,0.34)]">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b2a3ff]">Comece agora</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b2a3ff]">
+                  Comece agora
+                </div>
                 <h2 className="mt-3 max-w-xl text-4xl font-extrabold tracking-[-0.04em] text-white">
                   Pronto para evoluir como desenvolvedor?
                 </h2>
@@ -509,15 +694,23 @@ export function Home() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   to="/register"
-                  className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover"
                 >
                   Começar agora
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
                 </Link>
                 <Link
                   to="/dashboard"
-                  className="inline-flex h-11 items-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
                 >
                   Explorar plataforma
+                  <ChevronRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
                 </Link>
               </div>
             </div>
@@ -529,13 +722,18 @@ export function Home() {
               <div>
                 <BrandLogo compact imageClassName="h-9 w-36" />
                 <p className="mt-4 max-w-sm text-sm leading-6 text-textSecondary">
-                  Treino inteligente para devs praticarem entrevistas, revisarem conceitos e acompanharem evolução real.
+                  Treino inteligente para devs praticarem entrevistas, revisarem
+                  conceitos e acompanharem evolução real.
                 </p>
                 <SocialButtons className="mt-6" />
               </div>
 
               {footerSections.map((section) => (
-                <FooterColumn key={section.title} title={section.title} links={section.links} />
+                <FooterColumn
+                  key={section.title}
+                  title={section.title}
+                  links={section.links}
+                />
               ))}
             </div>
 
@@ -543,9 +741,24 @@ export function Home() {
             <div className="flex flex-col gap-4 pt-6 text-xs text-textMuted sm:flex-row sm:items-center sm:justify-between">
               <span>© 2026 CodeQuest. Todos os direitos reservados.</span>
               <div className="flex gap-4">
-                <Link to="/privacidade" className="transition hover:text-textPrimary">Privacidade</Link>
-                <Link to="/termos" className="transition hover:text-textPrimary">Termos</Link>
-                <Link to="/cookies" className="transition hover:text-textPrimary">Cookies</Link>
+                <Link
+                  to="/privacidade"
+                  className="transition hover:text-textPrimary"
+                >
+                  Privacidade
+                </Link>
+                <Link
+                  to="/termos"
+                  className="transition hover:text-textPrimary"
+                >
+                  Termos
+                </Link>
+                <Link
+                  to="/cookies"
+                  className="transition hover:text-textPrimary"
+                >
+                  Cookies
+                </Link>
               </div>
             </div>
           </footer>
@@ -560,7 +773,9 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo =
-    typeof location.state === 'object' && location.state && 'redirectTo' in location.state
+    typeof location.state === 'object' &&
+    location.state &&
+    'redirectTo' in location.state
       ? String(location.state.redirectTo)
       : '/dashboard';
   const form = useForm<LoginInput>({
@@ -591,7 +806,10 @@ export function Login() {
       footer={
         <p className="text-sm text-textSecondary">
           Não tem conta?{' '}
-          <Link to="/register" className="font-semibold text-textPrimary hover:text-primary">
+          <Link
+            to="/register"
+            className="font-semibold text-textPrimary hover:text-primary"
+          >
             Criar conta
           </Link>
         </p>
@@ -611,6 +829,7 @@ export function Login() {
         <Field
           id="email"
           label="Email"
+          icon={Mail}
           error={form.formState.errors.email?.message}
         >
           <Input
@@ -619,13 +838,16 @@ export function Login() {
             autoComplete="email"
             placeholder="voce@exemplo.com"
             aria-invalid={form.formState.errors.email ? 'true' : 'false'}
-            aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
+            aria-describedby={
+              form.formState.errors.email ? 'email-error' : undefined
+            }
             {...form.register('email')}
           />
         </Field>
         <Field
           id="password"
           label="Senha"
+          icon={Lock}
           error={form.formState.errors.password?.message}
         >
           <Input
@@ -634,19 +856,30 @@ export function Login() {
             autoComplete="current-password"
             placeholder="••••••••"
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
-            aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
+            aria-describedby={
+              form.formState.errors.password ? 'password-error' : undefined
+            }
             {...form.register('password')}
           />
         </Field>
         <div className="flex justify-end">
-          <Link to="/forgot-password" className="text-sm font-medium text-textSecondary hover:text-textPrimary">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-textSecondary hover:text-textPrimary"
+          >
             Esqueci minha senha
           </Link>
         </div>
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        <Button className="w-full" type="submit" loading={form.formState.isSubmitting} loadingText="Entrando...">
+        <Button
+          className="w-full"
+          type="submit"
+          loading={form.formState.isSubmitting}
+          loadingText="Entrando..."
+        >
+          <LogIn className="h-4 w-4" aria-hidden="true" />
           Entrar
         </Button>
         <Divider label="Login com redes sociais" />
@@ -659,7 +892,9 @@ export function Login() {
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const form = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+  const form = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+  });
   const socialProviders: SocialButton[] = [
     {
       type: 'google',
@@ -683,7 +918,10 @@ export function Register() {
       footer={
         <p className="text-sm text-textSecondary">
           Já tem conta?{' '}
-          <Link to="/login" className="font-semibold text-textPrimary hover:text-primary">
+          <Link
+            to="/login"
+            className="font-semibold text-textPrimary hover:text-primary"
+          >
             Entrar
           </Link>
         </p>
@@ -697,7 +935,10 @@ export function Register() {
             navigate('/dashboard');
           } catch (error) {
             const message = getErrorMessage(error);
-            if (message.toLowerCase().includes('email') || message.toLowerCase().includes('e-mail')) {
+            if (
+              message.toLowerCase().includes('email') ||
+              message.toLowerCase().includes('e-mail')
+            ) {
               form.setError('email', { message });
             } else {
               form.setError('root', { message });
@@ -705,10 +946,25 @@ export function Register() {
           }
         })}
       >
-        <Field id="name" label="Nome" error={form.formState.errors.name?.message}>
-          <Input id="name" placeholder="Seu nome" aria-invalid={form.formState.errors.name ? 'true' : 'false'} {...form.register('name')} />
+        <Field
+          id="name"
+          label="Nome"
+          icon={Users}
+          error={form.formState.errors.name?.message}
+        >
+          <Input
+            id="name"
+            placeholder="Seu nome"
+            aria-invalid={form.formState.errors.name ? 'true' : 'false'}
+            {...form.register('name')}
+          />
         </Field>
-        <Field id="register-email" label="Email" error={form.formState.errors.email?.message}>
+        <Field
+          id="register-email"
+          label="Email"
+          icon={Mail}
+          error={form.formState.errors.email?.message}
+        >
           <Input
             id="register-email"
             type="email"
@@ -718,7 +974,12 @@ export function Register() {
             {...form.register('email')}
           />
         </Field>
-        <Field id="register-password" label="Senha" error={form.formState.errors.password?.message}>
+        <Field
+          id="register-password"
+          label="Senha"
+          icon={Lock}
+          error={form.formState.errors.password?.message}
+        >
           <Input
             id="register-password"
             type="password"
@@ -731,7 +992,13 @@ export function Register() {
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        <Button className="w-full" type="submit" loading={form.formState.isSubmitting} loadingText="Criando conta...">
+        <Button
+          className="w-full"
+          type="submit"
+          loading={form.formState.isSubmitting}
+          loadingText="Criando conta..."
+        >
+          <UserPlus className="h-4 w-4" aria-hidden="true" />
           Criar conta
         </Button>
         <Divider label="Cadastro com redes sociais" />
@@ -748,13 +1015,19 @@ export function ForgotPassword() {
       title="Recuperação de senha"
       subtitle="O fluxo de reset ainda não foi configurado no backend. Quando o endpoint existir, esta rota pode receber o formulário real."
       footer={
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary">
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"
+        >
           <ArrowLeft size={16} />
           Voltar para login
         </Link>
       }
     >
-      <InlineError tone="info" message="O endpoint de recuperação ainda não está disponível neste ambiente." />
+      <InlineError
+        tone="info"
+        message="O endpoint de recuperação ainda não está disponível neste ambiente."
+      />
     </AuthCard>
   );
 }
@@ -781,19 +1054,25 @@ function AuthCard({
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
             <BrandLogo imageClassName="h-11 w-44 rounded-md" />
-            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5C6170]">{eyebrow}</p>
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5C6170]">
+              {eyebrow}
+            </p>
           </div>
           <BadgeChip>Halo Dark</BadgeChip>
         </div>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-extrabold tracking-[-0.04em] text-[#F2F4F8]">{title}</h1>
+          <h1 className="text-3xl font-extrabold tracking-[-0.04em] text-[#F2F4F8]">
+            {title}
+          </h1>
           <p className="mt-3 text-sm leading-6 text-[#9AA0AE]">{subtitle}</p>
         </div>
 
         {children}
 
-        {footer ? <div className="mt-6 border-t border-white/8 pt-5">{footer}</div> : null}
+        {footer ? (
+          <div className="mt-6 border-t border-white/8 pt-5">{footer}</div>
+        ) : null}
       </Card>
     </div>
   );
@@ -812,9 +1091,17 @@ function SectionHeading({
 }) {
   return (
     <div className={centered ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
-      <div className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#7f86a2]">{eyebrow}</div>
-      <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-0.04em] text-white sm:text-[2.6rem]">{title}</h2>
-      {description ? <p className="mt-4 text-sm leading-7 text-textSecondary">{description}</p> : null}
+      <div className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#7f86a2]">
+        {eyebrow}
+      </div>
+      <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-0.04em] text-white sm:text-[2.6rem]">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-4 text-sm leading-7 text-textSecondary">
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -823,17 +1110,32 @@ function MetricPanel({
   label,
   value,
   note,
+  icon: Icon,
   compact = false,
 }: {
   label: string;
   value: string;
   note: string;
+  icon?: LucideIcon;
   compact?: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-textMuted">{label}</div>
-      <div className={compact ? 'mt-3 text-3xl font-bold text-white' : 'mt-4 text-[3rem] font-bold leading-none text-white'}>{value}</div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-textMuted">
+          {label}
+        </div>
+        {Icon ? <IconBadge icon={Icon} variant="indigo" size="sm" /> : null}
+      </div>
+      <div
+        className={
+          compact
+            ? 'mt-3 text-3xl font-bold text-white'
+            : 'mt-4 text-[3rem] font-bold leading-none text-white'
+        }
+      >
+        {value}
+      </div>
       <div className="mt-1 text-xs font-semibold text-success">{note}</div>
     </div>
   );
@@ -843,7 +1145,9 @@ function ScoreBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-background/70 p-4">
       <div className="text-xs text-textSecondary">{label}</div>
-      <div className="mt-2 text-5xl font-black leading-none text-white">{value}</div>
+      <div className="mt-2 text-5xl font-black leading-none text-white">
+        {value}
+      </div>
     </div>
   );
 }
@@ -851,17 +1155,24 @@ function ScoreBox({ label, value }: { label: string; value: string }) {
 function Field({
   id,
   label,
+  icon: Icon,
   error,
   children,
 }: {
   id: string;
   label: string;
+  icon?: LucideIcon;
   error?: string | undefined;
   children: ReactNode;
 }) {
   return (
     <label htmlFor={id} className="block">
-      <div className="mb-2 text-xs font-semibold text-textPrimary">{label}</div>
+      <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-textPrimary">
+        {Icon ? (
+          <Icon className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+        ) : null}
+        {label}
+      </div>
       {children}
       {error ? (
         <p id={`${id}-error`} className="mt-2 text-sm text-danger">
@@ -876,17 +1187,30 @@ function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 py-2">
       <div className="h-px flex-1 bg-white/8" />
-      <span className="text-xs uppercase tracking-[0.18em] text-textMuted">{label}</span>
+      <span className="text-xs uppercase tracking-[0.18em] text-textMuted">
+        {label}
+      </span>
       <div className="h-px flex-1 bg-white/8" />
     </div>
   );
 }
 
-function InlineError({ message, tone = 'danger' }: { message: string; tone?: 'danger' | 'info' }) {
-  const toneClass = tone === 'danger' ? 'border-danger/25 bg-danger/10 text-danger' : 'border-primary/25 bg-primary/10 text-[#B9C3FF]';
+function InlineError({
+  message,
+  tone = 'danger',
+}: {
+  message: string;
+  tone?: 'danger' | 'info';
+}) {
+  const toneClass =
+    tone === 'danger'
+      ? 'border-danger/25 bg-danger/10 text-danger'
+      : 'border-primary/25 bg-primary/10 text-[#B9C3FF]';
 
   return (
-    <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${toneClass}`}>
+    <div
+      className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${toneClass}`}
+    >
       <AlertCircle size={16} className="mt-0.5 shrink-0" />
       <span>{message}</span>
     </div>
@@ -906,16 +1230,34 @@ function ContactForm() {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <Field id="contact-name" label="Nome">
-        <Input id="contact-name" name="name" autoComplete="name" placeholder="Leonardo Bastos" required />
+      <Field id="contact-name" label="Nome" icon={Users}>
+        <Input
+          id="contact-name"
+          name="name"
+          autoComplete="name"
+          placeholder="Leonardo Bastos"
+          required
+        />
       </Field>
-      <Field id="contact-email" label="Email">
-        <Input id="contact-email" name="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" required />
+      <Field id="contact-email" label="Email" icon={Mail}>
+        <Input
+          id="contact-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="voce@exemplo.com"
+          required
+        />
       </Field>
-      <Field id="contact-subject" label="Assunto">
-        <Input id="contact-subject" name="subject" placeholder="Parceria, sugestao ou melhoria" required />
+      <Field id="contact-subject" label="Assunto" icon={MessageSquarePlus}>
+        <Input
+          id="contact-subject"
+          name="subject"
+          placeholder="Parceria, sugestao ou melhoria"
+          required
+        />
       </Field>
-      <Field id="contact-message" label="Mensagem">
+      <Field id="contact-message" label="Mensagem" icon={Send}>
         <textarea
           id="contact-message"
           name="message"
@@ -925,20 +1267,39 @@ function ContactForm() {
           placeholder="Escreva sua mensagem..."
         />
       </Field>
-      <ValidationError prefix="Email" field="email" errors={state.errors} className="text-sm text-danger" />
-      <ValidationError prefix="Mensagem" field="message" errors={state.errors} className="text-sm text-danger" />
+      <ValidationError
+        prefix="Email"
+        field="email"
+        errors={state.errors}
+        className="text-sm text-danger"
+      />
+      <ValidationError
+        prefix="Mensagem"
+        field="message"
+        errors={state.errors}
+        className="text-sm text-danger"
+      />
       <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
         <p className="text-[11px] text-textMuted">
           Ao enviar, voce concorda com nossos{' '}
-          <Link to="/termos" className="text-textPrimary hover:text-primary">Termos</Link>
-          {' '}e{' '}
-          <Link to="/privacidade" className="text-textPrimary hover:text-primary">Privacidade</Link>.
+          <Link to="/termos" className="text-textPrimary hover:text-primary">
+            Termos
+          </Link>{' '}
+          e{' '}
+          <Link
+            to="/privacidade"
+            className="text-textPrimary hover:text-primary"
+          >
+            Privacidade
+          </Link>
+          .
         </p>
         <button
           type="submit"
           disabled={state.submitting}
-          className="inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
         >
+          <Send className="h-4 w-4" aria-hidden="true" />
           {state.submitting ? 'Enviando...' : 'Enviar'}
         </button>
       </div>
@@ -956,7 +1317,13 @@ function BadgeChip({ children }: { children: ReactNode }) {
 
 type FooterLink = { label: string; to?: string; href?: string };
 
-function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) {
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: FooterLink[];
+}) {
   return (
     <div>
       <div className="text-sm font-semibold text-white">{title}</div>
@@ -964,11 +1331,27 @@ function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) 
         {links.map((link) => (
           <div key={link.label}>
             {link.to ? (
-              <Link to={link.to} className="transition hover:text-textPrimary">
+              <Link
+                to={link.to}
+                className="group inline-flex items-center gap-2 transition hover:text-textPrimary"
+              >
+                <ChevronRight
+                  className="h-3.5 w-3.5 text-indigo-300 transition-transform duration-300 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
                 {link.label}
               </Link>
             ) : (
-              <a href={link.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-textPrimary">
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 transition hover:text-textPrimary"
+              >
+                <ChevronRight
+                  className="h-3.5 w-3.5 text-indigo-300 transition-transform duration-300 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
                 {link.label}
               </a>
             )}
