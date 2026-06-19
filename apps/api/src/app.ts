@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { passport } from './config/passport.js';
 import { env } from './config/env.js';
 import { errorMiddleware } from './middleware/error.js';
 import { adminRoutes } from './routes/admin.routes.js';
@@ -24,6 +25,7 @@ app.use(helmet());
 app.use(cors({ origin: env.WEB_ORIGIN, credentials: true }));
 app.use(compression());
 app.use(cookieParser());
+app.use(passport.initialize());
 app.use(express.json({ limit: '1mb' }));
 
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 25, standardHeaders: true, legacyHeaders: false });

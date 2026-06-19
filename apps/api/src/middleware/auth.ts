@@ -1,5 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
+import { prisma } from '../config/prisma.js';
+import { ACCESS_TOKEN_COOKIE } from '../utils/auth-cookies.js';
 import { verifyAccessToken } from '../utils/tokens.js';
 import { HttpError } from '../utils/http.js';
 
@@ -10,27 +13,66 @@ export type AuthenticatedRequest = Request & {
   };
 };
 
-export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+function authDebug(message: string, payload?: unknown) {
+  if (env.NODE_ENV !== 'production') {
+    if (payload === undefined) console.log(message);
+    else console.log(message, payload);
+  }
+}
+
+function extractBearerToken(authorization?: string) {
+  if (!authorization?.startsWith('Bearer ')) return null;
+  return authorization.slice('Bearer '.length);
+}
+
+export async function requireAuth(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) {
   const authorization =
     req.headers.authorization ||
     req.header('Authorization') ||
     req.header('authorization');
 
-  const token =
-    typeof authorization === 'string' && authorization.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : undefined;
+  const cookieToken = req.cookies?.[ACCESS_TOKEN_COOKIE] as
+    | string
+    | undefined;
+
+  authDebug('[AUTH DEBUG] cookie keys:', Object.keys(req.cookies ?? {}));
+  authDebug('[AUTH DEBUG] has access cookie:', Boolean(cookieToken));
+  authDebug(
+    '[AUTH DEBUG] has authorization header:',
+    Boolean(req.headers.authorization),
+  );
+
+  const bearerToken = extractBearerToken(
+    typeof authorization === 'string' ? authorization : undefined,
+  );
+  const token = cookieToken ?? bearerToken;
 
   if (!token) {
-    throw new HttpError(401, 'Missing access token');
+    authDebug('[AUTH DEBUG] failure:', { reason: 'missing_token' });
+    next(new HttpError(401, 'Missing access token'));
+    return;
   }
 
   try {
     const payload = verifyAccessToken(token);
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, role: true },
+    });
+
+    if (!user) {
+      authDebug('[AUTH DEBUG] failure:', { reason: 'user_not_found' });
+      next(new HttpError(401, 'Invalid access token'));
+      return;
+    }
 
     (req as AuthenticatedRequest).user = {
-      id: payload.sub,
-      role: payload.role,
+      id: user.id,
+      role: user.role,
     };
 
     next();
@@ -39,10 +81,12 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
       error instanceof jwt.JsonWebTokenError ||
       error instanceof jwt.TokenExpiredError
     ) {
-      throw new HttpError(401, 'Invalid access token');
+      authDebug('[AUTH DEBUG] failure:', { reason: 'invalid_token' });
+      next(new HttpError(401, 'Invalid access token'));
+      return;
     }
 
-    throw error;
+    next(error);
   }
 }
 

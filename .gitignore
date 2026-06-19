@@ -11,5 +11,9 @@ test-results/
 *.tsbuildinfo
 apps/web/src/**/*.js
 apps/web/src/**/*.jsx
+.vercel
+.railway
+oauth-debug-report.txt
 
 
+.vercel

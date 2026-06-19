@@ -246,7 +246,7 @@ function formatCount(value: number) {
 }
 
 function getAuthUrl(provider: 'github' | 'google') {
-  return `${String(api.defaults.baseURL ?? 'http://localhost:3333').replace(/\/$/, '')}/auth/${provider}`;
+  return `${import.meta.env.VITE_API_URL}/auth/${provider}`;
 }
 
 function MarqueeSurface({
@@ -769,7 +769,7 @@ export function Home() {
 }
 
 export function Login() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo =
@@ -786,15 +786,17 @@ export function Login() {
   const socialProviders: SocialButton[] = [
     {
       type: 'google',
-      label: 'Continuar com Google',
+      label: 'Entrar com Google',
       icon: <GoogleIcon />,
-      href: getAuthUrl('google'),
+      onClick: loginWithGoogle,
     },
     {
       type: 'github',
-      label: 'Continuar com GitHub',
+      label: 'Entrar com GitHub',
       icon: <GithubIcon />,
-      href: getAuthUrl('github'),
+      onClick: () => {
+        window.location.href = getAuthUrl('github');
+      },
     },
   ];
 
@@ -890,7 +892,7 @@ export function Login() {
 }
 
 export function Register() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -900,13 +902,15 @@ export function Register() {
       type: 'google',
       label: 'Continuar com Google',
       icon: <GoogleIcon />,
-      href: getAuthUrl('google'),
+      onClick: loginWithGoogle,
     },
     {
       type: 'github',
       label: 'Continuar com GitHub',
       icon: <GithubIcon />,
-      href: getAuthUrl('github'),
+      onClick: () => {
+        window.location.href = getAuthUrl('github');
+      },
     },
   ];
 

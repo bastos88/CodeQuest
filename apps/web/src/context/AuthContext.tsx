@@ -2,8 +2,10 @@ import axios from 'axios';
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -21,13 +23,14 @@ type User = {
 type AuthContextValue = {
   user: User | null;
   isAuthReady: boolean;
+  isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
-  persistOAuthSession: (
-    accessToken: string,
-    refreshToken: string,
-  ) => Promise<void>;
-  logout: () => void;
+  loadUser: () => Promise<User | null>;
+  refreshUser: () => Promise<User | null>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -38,30 +41,87 @@ function clearStoredSession() {
   localStorage.removeItem('codequest.user');
 }
 
+function shouldRestoreSessionOnLoad() {
+  if (window.location.pathname === '/oauth/callback') return false;
+
+  const publicPaths = new Set([
+    '/',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/sobre',
+    '/termos',
+    '/privacidade',
+    '/cookies',
+  ]);
+
+  return (
+    !publicPaths.has(window.location.pathname) ||
+    Boolean(localStorage.getItem('codequest.user'))
+  );
+}
+
+function normalizeUser(data: User | { user: User }) {
+  return 'user' in data ? data.user : data;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const loadUserPromiseRef = useRef<Promise<User | null> | null>(null);
+
+  const loadUser = useCallback(async () => {
+    if (!loadUserPromiseRef.current) {
+      setLoading(true);
+
+      loadUserPromiseRef.current = api
+        .get<User | { user: User }>('/auth/me', {
+          headers: { 'Cache-Control': 'no-cache' },
+          skipAuthExpiredHandler: true,
+        })
+        .then(({ data }) => {
+          const currentUser = normalizeUser(data);
+          localStorage.setItem('codequest.user', JSON.stringify(currentUser));
+          setUser(currentUser);
+          return currentUser;
+        })
+        .catch(() => {
+          clearStoredSession();
+          setUser(null);
+          return null;
+        })
+        .finally(() => {
+          loadUserPromiseRef.current = null;
+          setLoading(false);
+          setIsAuthReady(true);
+        });
+    }
+
+    return loadUserPromiseRef.current;
+  }, []);
 
   useEffect(() => {
     let active = true;
 
     async function restoreSession() {
-      const token = localStorage.getItem('codequest.accessToken');
-      if (!token) {
-        clearStoredSession();
-        if (active) setIsAuthReady(true);
+      if (!shouldRestoreSessionOnLoad()) {
+        if (active) {
+          setLoading(false);
+          setIsAuthReady(true);
+        }
         return;
       }
 
       try {
-        const { data } = await api.get<User>('/auth/me');
-        localStorage.setItem('codequest.user', JSON.stringify(data));
-        if (active) setUser(data);
+        await loadUser();
       } catch {
-        clearStoredSession();
-        if (active) setUser(null);
-      } finally {
-        if (active) setIsAuthReady(true);
+        if (active) {
+          clearStoredSession();
+          setUser(null);
+          setLoading(false);
+          setIsAuthReady(true);
+        }
       }
     }
 
@@ -96,11 +156,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         accessToken: string;
         refreshToken: string;
       }>(path, payload);
-      localStorage.setItem('codequest.accessToken', data.accessToken);
-      localStorage.setItem('codequest.refreshToken', data.refreshToken);
       localStorage.setItem('codequest.user', JSON.stringify(data.user));
       setUser(data.user);
       setIsAuthReady(true);
+      setLoading(false);
     } catch (error) {
       if (axios.isAxiosError<{ message?: string }>(error)) {
         const status = error.response?.status;
@@ -126,26 +185,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      isAuthenticated: Boolean(user),
+      loading,
       login: (email, password) =>
         persistSession('/auth/login', { email, password }),
+      loginWithGoogle: () => {
+        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+      },
       register: (name, email, password) =>
         persistSession('/auth/register', { name, email, password }),
-      persistOAuthSession: async (accessToken, refreshToken) => {
-        localStorage.setItem('codequest.accessToken', accessToken);
-        localStorage.setItem('codequest.refreshToken', refreshToken);
-        const { data } = await api.get<User>('/auth/me');
-        localStorage.setItem('codequest.user', JSON.stringify(data));
-        setUser(data);
-        setIsAuthReady(true);
-      },
-      logout: () => {
+      loadUser,
+      refreshUser: loadUser,
+      logout: async () => {
+        try {
+          await api.post('/auth/logout', {}, { skipAuthExpiredHandler: true });
+        } catch {
+          // Local cleanup still needs to happen if the session is already gone.
+        }
         clearStoredSession();
         setUser(null);
+        setLoading(false);
         setIsAuthReady(true);
       },
       isAuthReady,
     }),
-    [isAuthReady, user],
+    [isAuthReady, loadUser, loading, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

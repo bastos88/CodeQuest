@@ -5,13 +5,11 @@ import { Card } from '../components/ui/Card';
 
 export function OAuthCallback() {
   const navigate = useNavigate();
-  const { persistOAuthSession } = useAuth();
+  const { refreshUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const accessToken = params.get('accessToken');
-    const refreshToken = params.get('refreshToken');
+    const params = new URLSearchParams(window.location.search);
     const oauthError = params.get('error');
 
     if (oauthError) {
@@ -19,15 +17,33 @@ export function OAuthCallback() {
       return;
     }
 
-    if (!accessToken || !refreshToken) {
-      setError('Resposta OAuth invalida.');
-      return;
+    let mounted = true;
+
+    async function finishOAuthLogin() {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const user = await refreshUser();
+
+        if (!mounted) return;
+        if (user) {
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+
+      if (mounted) {
+        setError('Nao foi possivel iniciar a sessao OAuth.');
+        navigate('/login?error=oauth_failed', { replace: true });
+      }
     }
 
-    persistOAuthSession(accessToken, refreshToken)
-      .then(() => navigate('/dashboard', { replace: true }))
-      .catch(() => setError('Nao foi possivel iniciar a sessao OAuth.'));
-  }, [navigate, persistOAuthSession]);
+    void finishOAuthLogin();
+
+    return () => {
+      mounted = false;
+    };
+  }, [navigate, refreshUser]);
 
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4 text-textPrimary">
