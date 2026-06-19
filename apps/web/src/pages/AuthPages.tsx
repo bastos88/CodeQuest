@@ -269,6 +269,7 @@ function MarqueeSurface({
 }
 
 export function Home() {
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],
     queryFn: async () => {
@@ -293,36 +294,64 @@ export function Home() {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(91,107,255,0.2),transparent_26rem),radial-gradient(circle_at_80%_10%,rgba(125,92,255,0.14),transparent_30rem)]" />
 
-        <header className="relative border-b border-white/6">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
-            <BrandLogo compact imageClassName="h-9 w-36" />
-            <nav className="hidden items-center gap-1 text-[11px] font-semibold lg:flex">
-              {publicNavItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className={navLinkClass}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/login"
-                className="hidden rounded-full px-3.5 py-2 text-xs font-semibold text-textPrimary transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 sm:inline-flex"
-              >
-                Entrar
-              </Link>
-              <Link
-                to="/register"
-                className="group inline-flex h-9 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                Começar agora
-                <ArrowRight
-                  className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </Link>
-            </div>
-          </div>
-        </header>
+       <header className="relative border-b border-white/6">
+  <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
+    <BrandLogo compact imageClassName="h-9 w-36" />
+
+    <nav className="hidden items-center gap-1 text-[11px] font-semibold lg:flex">
+      {publicNavItems.map((item) => (
+        <NavLink key={item.to} to={item.to} className={navLinkClass}>
+          {item.label}
+        </NavLink>
+      ))}
+    </nav>
+
+    <div className="flex items-center gap-3">
+      {loading ? (
+        <span className="hidden rounded-full px-3.5 py-2 text-xs font-semibold text-textSecondary sm:inline-flex">
+          Carregando...
+        </span>
+      ) : isAuthenticated && user ? (
+        <>
+          <Link
+            to="/dashboard"
+            className="hidden rounded-full px-3.5 py-2 text-xs font-semibold text-textPrimary transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 sm:inline-flex"
+          >
+            {user.name}
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="group inline-flex h-9 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-textPrimary transition hover:-translate-y-px hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Sair
+          </button>
+        </>
+      ) : (
+        <>
+          <Link
+            to="/login"
+            className="hidden rounded-full px-3.5 py-2 text-xs font-semibold text-textPrimary transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 sm:inline-flex"
+          >
+            Entrar
+          </Link>
+
+          <Link
+            to="/register"
+            className="group inline-flex h-9 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Começar agora
+            <ArrowRight
+              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
+        </>
+      )}
+    </div>
+  </div>
+</header>
 
         <section className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8 lg:pb-20 lg:pt-16">
           <div className="grid items-center gap-12 lg:grid-cols-[1.02fr_1fr]">
