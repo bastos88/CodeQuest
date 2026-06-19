@@ -42,8 +42,8 @@ export async function ranking(req: Request, res: Response) {
 
   const limit =
     Number.isInteger(requestedLimit) && requestedLimit > 0
-      ? Math.min(requestedLimit, 5)
-      : 5;
+      ? Math.min(requestedLimit, 10)
+      : 10;
 
   const users = await prisma.user.findMany({
     orderBy: [
