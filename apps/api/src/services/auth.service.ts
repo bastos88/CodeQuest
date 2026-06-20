@@ -1,8 +1,11 @@
 import bcrypt from 'bcryptjs';
+import { createHash, randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import type { LoginInput, RegisterInput } from '@codequest/shared';
 import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/http.js';
+import { env } from '../config/env.js';
+import { sendPasswordResetEmail } from './email.service.js';
 import {
   hashToken,
   signAccessToken,
@@ -166,6 +169,107 @@ export async function logout(refreshToken: string) {
     where: { tokenHash: hashToken(refreshToken), revokedAt: null },
     data: { revokedAt: new Date() },
   });
+}
+
+const PASSWORD_RESET_RESPONSE =
+  'Se existir uma conta com este e-mail, enviaremos instruções para redefinir sua senha.';
+
+function hashPasswordResetToken(token: string) {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+export async function forgotPassword(email: string) {
+  const user = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
+    select: { id: true, name: true, email: true },
+  });
+
+  if (!user) return { message: PASSWORD_RESET_RESPONSE };
+
+  const token = randomBytes(32).toString('hex');
+  const tokenHash = hashPasswordResetToken(token);
+  const expiresAt = new Date(
+    Date.now() + env.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES * 60 * 1000,
+  );
+
+  await prisma.$transaction([
+    prisma.passwordResetToken.deleteMany({ where: { userId: user.id } }),
+    prisma.passwordResetToken.create({
+      data: { userId: user.id, tokenHash, expiresAt },
+    }),
+  ]);
+
+  const resetUrl = new URL('/reset-password', env.WEB_ORIGIN);
+  resetUrl.searchParams.set('token', token);
+
+  try {
+    await sendPasswordResetEmail({
+      to: user.email,
+      resetUrl: resetUrl.toString(),
+      userName: user.name,
+    });
+  } catch (error) {
+    console.error('[PASSWORD RESET EMAIL ERROR]', {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Falha desconhecida no provedor de e-mail.',
+    });
+  }
+
+  return { message: PASSWORD_RESET_RESPONSE };
+}
+
+export async function resetPassword(input: {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}) {
+  if (input.newPassword !== input.confirmPassword) {
+    throw new HttpError(422, 'A confirmação da senha não confere.');
+  }
+
+  const tokenHash = hashPasswordResetToken(input.token);
+  const storedToken = await prisma.passwordResetToken.findUnique({
+    where: { tokenHash },
+    select: {
+      id: true,
+      userId: true,
+      expiresAt: true,
+      usedAt: true,
+    },
+  });
+
+  const now = new Date();
+  if (!storedToken || storedToken.usedAt || storedToken.expiresAt <= now) {
+    throw new HttpError(400, 'Este link de recuperação é inválido ou expirou.');
+  }
+
+  const passwordHash = await bcrypt.hash(input.newPassword, 12);
+
+  await prisma.$transaction(async (tx) => {
+    const consumed = await tx.passwordResetToken.updateMany({
+      where: {
+        id: storedToken.id,
+        usedAt: null,
+        expiresAt: { gt: now },
+      },
+      data: { usedAt: now },
+    });
+
+    if (consumed.count !== 1) {
+      throw new HttpError(400, 'Este link de recuperação é inválido ou expirou.');
+    }
+
+    await tx.user.update({
+      where: { id: storedToken.userId },
+      data: { passwordHash },
+    });
+    await tx.refreshToken.deleteMany({ where: { userId: storedToken.userId } });
+  });
+
+  return { message: 'Senha redefinida com sucesso.' };
 }
 
 export async function completeOAuth(profile: OAuthProfile) {

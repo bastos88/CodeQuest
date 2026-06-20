@@ -3,7 +3,7 @@ import { calculateQuizXP, getLevelFromXP } from '@codequest/shared';
 
 describe('XP and level business rules', () => {
   it('keeps XP non-negative for wrong answers', () => {
-    expect(calculateQuizXP([{ difficulty: 'EASY', isCorrect: false }])).toBe(25);
+    expect(calculateQuizXP([{ difficulty: 'EASY', isCorrect: false }])).toBe(20);
   });
 
   it('matches the documented level formula', () => {

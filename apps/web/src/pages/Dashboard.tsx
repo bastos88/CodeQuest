@@ -1,437 +1,315 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
+  Activity,
   ArrowRight,
-  CheckCircle2,
-  Clock3,
   Code2,
-  ShieldCheck,
   Sparkles,
   Target,
   Trophy,
-  Activity,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { getXPProgressToNextLevel } from '@codequest/shared';
+import { useNavigate } from 'react-router-dom';
+import { ProfileSettingsCard } from '../components/dashboard/ProfileSettingsCard';
+import { AchievementCard } from '../components/gamification/AchievementCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { api } from '../lib/api';
-import { achievements, missions, profile, skills } from '../lib/mockData';
-
-type ProfileResponse = {
-  name: string;
-  activeTitle: string;
-  xp: number;
-  rating: number;
-  level: ReturnType<typeof getXPProgressToNextLevel>;
-  stats: {
-    quizzesCompleted: number;
-    accuracy: number;
-    streakDays: number;
-  };
-};
-
-type RankingPlayer = {
-  id: string;
-  name: string | null;
-  avatarUrl: string | null;
-  xp: number;
-  level: number;
-  accuracy: number;
-  quizzesCompleted: number;
-  position: number;
-};
+import {
+  getProfile,
+  getProfileSkills,
+  profileQueryKeys,
+  type SkillProgress,
+} from '../lib/profile';
+import { getPublicRanking, rankingQueryKeys } from '../lib/ranking';
+import {
+  gamificationQueryKeys,
+  getAchievements,
+  getDailyMissions,
+  getGamificationSummary,
+} from '../lib/gamification';
 
 export function Dashboard() {
-const dashboardRankingQuery = useQuery({
-  queryKey: ['dashboard-ranking'],
-  queryFn: async () => {
-    const { data } = await api.get<RankingPlayer[]>('/public/ranking', {
-      params: { limit: 10 },
-    });
-
-    return data;
-  },
-  staleTime: 0,
-  refetchOnMount: 'always',
-  refetchOnWindowFocus: true,
-  retry: 1,
-});
-const ranking = dashboardRankingQuery.data ?? [];
-
-  const { data } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => (await api.get<ProfileResponse>('/profile/me')).data,
+  const navigate = useNavigate();
+  const profileQuery = useQuery({
+    queryKey: profileQueryKeys.me,
+    queryFn: getProfile,
+    retry: false,
+  });
+  const skillsQuery = useQuery({
+    queryKey: profileQueryKeys.skills,
+    queryFn: getProfileSkills,
+    retry: false,
+  });
+  const rankingQuery = useQuery({
+    queryKey: rankingQueryKeys.public(10),
+    queryFn: () => getPublicRanking(10),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    retry: 1,
+  });
+  const gamificationQuery = useQuery({
+    queryKey: gamificationQueryKeys.summary,
+    queryFn: getGamificationSummary,
+    retry: false,
+  });
+  const achievementsQuery = useQuery({
+    queryKey: gamificationQueryKeys.achievements,
+    queryFn: getAchievements,
+    retry: false,
+  });
+  const missionsQuery = useQuery({
+    queryKey: gamificationQueryKeys.dailyMissions,
+    queryFn: getDailyMissions,
     retry: false,
   });
 
-  const current = data ?? {
-    name: profile.name,
-    activeTitle: profile.title,
-    xp: profile.xp,
-    rating: 1020,
-    level: getXPProgressToNextLevel(profile.xp),
-    stats: {
-      quizzesCompleted: profile.quizzes,
-      accuracy: profile.accuracy,
-      streakDays: profile.streak,
-    },
-  };
+  if (profileQuery.isLoading) {
+    return <Card className="p-6 text-sm text-textSecondary">Carregando seu Dashboard...</Card>;
+  }
+
+  if (!profileQuery.data) {
+    return (
+      <Card className="border-danger/20 bg-danger/5 p-6 text-sm text-red-200">
+        Não foi possível carregar os dados do seu perfil.
+      </Card>
+    );
+  }
+
+  const profile = profileQuery.data;
+  const skills = skillsQuery.data ?? [];
+  const bestCategory = skills[0]?.category ?? 'Comece um quiz';
+  const gamification = gamificationQuery.data;
+  const achievements = achievementsQuery.data ?? [];
+  const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="space-y-6">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="overflow-hidden p-7">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(108,99,255,0.16),transparent_18rem)]" />
-            <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-              <div>
-                <p className="section-kicker">student.progression</p>
-
-                <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.05em] text-textPrimary">
-                  Olá, {current.name}
-                </h2>
-
-                <p className="mt-3 max-w-2xl text-base text-textSecondary">
-                  {current.activeTitle}
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <Badge tone="warning">{current.xp} XP total</Badge>
-                  <Badge tone="info">{current.rating} rating</Badge>
-                  <Badge tone="success">{current.stats.streakDays} dias de sequência</Badge>
-                </div>
-              </div>
-
-              <div className="w-full max-w-md rounded-[1.25rem] border border-white/8 bg-white/[0.035] p-5 shadow-soft">
-                <div className="mb-3 flex items-center justify-between text-sm">
-                  <span className="font-semibold text-textPrimary">
-                    Level {current.level.level}
-                  </span>
-
-                  <span className="font-mono text-textSecondary">
-                    {current.xp} XP
-                  </span>
-                </div>
-
-                <ProgressBar value={current.level.percentage} />
-
-                <p className="mt-3 text-sm text-textSecondary">
-                  {current.level.nextLevelXP - current.xp} XP até o próximo nível
-                </p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-
-        <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-          <StatTile
-            icon={Trophy}
-            label="Quizzes concluídos"
-            value={current.stats.quizzesCompleted}
-            tone="warning"
-          />
-
-          <StatTile
-            icon={Target}
-            label="Precisão média"
-            value={`${current.stats.accuracy}%`}
-            tone="info"
-          />
-
-          <StatTile
-            icon={Sparkles}
-            label="Sequência atual"
-            value={`${current.stats.streakDays} dias`}
-            tone="success"
-          />
-
-          <StatTile
-            icon={Code2}
-            label="Melhor categoria"
-            value={profile.bestCategory}
-            tone="primary"
-          />
-        </div>
-
-        <div className="grid gap-6 2xl:grid-cols-[0.95fr_1.05fr]">
-          <Card className="p-6">
-            <div className="mb-5 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
-                  Nova sessão de quiz
-                </h3>
-
-                <p className="mt-2 text-sm text-textSecondary">
-                  Escolha filtros rápidos e continue o treino sem sair do fluxo.
-                </p>
-              </div>
-
-              <Badge tone="info">Study mode</Badge>
-            </div>
-
-            <div className="grid gap-3">
-              <SelectPreview label="Categoria" value="React" />
-              <SelectPreview label="Dificuldade" value="Médio" />
-              <SelectPreview label="Perguntas" value="10" />
-            </div>
-
-            <Button className="mt-5 w-full justify-between">
-              <Link to="/quiz" className="flex-1">
-                Iniciar sessão
-              </Link>
-              <ArrowRight size={17} />
-            </Button>
-          </Card>
-
-          <Card className="p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
-                  Mapa de habilidades
-                </h3>
-
-                <p className="mt-2 text-sm text-textSecondary">
-                  Leitura rápida das categorias mais fortes e mais frágeis.
-                </p>
-              </div>
-
-              <Badge>Recência</Badge>
-            </div>
-
-            <div className="space-y-4">
-              {skills.map((skill) => (
-                <div key={skill.category}>
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="font-semibold text-textPrimary">
-                      {skill.category}
-                    </span>
-
-                    <span className="font-mono text-textSecondary">
-                      {skill.mastery}%
-                    </span>
-                  </div>
-
-                  <ProgressBar value={skill.mastery} />
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <Card className="p-6">
-          <div className="mb-5 flex items-center justify-between">
+    <div className="space-y-6">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="overflow-hidden p-7">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(108,99,255,0.16),transparent_18rem)]" />
+          <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
-                Medalhas e marcos
-              </h3>
+              <p className="section-kicker">student.progression</p>
+              <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.05em] text-textPrimary">
+                Olá, {profile.name}
+              </h2>
+              <p className="mt-3 max-w-2xl text-base text-textSecondary">{profile.activeTitle}</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Badge tone="warning">{profile.xp} XP total</Badge>
+                <Badge tone="info">{profile.rating} rating</Badge>
+                <Badge tone="success">{gamification?.streak.current ?? profile.stats.streakDays} dias de sequência</Badge>
+              </div>
+            </div>
 
-              <p className="mt-2 text-sm text-textSecondary">
-                Recompensas por consistência, acerto e contribuição.
+            <div className="w-full max-w-md rounded-[1.25rem] border border-white/8 bg-white/[0.035] p-5 shadow-soft">
+              <div className="mb-3 flex items-center justify-between text-sm">
+                <span className="font-semibold text-textPrimary">Nível {profile.level.level}</span>
+                <span className="font-mono text-textSecondary">{profile.xp} XP</span>
+              </div>
+              <ProgressBar value={profile.level.percentage} />
+              <p className="mt-3 text-sm text-textSecondary">
+                {Math.max(0, profile.level.nextLevelXP - profile.xp)} XP até o próximo nível
               </p>
             </div>
-
-            <Badge tone="success">Achievements</Badge>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-4">
-            {achievements.map(([name, status, tone]) => (
-              <div
-                key={name}
-                className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4"
-              >
-                <div
-                  className={`mb-4 grid h-10 w-10 place-items-center rounded-2xl ${
-                    tone === 'muted'
-                      ? 'bg-white/[0.06] text-textMuted'
-                      : 'bg-primary/16 text-primary'
-                  }`}
-                >
-                  <CheckCircle2 size={18} />
-                </div>
-
-                <p className="text-sm font-semibold text-textPrimary">{name}</p>
-                <p className="mt-2 text-sm text-textSecondary">{status}</p>
-              </div>
-            ))}
           </div>
         </Card>
-      </section>
+      </motion.div>
 
-      <aside className="space-y-6">
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
-                Missões diárias
-              </h3>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile icon={Trophy} label="Quizzes concluídos" value={profile.stats.quizzesCompleted} tone="warning" />
+        <StatTile icon={Target} label="Precisão média" value={`${profile.stats.accuracy}%`} tone="info" />
+        <StatTile icon={Sparkles} label="Sequência atual" value={`${profile.stats.streakDays} dias`} tone="success" />
+        <StatTile icon={Code2} label="Melhor categoria" value={bestCategory} tone="primary" />
+      </div>
 
-              <p className="mt-2 text-sm text-textSecondary">
-                Metas curtas para manter tração contínua.
-              </p>
-            </div>
-
-            <Clock3 size={18} className="text-textMuted" />
+      <div className="grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
+        <Card className="flex flex-col p-6">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Nova sessão de quiz</h3>
+            <p className="mt-2 text-sm leading-6 text-textSecondary">
+              Escolha categorias, dificuldade e quantidade de perguntas na configuração do desafio.
+            </p>
           </div>
-
-          <div className="space-y-3">
-            {missions.map((mission) => (
-              <div
-                key={mission.title}
-                className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4"
-              >
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-textPrimary">
-                    {mission.title}
-                  </p>
-
-                  <span className="font-mono text-xs text-success">
-                    +{mission.xp} XP
-                  </span>
-                </div>
-
-                <ProgressBar value={(mission.progress / mission.target) * 100} />
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
-                Top 10
-              </h3>
-
-              <p className="mt-2 text-sm text-textSecondary">
-                Visão rápida do ranking geral.
-              </p>
-            </div>
-
-            <Badge tone="warning">Geral</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {dashboardRankingQuery.isLoading ? (
-              <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                <p className="text-sm text-textSecondary">
-                  Carregando ranking...
-                </p>
-              </div>
-            ) : dashboardRankingQuery.isError ? (
-              <div className="rounded-[1.25rem] border border-red-400/20 bg-red-500/10 p-4">
-                <p className="text-sm text-red-300">
-                  Não foi possível carregar o ranking.
-                </p>
-              </div>
-            ) : ranking.length === 0 ? (
-              <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                <p className="text-sm text-textSecondary">
-                  Nenhum jogador no ranking ainda.
-                </p>
-              </div>
-            ) : (
-              ranking.map((player, index) => (
-                <div
-                  key={player.id}
-                  className="flex items-center gap-3 rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-3"
-                >
-                  <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[0.05] font-mono text-xs text-textSecondary">
-                    #{player.position ?? index + 1}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-textPrimary">
-                      {player.name}
-                    </p>
-
-                    <p className="truncate text-xs text-textMuted">
-                      Nível {player.level} · {player.quizzesCompleted} quizzes ·{' '}
-                      {player.accuracy}% acerto
-                    </p>
-                  </div>
-
-                  <span className="font-mono text-xs text-textSecondary">
-                    {player.xp} XP
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-start gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-success/10 text-success">
-              <ShieldCheck size={20} />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold tracking-[-0.03em] text-textPrimary">
-                Fila de revisão
-              </h3>
-
-              <p className="mt-2 text-sm text-textSecondary">
-                12 perguntas aguardando checklist editorial e técnico.
-              </p>
-            </div>
-          </div>
-
-          <Button className="mt-5 w-full" variant="secondary">
-            <Link to="/admin" className="flex-1">
-              Abrir admin
-            </Link>
+          <Button className="mt-6 w-full justify-between" onClick={() => navigate('/quiz')}>
+            Iniciar sessão <ArrowRight size={17} />
           </Button>
         </Card>
-      </aside>
+
+        <SkillMapCard skills={skills} isLoading={skillsQuery.isLoading} isError={skillsQuery.isError} />
+      </div>
+
+      <RankingCard
+        players={rankingQuery.data ?? []}
+        isLoading={rankingQuery.isLoading}
+        isError={rankingQuery.isError}
+      />
+
+      <Card className="p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Missões diárias</h3>
+            <p className="mt-2 text-sm text-textSecondary">Progresso válido até ao fim do dia UTC.</p>
+          </div>
+          <Badge tone="info">Hoje</Badge>
+        </div>
+        {missionsQuery.isLoading ? <EmptyState>Carregando missões...</EmptyState> : null}
+        {missionsQuery.isError ? <EmptyState>Não foi possível carregar as missões diárias.</EmptyState> : null}
+        {missionsQuery.data ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {missionsQuery.data.missions.map((mission) => (
+              <div key={mission.code} className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-textPrimary">{mission.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-textMuted">{mission.description}</p>
+                  </div>
+                  <Badge tone={mission.completed ? 'success' : 'warning'}>+{mission.xpReward} XP</Badge>
+                </div>
+                <ProgressBar className="mt-4" value={(mission.progress / mission.target) * 100} />
+                <p className="mt-2 font-mono text-xs text-textSecondary">
+                  {mission.completed ? 'Concluída' : `${mission.progress}/${mission.target}`}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </Card>
+
+      <ProfileSettingsCard />
+
+      <Card className="p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Medalhas e marcos</h3>
+            <p className="mt-2 text-sm text-textSecondary">Marcos desbloqueados e próximos objetivos.</p>
+          </div>
+          <Badge tone="success">{unlockedAchievements}/{achievements.length} desbloqueadas</Badge>
+        </div>
+
+        {achievementsQuery.isLoading ? <EmptyState>Carregando conquistas...</EmptyState> : null}
+        {achievementsQuery.isError ? <EmptyState>Não foi possível carregar as conquistas.</EmptyState> : null}
+        {achievements.length ? (
+          <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {achievements.map((achievement) => (
+              <AchievementCard key={achievement.code} achievement={achievement} />
+            ))}
+          </div>
+        ) : !achievementsQuery.isLoading && !achievementsQuery.isError ? (
+          <EmptyState>Complete quizzes para começar a desbloquear conquistas.</EmptyState>
+        ) : null}
+      </Card>
     </div>
   );
 }
 
-function StatTile({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof Activity;
-  label: string;
-  value: string | number;
-  tone: 'primary' | 'info' | 'warning' | 'success';
-}) {
+function SkillMapCard({ skills, isLoading, isError }: { skills: SkillProgress[]; isLoading: boolean; isError: boolean }) {
+  const navigate = useNavigate();
+  return (
+    <Card className="p-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Mapa de habilidades</h3>
+          <p className="mt-2 text-sm text-textSecondary">Domínio calculado pela precisão e pelo volume de prática.</p>
+        </div>
+        <Badge>Dados reais</Badge>
+      </div>
+
+      {isLoading ? <EmptyState>Carregando habilidades...</EmptyState> : null}
+      {isError ? <EmptyState>Não foi possível carregar seu mapa de habilidades.</EmptyState> : null}
+      {!isLoading && !isError && skills.length === 0 ? (
+        <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-5">
+          <p className="text-sm leading-6 text-textSecondary">
+            Você ainda não possui dados de habilidade. Complete um quiz para começar a mapear sua evolução.
+          </p>
+          <Button className="mt-4" variant="secondary" onClick={() => navigate('/quiz')}>
+            Começar um quiz
+          </Button>
+        </div>
+      ) : null}
+      {!isLoading && !isError && skills.length ? (
+        <div className="space-y-5">
+          {skills.map((skill) => (
+            <div key={skill.categoryId}>
+              <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-textPrimary">{skill.category}</p>
+                  <p className="mt-1 text-xs text-textMuted">
+                    {skill.accuracy}% de precisão · {skill.correct}/{skill.answered} respostas corretas
+                    {skill.lastPlayedAt ? ` · ${formatLastPlayed(skill.lastPlayedAt)}` : ''}
+                  </p>
+                </div>
+                <span className="font-mono text-sm text-textSecondary">{skill.mastery}%</span>
+              </div>
+              <ProgressBar value={skill.mastery} />
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+function RankingCard({ players, isLoading, isError }: { players: Awaited<ReturnType<typeof getPublicRanking>>; isLoading: boolean; isError: boolean }) {
+  return (
+    <Card className="p-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Top 10</h3>
+          <p className="mt-2 text-sm text-textSecondary">Ranking geral atualizado com o progresso dos jogadores.</p>
+        </div>
+        <Badge tone="warning">Geral</Badge>
+      </div>
+      {isLoading ? <EmptyState>Carregando ranking...</EmptyState> : null}
+      {isError ? <EmptyState>Não foi possível carregar o ranking.</EmptyState> : null}
+      {!isLoading && !isError && players.length === 0 ? <EmptyState>Nenhum jogador no ranking ainda.</EmptyState> : null}
+      {!isLoading && !isError && players.length ? (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {players.map((player, index) => (
+            <div key={player.id} className="flex items-center gap-3 rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/[0.05] font-mono text-xs text-textSecondary">
+                #{player.position ?? index + 1}
+              </span>
+              <Avatar name={player.name} avatarUrl={player.avatarUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-textPrimary">{player.name}</p>
+                <p className="truncate text-xs text-textMuted">Nível {player.level} · {player.quizzesCompleted} quizzes · {player.accuracy}% acerto</p>
+              </div>
+              <span className="font-mono text-xs text-textSecondary">{player.xp} XP</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+function Avatar({ name, avatarUrl }: { name: string; avatarUrl: string | null | undefined }) {
+  if (avatarUrl) return <img src={avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-2xl object-cover" />;
+  return <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/12 text-xs font-bold text-primary">{name.slice(0, 2).toUpperCase()}</span>;
+}
+
+function EmptyState({ children }: { children: string }) {
+  return <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4 text-sm text-textSecondary">{children}</div>;
+}
+
+function StatTile({ icon: Icon, label, value, tone }: { icon: typeof Activity; label: string; value: string | number; tone: 'primary' | 'info' | 'warning' | 'success' }) {
   const toneClasses = {
     primary: 'bg-primary/12 text-primary',
     info: 'bg-info/12 text-info',
     warning: 'bg-warning/12 text-warning',
     success: 'bg-success/12 text-success',
   };
-
   return (
     <Card className="p-5">
-      <div
-        className={`mb-5 grid h-11 w-11 place-items-center rounded-2xl ${toneClasses[tone]}`}
-      >
-        <Icon size={18} />
-      </div>
-
-      <p className="font-mono text-3xl font-extrabold text-textPrimary">
-        {value}
-      </p>
-
+      <div className={`mb-5 grid h-11 w-11 place-items-center rounded-2xl ${toneClasses[tone]}`}><Icon size={18} /></div>
+      <p className="font-mono text-3xl font-extrabold text-textPrimary">{value}</p>
       <p className="mt-2 text-sm text-textSecondary">{label}</p>
     </Card>
   );
 }
 
-function SelectPreview({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-      <span className="text-sm text-textSecondary">{label}</span>
-      <span className="font-mono text-sm font-semibold text-textPrimary">
-        {value}
-      </span>
-    </div>
-  );
+function formatLastPlayed(value: string) {
+  return `último estudo ${new Intl.DateTimeFormat('pt-PT', { dateStyle: 'short' }).format(new Date(value))}`;
 }

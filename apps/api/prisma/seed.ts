@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { PrismaClient, type Difficulty } from '@prisma/client';
+import { seedGamification } from './gamification-seed-data.js';
 
 
 dotenv.config({
-  path: path.resolve(process.cwd(), 'apps/api/.env'),
+  path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.env'),
 });
 
 const prisma = new PrismaClient();
@@ -4864,38 +4866,7 @@ async function main() {
     },
   });
 
-  const achievements = [
-    ['first_quiz', 'Primeiro quiz', 'Complete seu primeiro quiz.', 25],
-    ['ten_quizzes', '10 quizzes concluídos', 'Complete 10 quizzes.', 100],
-    ['hundred_correct', '100 respostas corretas', 'Acerte 100 perguntas.', 150],
-    ['perfect_quiz', 'Primeiro quiz perfeito', 'Finalize um quiz sem erros.', 50],
-    ['react_i', 'React I', 'Acerte 25 perguntas de React.', 40],
-    ['top_10', 'Top 10 Ranking', 'Entre no ranking geral.', 75],
-    ['arena_master', 'Mestre da Arena', 'Vença desafios ranqueados.', 120],
-  ] as const;
-
-  for (const [key, name, description, xpBonus] of achievements) {
-    await prisma.achievement.upsert({
-      where: { key },
-      update: {},
-      create: { key, name, description, xpBonus, category: 'general' },
-    });
-  }
-
-  const missions = [
-    ['daily_10_questions', 'DAILY', 'Responder 10 perguntas', 10, 80],
-    ['daily_js_5', 'DAILY', 'Acertar 5 perguntas de JavaScript', 5, 60],
-    ['weekly_3_quizzes', 'WEEKLY', 'Completar 3 quizzes', 3, 180],
-    ['weekly_arena_win', 'WEEKLY', 'Vencer 1 desafio na Arena', 1, 220],
-  ] as const;
-
-  for (const [key, type, title, target, xpReward] of missions) {
-    await prisma.mission.upsert({
-      where: { key },
-      update: {},
-      create: { key, type, title, target, xpReward },
-    });
-  }
+  await seedGamification(prisma);
 
   const tracks = [
     ['Trilha Front-End', 'HTML -> CSS -> JavaScript -> TypeScript -> React', ['html', 'css', 'javascript', 'typescript', 'react']],
@@ -4949,13 +4920,9 @@ async function main() {
     });
   }
 
-  console.log(`Seed completed. ${prompts.length} perguntas inseridas/atualizadas.`);
-  console.log(`Admin seed user: ${adminEmail}`);
-  console.log(`Student seed user: ${studentEmail}`);
-  if (!isProduction) {
-    console.log(`Admin seed password: ${adminPlainPassword}`);
-    console.log(`Student seed password: ${studentPlainPassword}`);
-  }
+  console.info(`Seed completed. ${prompts.length} perguntas inseridas/atualizadas.`);
+  console.info(`Admin seed user: ${adminEmail}`);
+  console.info(`Student seed user: ${studentEmail}`);
 }
 
 main()

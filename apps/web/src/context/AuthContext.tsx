@@ -15,6 +15,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  avatarUrl: string | null;
   role: 'USER' | 'REVIEWER' | 'ADMIN';
   xp: number;
   rating: number;
@@ -49,6 +50,7 @@ function shouldRestoreSessionOnLoad() {
     '/login',
     '/register',
     '/forgot-password',
+    '/reset-password',
     '/sobre',
     '/termos',
     '/privacidade',

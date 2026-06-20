@@ -57,14 +57,14 @@ describe('public ranking route', () => {
     vi.clearAllMocks();
   });
 
-  it('exposes GET /public/ranking with safe top 5 data', async () => {
+  it('exposes GET /public/ranking with safe top 10 data', async () => {
     findMany.mockResolvedValue([createMockRankingUser()]);
 
     const response = await request(app).get('/public/ranking?limit=99').expect(200);
 
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        take: 5,
+        take: 10,
         select: expect.not.objectContaining({
           email: true,
           passwordHash: true,

@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   Award,
-  BarChart3,
   Crown,
   Medal,
-  Sparkles,
   Target,
   TrendingUp,
   Trophy,

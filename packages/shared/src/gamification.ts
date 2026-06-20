@@ -1,10 +1,11 @@
 export const XP_RULES = {
-  quizCompleted: 25,
+  quizCompleted: 20,
   correctAnswer: 10,
-  mediumBonus: 4,
-  hardBonus: 8,
+  hardQuizBonus: 25,
   perfectQuiz: 50,
-  dailyStreak: 20,
+  firstCategory: 15,
+  streakPerDay: 5,
+  maximumStreakBonus: 50,
   submittedQuestion: 5,
   approvedQuestion: 40,
 } as const;
@@ -36,16 +37,16 @@ export function getXPProgressToNextLevel(xp: number) {
   };
 }
 
-export function calculateQuestionXP(difficulty: Difficulty, isCorrect: boolean): number {
+export function calculateQuestionXP(_difficulty: Difficulty, isCorrect: boolean): number {
   if (!isCorrect) return 0;
-  const difficultyBonus = difficulty === 'HARD' ? XP_RULES.hardBonus : difficulty === 'MEDIUM' ? XP_RULES.mediumBonus : 0;
-  return XP_RULES.correctAnswer + difficultyBonus;
+  return XP_RULES.correctAnswer;
 }
 
 export function calculateQuizXP(answers: Array<{ difficulty: Difficulty; isCorrect: boolean }>): number {
   const questionXP = answers.reduce((total, answer) => total + calculateQuestionXP(answer.difficulty, answer.isCorrect), 0);
   const perfectBonus = answers.length > 0 && answers.every((answer) => answer.isCorrect) ? XP_RULES.perfectQuiz : 0;
-  return XP_RULES.quizCompleted + questionXP + perfectBonus;
+  const hardQuizBonus = answers.some((answer) => answer.difficulty === 'HARD') ? XP_RULES.hardQuizBonus : 0;
+  return XP_RULES.quizCompleted + questionXP + perfectBonus + hardQuizBonus;
 }
 
 export function calculateAccuracy(correct: number, total: number): number {

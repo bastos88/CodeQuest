@@ -4,7 +4,6 @@ import { ValidationError, useForm as useFormspree } from '@formspree/react';
 import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircle,
-  ArrowLeft,
   ArrowRight,
   BarChart3,
   Brain,
@@ -1041,31 +1040,7 @@ export function Register() {
   );
 }
 
-export function ForgotPassword() {
-  return (
-    <AuthCard
-      eyebrow="Password Recovery"
-      title="Recuperação de senha"
-      subtitle="O fluxo de reset ainda não foi configurado no backend. Quando o endpoint existir, esta rota pode receber o formulário real."
-      footer={
-        <Link
-          to="/login"
-          className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"
-        >
-          <ArrowLeft size={16} />
-          Voltar para login
-        </Link>
-      }
-    >
-      <InlineError
-        tone="info"
-        message="O endpoint de recuperação ainda não está disponível neste ambiente."
-      />
-    </AuthCard>
-  );
-}
-
-function AuthCard({
+export function AuthCard({
   eyebrow,
   title,
   subtitle,

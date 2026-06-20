@@ -1,6 +1,7 @@
 import type { ApproveReviewInput, QuestionInput, RejectReviewInput } from '@codequest/shared';
 import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/http.js';
+import { applyContributionGamification } from './gamification.service.js';
 
 export async function listQuestions(includeUnapproved: boolean) {
   return prisma.question.findMany({
@@ -176,7 +177,9 @@ export async function approveQuestion(
       },
     });
 
-    if (question.authorId) await tx.user.update({ where: { id: question.authorId }, data: { xp: { increment: 40 } } });
+    if (question.authorId) {
+      await applyContributionGamification(tx, question.authorId, question.id);
+    }
     return question;
   });
 }

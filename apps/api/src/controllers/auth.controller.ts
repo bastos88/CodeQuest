@@ -44,6 +44,14 @@ export async function logout(req: Request, res: Response) {
   res.status(204).send();
 }
 
+export async function forgotPassword(req: Request, res: Response) {
+  res.json(await authService.forgotPassword(req.body.email));
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  res.json(await authService.resetPassword(req.body));
+}
+
 export async function me(req: AuthenticatedRequest, res: Response) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Pragma', 'no-cache');
@@ -152,12 +160,6 @@ async function authenticateOAuth(
         }
 
         try {
-          if (env.NODE_ENV !== 'production') {
-            console.log('[OAUTH DEBUG] callback reached');
-            console.log('[OAUTH DEBUG] user id:', user.id);
-            console.log('[OAUTH DEBUG] setting cookies');
-          }
-
           const session = await authService.createTokenPair(user);
           setAuthCookies(res, session);
           res.redirect(`${env.WEB_ORIGIN}/oauth/callback`);

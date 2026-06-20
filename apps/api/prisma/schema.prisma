@@ -49,6 +49,18 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum GamificationEventType {
+  QUIZ_COMPLETED
+  QUIZ_PERFECT
+  ACHIEVEMENT_UNLOCKED
+  STREAK_BONUS
+  DAILY_MISSION_COMPLETED
+  CATEGORY_MASTERY
+  CONTRIBUTION_APPROVED
+  ARENA_WIN
+  ARENA_LOSS
+}
+
 model User {
   id              String            @id @default(uuid())
   name            String
@@ -64,9 +76,12 @@ model User {
   correctAnswers  Int               @default(0)
   totalAnswers    Int               @default(0)
   streakDays      Int               @default(0)
+  longestStreak   Int               @default(0)
+  lastActivityAt  DateTime?
   activeTitleId   String?
   activeTitle     Title?            @relation("ActiveTitle", fields: [activeTitleId], references: [id])
   refreshTokens   RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
   quizResults     QuizResult[]
   submittedQuestions Question[]     @relation("SubmittedQuestions")
   reviews         Review[]          @relation("ReviewerReviews")
@@ -77,6 +92,7 @@ model User {
   arenaAsA        ArenaMatch[]      @relation("ArenaA")
   arenaAsB        ArenaMatch[]      @relation("ArenaB")
   activities      ActivityLog[]
+  gamificationEvents GamificationEvent[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -92,6 +108,19 @@ model RefreshToken {
   revokedAt   DateTime?
   replacedBy  String?
   createdAt   DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Category {
@@ -162,6 +191,7 @@ model QuizResult {
   durationSeconds Int
   answers         QuizAnswer[]
   createdAt       DateTime     @default(now())
+  gamificationAppliedAt DateTime?
 }
 
 model QuizAnswer {
@@ -207,6 +237,9 @@ model Achievement {
   category    String
   tier        String?
   xpBonus     Int               @default(0)
+  iconKey     String?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
   users       UserAchievement[]
 }
 
@@ -219,6 +252,19 @@ model UserAchievement {
   unlockedAt    DateTime    @default(now())
 
   @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model GamificationEvent {
+  id        String                  @id @default(uuid())
+  userId    String
+  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      GamificationEventType
+  xpChange  Int
+  metadata  Json?
+  createdAt DateTime                @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model Title {
@@ -268,6 +314,8 @@ model Mission {
   target      Int
   xpReward    Int
   categorySlug String?
+  description String        @default("")
+  isActive     Boolean       @default(true)
   users       UserMission[]
 }
 

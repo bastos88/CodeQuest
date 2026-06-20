@@ -2,10 +2,12 @@ node_modules
 dist
 .env
 .env.*
+!apps/api/.env.example
 coverage
 *.log
 apps/api/prisma/migrations/dev.db
 output/
+.playwright-cli/
 playwright-report/
 test-results/
 *.tsbuildinfo
@@ -14,6 +16,3 @@ apps/web/src/**/*.jsx
 .vercel
 .railway
 oauth-debug-report.txt
-
-
-.vercel

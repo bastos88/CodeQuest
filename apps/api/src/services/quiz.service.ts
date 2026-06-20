@@ -1,7 +1,5 @@
 import {
   calculateAccuracy,
-  calculateQuizXP,
-  getLevelFromXP,
   type QuizSetupDifficulty,
   type QuizStartInput,
   type QuizSubmitInput,
@@ -9,6 +7,7 @@ import {
 import { Prisma, QuestionStatus, type Difficulty } from '@prisma/client';
 import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/http.js';
+import { applyQuizGamification } from './gamification.service.js';
 
 function shuffleArray<T>(items: T[]): T[] {
   const copy = [...items];
@@ -117,6 +116,12 @@ export async function submitQuiz(userId: string, input: QuizSubmitInput) {
   if (session.submittedAt) throw new HttpError(409, 'Quiz already submitted');
 
   const questionIds = input.answers.map((answer) => answer.questionId);
+  if (questionIds.length !== session.questionIds.length) {
+    throw new HttpError(400, 'Every quiz question must have exactly one answer');
+  }
+  if (new Set(questionIds).size !== questionIds.length) {
+    throw new HttpError(400, 'A quiz question cannot be answered more than once');
+  }
   const unauthorizedQuestion = questionIds.find(
     (questionId) => !session.questionIds.includes(questionId),
   );
@@ -145,7 +150,6 @@ export async function submitQuiz(userId: string, input: QuizSubmitInput) {
   });
 
   const correctCount = answerRows.filter((answer) => answer.isCorrect).length;
-  const xpEarned = calculateQuizXP(answerRows);
   const durationSeconds = answerRows.reduce(
     (total, answer) => total + answer.timeSpentSeconds,
     0,
@@ -163,7 +167,7 @@ export async function submitQuiz(userId: string, input: QuizSubmitInput) {
         totalQuestions: session.questionIds.length,
         correctCount,
         accuracy: calculateAccuracy(correctCount, session.questionIds.length),
-        xpEarned,
+        xpEarned: 0,
         durationSeconds,
         answers: {
           createMany: {
@@ -179,32 +183,23 @@ export async function submitQuiz(userId: string, input: QuizSubmitInput) {
       include: { answers: true },
     });
 
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        xp: { increment: xpEarned },
-        quizzesCompleted: { increment: 1 },
-        correctAnswers: { increment: correctCount },
-        totalAnswers: { increment: session.questionIds.length },
-      },
-    });
     await tx.question.updateMany({
       where: { id: { in: session.questionIds } },
       data: { usedCount: { increment: 1 } },
     });
-    return created;
+    const gamification = await applyQuizGamification(tx, {
+      userId,
+      quizResultId: created.id,
+    });
+    return { created, gamification };
   });
-
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: userId },
-    select: { xp: true },
-  });
-  await unlockAchievements(userId);
 
   return {
-    ...result,
-    level: getLevelFromXP(user.xp),
-    answers: result.answers.map((answer) => ({
+    ...result.created,
+    xpEarned: result.gamification.xpGained,
+    level: result.gamification.level.level,
+    gamification: result.gamification,
+    answers: result.created.answers.map((answer) => ({
       questionId: answer.questionId,
       selectedOptionId: answer.selectedOptionId,
       isCorrect: answer.isCorrect,
@@ -238,38 +233,4 @@ export async function getQuizResult(userId: string, id: string) {
       },
     },
   });
-}
-
-async function unlockAchievements(userId: string) {
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  const achievements = await prisma.achievement.findMany();
-  const unlockedKeys = new Set(
-    (
-      await prisma.userAchievement.findMany({
-        where: { userId },
-        include: { achievement: true },
-      })
-    ).map((item) => item.achievement.key),
-  );
-
-  const shouldUnlock = achievements.filter((achievement) => {
-    if (unlockedKeys.has(achievement.key)) return false;
-    if (achievement.key === 'first_quiz') return user.quizzesCompleted >= 1;
-    if (achievement.key === 'ten_quizzes') return user.quizzesCompleted >= 10;
-    if (achievement.key === 'hundred_correct')
-      return user.correctAnswers >= 100;
-    return false;
-  });
-
-  for (const achievement of shouldUnlock) {
-    await prisma.userAchievement.create({
-      data: { userId, achievementId: achievement.id },
-    });
-    if (achievement.xpBonus > 0) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { xp: { increment: achievement.xpBonus } },
-      });
-    }
-  }
 }

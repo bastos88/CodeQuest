@@ -14,6 +14,17 @@ describe('gamification helpers', () => {
   });
 
   it('never subtracts XP for wrong study answers', () => {
-    expect(calculateQuizXP([{ difficulty: 'HARD', isCorrect: false }])).toBe(25);
+    expect(calculateQuizXP([{ difficulty: 'HARD', isCorrect: false }])).toBe(45);
+  });
+
+  it('adds base, correct answer and perfect bonuses', () => {
+    expect(calculateQuizXP([{ difficulty: 'EASY', isCorrect: true }])).toBe(80);
+  });
+
+  it('applies the hard bonus once per quiz', () => {
+    expect(calculateQuizXP([
+      { difficulty: 'HARD', isCorrect: true },
+      { difficulty: 'HARD', isCorrect: true },
+    ])).toBe(115);
   });
 });

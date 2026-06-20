@@ -10,7 +10,9 @@ import { Admin } from './pages/Admin';
 import { Arena } from './pages/Arena';
 import { Contribute } from './pages/Contribute';
 import { Dashboard } from './pages/Dashboard';
-import { ForgotPassword, Home, Login, Register } from './pages/AuthPages';
+import { Home, Login, Register } from './pages/AuthPages';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { AboutPage, CookiesPage, PrivacyPage, TermsPage } from './pages/InstitutionalPages';
 import { OAuthCallback } from './pages/OAuthCallback';
 import { Profile } from './pages/Profile';
@@ -24,6 +26,7 @@ const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <AppErrorBoundary /> },
   { path: '/register', element: <Register />, errorElement: <AppErrorBoundary /> },
   { path: '/forgot-password', element: <ForgotPassword />, errorElement: <AppErrorBoundary /> },
+  { path: '/reset-password', element: <ResetPassword />, errorElement: <AppErrorBoundary /> },
   { path: '/oauth/callback', element: <OAuthCallback />, errorElement: <AppErrorBoundary /> },
   { path: '/sobre', element: <AboutPage />, errorElement: <AppErrorBoundary /> },
   { path: '/termos', element: <TermsPage />, errorElement: <AppErrorBoundary /> },

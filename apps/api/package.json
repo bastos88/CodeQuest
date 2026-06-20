@@ -10,6 +10,8 @@
     "test": "vitest run",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:gamification": "tsx prisma/seed-gamification.ts",
+    "email:test": "tsx src/scripts/test-email.ts",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "resend": "^6.14.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

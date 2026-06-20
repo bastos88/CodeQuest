@@ -11,6 +11,14 @@ export async function skills(req: AuthenticatedRequest, res: Response) {
   res.json(await profileService.getSkillMap(req.user.id));
 }
 
+export async function updateMe(req: AuthenticatedRequest, res: Response) {
+  res.json(await profileService.updateProfile(req.user.id, req.body));
+}
+
+export async function updatePassword(req: AuthenticatedRequest, res: Response) {
+  res.json(await profileService.updatePassword(req.user.id, req.body));
+}
+
 export async function achievements(req: AuthenticatedRequest, res: Response) {
   res.json(await prisma.achievement.findMany({ include: { users: { where: { userId: req.user.id } } } }));
 }

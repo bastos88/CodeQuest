@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Circle, Clock3, Sparkles, Trophy } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,9 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { api } from '../lib/api';
 import { difficultyCopy } from '../lib/quiz';
 import { clearQuizSession, readQuizSession } from '../lib/quizSession';
+import { profileQueryKeys } from '../lib/profile';
+import { gamificationQueryKeys, type LevelProgress } from '../lib/gamification';
+import { AchievementIcon } from '../components/gamification/AchievementIcon';
 
 type PendingAnswer = {
   questionId: string;
@@ -22,6 +25,22 @@ type QuizSubmitResponse = {
   accuracy: number;
   xpEarned: number;
   level: number;
+  gamification: {
+    xpGained: number;
+    totalXP: number;
+    level: LevelProgress;
+    streak: { current: number; longest: number };
+    newAchievements: Array<{
+      code: string;
+      name: string;
+      description: string;
+      category: string;
+      xpReward: number;
+      iconKey: string | null;
+      unlockedAt: string;
+    }>;
+    completedMissions: Array<{ code: string; title: string; xpReward: number }>;
+  };
   answers: Array<{
     questionId: string;
     selectedOptionId: string;
@@ -30,6 +49,7 @@ type QuizSubmitResponse = {
 };
 
 export function Quiz() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const session = useMemo(() => readQuizSession(), []);
   const startedAtRef = useRef(Date.now());
@@ -78,9 +98,21 @@ export function Quiz() {
         })
       ).data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       clearQuizSession();
       setResult(data);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: profileQueryKeys.me }),
+        queryClient.invalidateQueries({ queryKey: profileQueryKeys.skills }),
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKeys.summary }),
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKeys.achievements }),
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKeys.dailyMissions }),
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKeys.events }),
+        queryClient.invalidateQueries({
+          predicate: ({ queryKey }) =>
+            typeof queryKey[0] === 'string' && queryKey[0].includes('ranking'),
+        }),
+      ]);
     },
   });
 
@@ -112,6 +144,48 @@ export function Quiz() {
             <ResultMetric label="XP ganho" value={`+${result.xpEarned}`} icon={CheckCircle2} />
             <ResultMetric label="Novo nível" value={`Lv ${result.level}`} icon={Clock3} />
           </div>
+
+          <div className="mt-6 grid gap-4 text-left md:grid-cols-2">
+            <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-5">
+              <p className="text-sm font-semibold text-textPrimary">Progressão atual</p>
+              <div className="mt-3 flex items-center justify-between text-sm text-textSecondary">
+                <span>Nível {result.gamification.level.level}</span>
+                <span className="font-mono">{result.gamification.totalXP} XP</span>
+              </div>
+              <ProgressBar className="mt-3" value={result.gamification.level.percentage} />
+              <p className="mt-3 text-xs text-textMuted">
+                Sequência atual: {result.gamification.streak.current} dia{result.gamification.streak.current === 1 ? '' : 's'}
+              </p>
+            </div>
+            <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-5">
+              <p className="text-sm font-semibold text-textPrimary">Recompensas desta sessão</p>
+              <p className="mt-3 text-sm text-textSecondary">
+                {result.gamification.newAchievements.length} conquista(s) e {result.gamification.completedMissions.length} missão(ões) concluída(s).
+              </p>
+              {result.gamification.completedMissions.map((mission) => (
+                <p key={mission.code} className="mt-2 text-xs text-success">{mission.title} · +{mission.xpReward} XP</p>
+              ))}
+            </div>
+          </div>
+
+          {result.gamification.newAchievements.length ? (
+            <div className="mt-6 text-left">
+              <p className="mb-3 text-sm font-semibold text-textPrimary">Novas conquistas</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {result.gamification.newAchievements.map((achievement) => (
+                  <div key={achievement.code} className="flex items-start gap-3 rounded-[1.25rem] border border-primary/20 bg-primary/[0.06] p-4">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/16 text-primary">
+                      <AchievementIcon iconKey={achievement.iconKey} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-textPrimary">{achievement.name}</p>
+                      <p className="mt-1 text-xs leading-5 text-textSecondary">{achievement.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
@@ -236,7 +310,7 @@ export function Quiz() {
                   if (!question || !selectedAlternativeId) return;
 
                   const nextAnswers = [
-                    ...answers,
+                    ...answers.filter((answer) => answer.questionId !== question.id),
                     {
                       questionId: question.id,
                       alternativeId: selectedAlternativeId,
