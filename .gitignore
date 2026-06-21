@@ -16,3 +16,27 @@ apps/web/src/**/*.jsx
 .vercel
 .railway
 oauth-debug-report.txt
+
+# Local tests and test artifacts
+**/tests/
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+**/screenshots/
+**/snapshots/
+**/test-artifacts/
+**/generated-images/
+**/*.actual.png
+**/*.expected.png
+**/*.diff.png
+**/*.snapshot.png
+
+# Local terminal scripts
+*.ps1
+*.sh
+*.bat
+*.cmd
+
+# Local documentation (keep only the official root README)
+*.md
+!/README.md

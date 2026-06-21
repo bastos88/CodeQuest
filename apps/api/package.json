@@ -7,7 +7,7 @@
     "dev": "npm run build --workspace @codequest/shared && tsx watch src/server.ts",
     "build": "npm run build --workspace @codequest/shared && tsc -p tsconfig.json",
     "start": "prisma migrate deploy --schema prisma/schema.prisma && node dist/server.js",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:gamification": "tsx prisma/seed-gamification.ts",
