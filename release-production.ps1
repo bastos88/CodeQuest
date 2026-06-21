@@ -146,6 +146,8 @@ $allowedPaths = @(
 "packages/shared",
 "package.json",
 "package-lock.json",
+"vercel.json",
+"PROJECT_AUDIT.md",
 "release-production.ps1",
 "cleanup-generated-images.ps1",
 "cleanup-project.ps1"
