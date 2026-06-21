@@ -419,8 +419,8 @@ export function Home() {
                 />
                 <div className="relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(91,107,255,0.16),transparent_16rem),linear-gradient(180deg,#141625_0%,#0d0f18_100%)]">
                   <img
-                    src="/images/quiz-hero-optimized.jpg"
-                    alt="Interface gamificada do quiz mostrando progresso, XP, perguntas e ranking"
+                    src="/images/quiz-hero.png"
+                    alt="Ilustração de um quiz de programação com perguntas e recompensa de XP"
                     className="block aspect-[4/3] w-full max-w-full rounded-[1.35rem] object-cover"
                     loading="eager"
                     decoding="async"
