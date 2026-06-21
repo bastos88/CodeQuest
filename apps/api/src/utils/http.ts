@@ -7,7 +7,10 @@ export class HttpError extends Error {
   }
 }
 
-export function assertFound<T>(value: T | null | undefined, message = 'Resource not found'): T {
+export function assertFound<T>(
+  value: T | null | undefined,
+  message = 'Resource not found',
+): T {
   if (!value) throw new HttpError(404, message);
   return value;
 }

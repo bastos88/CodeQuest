@@ -69,5 +69,6 @@ export async function updatePassword(input: {
   newPassword: string;
   confirmPassword: string;
 }): Promise<{ message: string }> {
-  return (await api.patch<{ message: string }>('/profile/me/password', input)).data;
+  return (await api.patch<{ message: string }>('/profile/me/password', input))
+    .data;
 }

@@ -17,5 +17,7 @@ export async function dailyMissions(req: AuthenticatedRequest, res: Response) {
 export async function events(req: AuthenticatedRequest, res: Response) {
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
-  res.json(await gamificationService.getGamificationEvents(req.user.id, page, limit));
+  res.json(
+    await gamificationService.getGamificationEvents(req.user.id, page, limit),
+  );
 }

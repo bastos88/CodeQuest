@@ -132,13 +132,23 @@ export function ProfileSettingsCard() {
             <UserRound size={20} />
           </div>
           <div>
-            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Perfil</h3>
-            <p className="mt-1 text-sm text-textSecondary">Atualize como você aparece no CodeQuest.</p>
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
+              Perfil
+            </h3>
+            <p className="mt-1 text-sm text-textSecondary">
+              Atualize como você aparece no CodeQuest.
+            </p>
           </div>
         </div>
 
-        {profileQuery.isLoading ? <StatusMessage>Carregando perfil...</StatusMessage> : null}
-        {profileQuery.isError ? <StatusMessage tone="error">Não foi possível carregar seu perfil.</StatusMessage> : null}
+        {profileQuery.isLoading ? (
+          <StatusMessage>Carregando perfil...</StatusMessage>
+        ) : null}
+        {profileQuery.isError ? (
+          <StatusMessage tone="error">
+            Não foi possível carregar seu perfil.
+          </StatusMessage>
+        ) : null}
 
         {profileQuery.data ? (
           <form onSubmit={handleProfileSubmit} className="space-y-5">
@@ -156,7 +166,9 @@ export function ProfileSettingsCard() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <FieldLabel htmlFor="profile-avatar">URL da foto de perfil</FieldLabel>
+                <FieldLabel htmlFor="profile-avatar">
+                  URL da foto de perfil
+                </FieldLabel>
                 <Input
                   id="profile-avatar"
                   type="url"
@@ -178,7 +190,9 @@ export function ProfileSettingsCard() {
             </div>
 
             <div>
-              <FieldLabel htmlFor="profile-name">Nickname / nome de exibição</FieldLabel>
+              <FieldLabel htmlFor="profile-name">
+                Nickname / nome de exibição
+              </FieldLabel>
               <Input
                 id="profile-name"
                 value={name}
@@ -189,13 +203,28 @@ export function ProfileSettingsCard() {
             </div>
             <div>
               <FieldLabel htmlFor="profile-email">E-mail</FieldLabel>
-              <Input id="profile-email" value={profileQuery.data.email} disabled className="opacity-60" />
-              <p className="mt-2 text-xs text-textMuted">O e-mail não pode ser alterado pelo Dashboard.</p>
+              <Input
+                id="profile-email"
+                value={profileQuery.data.email}
+                disabled
+                className="opacity-60"
+              />
+              <p className="mt-2 text-xs text-textMuted">
+                O e-mail não pode ser alterado pelo Dashboard.
+              </p>
             </div>
 
-            {profileError ? <StatusMessage tone="error">{profileError}</StatusMessage> : null}
-            {profileSuccess ? <StatusMessage tone="success">{profileSuccess}</StatusMessage> : null}
-            <Button type="submit" loading={profileMutation.isPending} loadingText="Salvando...">
+            {profileError ? (
+              <StatusMessage tone="error">{profileError}</StatusMessage>
+            ) : null}
+            {profileSuccess ? (
+              <StatusMessage tone="success">{profileSuccess}</StatusMessage>
+            ) : null}
+            <Button
+              type="submit"
+              loading={profileMutation.isPending}
+              loadingText="Salvando..."
+            >
               Salvar perfil
             </Button>
           </form>
@@ -208,8 +237,13 @@ export function ProfileSettingsCard() {
             <LockKeyhole size={20} />
           </div>
           <div>
-            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Segurança</h3>
-            <p className="mt-1 text-sm text-textSecondary">Altere ou crie uma senha local sem desconectar seus logins sociais.</p>
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
+              Segurança
+            </h3>
+            <p className="mt-1 text-sm text-textSecondary">
+              Altere ou crie uma senha local sem desconectar seus logins
+              sociais.
+            </p>
           </div>
         </div>
 
@@ -223,7 +257,9 @@ export function ProfileSettingsCard() {
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
             />
-            <p className="mt-2 text-xs text-textMuted">Opcional apenas se sua conta ainda não possui senha local.</p>
+            <p className="mt-2 text-xs text-textMuted">
+              Opcional apenas se sua conta ainda não possui senha local.
+            </p>
           </div>
           <div>
             <FieldLabel htmlFor="new-password">Nova senha</FieldLabel>
@@ -236,7 +272,9 @@ export function ProfileSettingsCard() {
             />
           </div>
           <div>
-            <FieldLabel htmlFor="confirm-password">Confirmar nova senha</FieldLabel>
+            <FieldLabel htmlFor="confirm-password">
+              Confirmar nova senha
+            </FieldLabel>
             <Input
               id="confirm-password"
               type="password"
@@ -246,9 +284,17 @@ export function ProfileSettingsCard() {
             />
           </div>
 
-          {passwordError ? <StatusMessage tone="error">{passwordError}</StatusMessage> : null}
-          {passwordSuccess ? <StatusMessage tone="success">{passwordSuccess}</StatusMessage> : null}
-          <Button type="submit" loading={passwordMutation.isPending} loadingText="Alterando...">
+          {passwordError ? (
+            <StatusMessage tone="error">{passwordError}</StatusMessage>
+          ) : null}
+          {passwordSuccess ? (
+            <StatusMessage tone="success">{passwordSuccess}</StatusMessage>
+          ) : null}
+          <Button
+            type="submit"
+            loading={passwordMutation.isPending}
+            loadingText="Alterando..."
+          >
             Alterar senha
           </Button>
         </form>
@@ -257,36 +303,67 @@ export function ProfileSettingsCard() {
   );
 }
 
-function FieldLabel({ htmlFor, children }: { htmlFor: string; children: string }) {
-  return <label htmlFor={htmlFor} className="mb-2 block text-sm font-semibold text-textPrimary">{children}</label>;
+function FieldLabel({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: string;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="mb-2 block text-sm font-semibold text-textPrimary"
+    >
+      {children}
+    </label>
+  );
 }
 
-function StatusMessage({ children, tone = 'neutral' }: { children: string; tone?: 'neutral' | 'error' | 'success' }) {
+function StatusMessage({
+  children,
+  tone = 'neutral',
+}: {
+  children: string;
+  tone?: 'neutral' | 'error' | 'success';
+}) {
   const styles = {
     neutral: 'border-white/8 bg-white/[0.03] text-textSecondary',
     error: 'border-danger/25 bg-danger/10 text-red-200',
     success: 'border-success/25 bg-success/10 text-emerald-200',
   };
   return (
-    <div role={tone === 'error' ? 'alert' : 'status'} className={`flex items-center gap-2 rounded-[1rem] border px-4 py-3 text-sm ${styles[tone]}`}>
-      {tone === 'success' ? <CheckCircle2 size={17} className="shrink-0 text-success" /> : null}
+    <div
+      role={tone === 'error' ? 'alert' : 'status'}
+      className={`flex items-center gap-2 rounded-[1rem] border px-4 py-3 text-sm ${styles[tone]}`}
+    >
+      {tone === 'success' ? (
+        <CheckCircle2 size={17} className="shrink-0 text-success" />
+      ) : null}
       {children}
     </div>
   );
 }
 
 function getInitials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'CQ';
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'CQ'
+  );
 }
 
 function getApiError(error: unknown) {
   if (axios.isAxiosError<{ message?: string }>(error)) {
-    return error.response?.data?.message ?? 'Não foi possível concluir a atualização.';
+    return (
+      error.response?.data?.message ??
+      'Não foi possível concluir a atualização.'
+    );
   }
-  return error instanceof Error ? error.message : 'Não foi possível concluir a atualização.';
+  return error instanceof Error
+    ? error.message
+    : 'Não foi possível concluir a atualização.';
 }

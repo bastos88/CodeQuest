@@ -8,22 +8,38 @@ export type TokenUser = {
 };
 
 export function signAccessToken(payload: TokenUser): string {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
+    algorithm: 'HS256',
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
+    expiresIn: '15m',
+  });
 }
 
 export function signRefreshToken(payload: TokenUser): string {
   return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
+    algorithm: 'HS256',
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
     expiresIn: '30d',
     jwtid: crypto.randomUUID(),
   });
 }
 
 export function verifyAccessToken(token: string): TokenUser {
-  return jwt.verify(token, env.JWT_ACCESS_SECRET) as TokenUser;
+  return jwt.verify(token, env.JWT_ACCESS_SECRET, {
+    algorithms: ['HS256'],
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
+  }) as TokenUser;
 }
 
 export function verifyRefreshToken(token: string): TokenUser {
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as TokenUser;
+  return jwt.verify(token, env.JWT_REFRESH_SECRET, {
+    algorithms: ['HS256'],
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
+  }) as TokenUser;
 }
 
 export function hashToken(token: string): string {

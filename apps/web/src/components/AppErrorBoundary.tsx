@@ -15,7 +15,9 @@ export function AppErrorBoundary() {
         </span>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-semibold text-white">Algo deu errado.</h1>
+          <h1 className="text-3xl font-semibold text-white">
+            Algo deu errado.
+          </h1>
           <p className="text-base leading-7 text-muted">{message}</p>
         </div>
 

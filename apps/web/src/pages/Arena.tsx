@@ -1,12 +1,9 @@
 import { Swords, Timer, TrendingUp, Zap } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 
 export function Arena() {
-  const [started, setStarted] = useState(false);
-
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
       <Card className="p-7">
@@ -35,44 +32,19 @@ export function Arena() {
         </div>
 
         <div className="mt-8 rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-6">
-          {started ? (
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <Badge tone="warning">Matchmaking</Badge>
-                <span className="font-mono text-sm text-textSecondary">
-                  00:24
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">
-                Desafio React médio
-              </h3>
-              <p className="mt-3 text-textSecondary">
-                Sessão competitiva criada. A API registra tempo de resposta e
-                impede submissão duplicada.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <MiniArenaMetric label="Risco" value="alto" />
-                <MiniArenaMetric label="Mapa" value="hooks-core" />
-              </div>
-            </div>
-          ) : (
-            <div>
-              <h3 className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">
-                Pronto para entrar?
-              </h3>
-              <p className="mt-3 text-textSecondary">
-                Ao iniciar, sua pontuação ranqueada poderá subir ou cair
-                conforme desempenho.
-              </p>
-            </div>
-          )}
-          <Button className="mt-6" onClick={() => setStarted(true)}>
-            {started ? (
-              <Zap className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <Swords className="h-4 w-4" aria-hidden="true" />
-            )}
-            {started ? 'Responder rodada' : 'Iniciar Arena'}
+          <div>
+            <Badge tone="warning">Em breve</Badge>
+            <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+              Modo competitivo em validação
+            </h3>
+            <p className="mt-3 text-textSecondary">
+              A Arena ficará disponível quando o matchmaking e a validação
+              server-side das partidas estiverem concluídos.
+            </p>
+          </div>
+          <Button className="mt-6" disabled>
+            <Swords className="h-4 w-4" aria-hidden="true" />
+            Arena indisponível
           </Button>
         </div>
       </Card>
@@ -81,21 +53,15 @@ export function Arena() {
         <MetricCard
           icon={TrendingUp}
           label="Rating atual"
-          value="1,020"
+          value="—"
           tone="success"
         />
-        <MetricCard
-          icon={Timer}
-          label="Tempo médio"
-          value="18s"
-          tone="warning"
-        />
-        <MetricCard icon={Zap} label="Win streak" value="6" tone="primary" />
+        <MetricCard icon={Timer} label="Tempo médio" value="—" tone="warning" />
+        <MetricCard icon={Zap} label="Win streak" value="—" tone="primary" />
       </aside>
     </div>
   );
 }
-
 function ArenaRule({
   label,
   value,
@@ -152,16 +118,5 @@ function MetricCard({
       </p>
       <p className="mt-2 text-sm text-textSecondary">{label}</p>
     </Card>
-  );
-}
-
-function MiniArenaMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1rem] border border-white/8 bg-background/60 px-4 py-3">
-      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">
-        {label}
-      </div>
-      <div className="mt-2 text-sm font-semibold text-textPrimary">{value}</div>
-    </div>
   );
 }

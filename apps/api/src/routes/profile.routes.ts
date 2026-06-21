@@ -8,15 +8,15 @@ import { z } from 'zod';
 const updateProfileSchema = z
   .object({
     name: z.string().min(2).max(30).optional(),
-    avatarUrl: z.string().url().nullable().optional(),
+    avatarUrl: z.string().url().max(2048).nullable().optional(),
   })
   .strict();
 
 const updatePasswordSchema = z
   .object({
-    currentPassword: z.string().optional(),
-    newPassword: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    currentPassword: z.string().max(120).optional(),
+    newPassword: z.string().min(8).max(120),
+    confirmPassword: z.string().min(8).max(120),
   })
   .strict();
 
@@ -24,7 +24,11 @@ export const profileRoutes = Router();
 
 profileRoutes.use(requireAuth);
 profileRoutes.get('/me', asyncHandler(controller.me));
-profileRoutes.patch('/me', validateBody(updateProfileSchema), asyncHandler(controller.updateMe));
+profileRoutes.patch(
+  '/me',
+  validateBody(updateProfileSchema),
+  asyncHandler(controller.updateMe),
+);
 profileRoutes.patch(
   '/me/password',
   validateBody(updatePasswordSchema),

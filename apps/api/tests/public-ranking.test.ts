@@ -2,7 +2,8 @@ import request from 'supertest';
 import { Role } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-process.env.DATABASE_URL ??= 'postgresql://codequest:test@localhost:5432/codequest_test';
+process.env.DATABASE_URL ??=
+  'postgresql://codequest:test@localhost:5432/codequest_test';
 
 vi.mock('../src/config/prisma.js', () => ({
   prisma: {
@@ -43,6 +44,8 @@ function createMockRankingUser() {
     xp: 8100,
     rating: 1000,
     streakDays: 0,
+    longestStreak: 0,
+    lastActivityAt: null,
     activeTitleId: null,
     quizzesCompleted: 10,
     correctAnswers: 8,
@@ -60,7 +63,9 @@ describe('public ranking route', () => {
   it('exposes GET /public/ranking with safe top 10 data', async () => {
     findMany.mockResolvedValue([createMockRankingUser()]);
 
-    const response = await request(app).get('/public/ranking?limit=99').expect(200);
+    const response = await request(app)
+      .get('/public/ranking?limit=99')
+      .expect(200);
 
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -92,7 +97,9 @@ describe('public ranking route', () => {
   it('returns an empty array when there are no ranked users', async () => {
     findMany.mockResolvedValue([]);
 
-    const response = await request(app).get('/public/ranking?limit=5').expect(200);
+    const response = await request(app)
+      .get('/public/ranking?limit=5')
+      .expect(200);
 
     expect(response.body).toEqual([]);
   });

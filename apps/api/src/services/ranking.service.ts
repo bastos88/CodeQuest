@@ -13,7 +13,11 @@ const userSelect = {
 
 export async function getGeneralRanking() {
   return prisma.user.findMany({
-    orderBy: [{ xp: 'desc' }, { quizzesCompleted: 'desc' }, { correctAnswers: 'desc' }],
+    orderBy: [
+      { xp: 'desc' },
+      { quizzesCompleted: 'desc' },
+      { correctAnswers: 'desc' },
+    ],
     take: 10,
     select: userSelect,
   });

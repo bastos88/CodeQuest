@@ -84,6 +84,7 @@ export async function startQuiz(userId: string, input: QuizStartInput) {
   const session = await prisma.quizSession.create({
     data: {
       userId,
+      expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
       difficulty: databaseDifficulty,
       questionIds: selected.map((question) => question.id),
       ...(categoryIds.length === 1
@@ -113,14 +114,22 @@ export async function submitQuiz(userId: string, input: QuizSubmitInput) {
   });
   if (!session || session.userId !== userId)
     throw new HttpError(404, 'Quiz session not found');
+  if (session.expiresAt <= new Date())
+    throw new HttpError(410, 'Quiz session expired');
   if (session.submittedAt) throw new HttpError(409, 'Quiz already submitted');
 
   const questionIds = input.answers.map((answer) => answer.questionId);
   if (questionIds.length !== session.questionIds.length) {
-    throw new HttpError(400, 'Every quiz question must have exactly one answer');
+    throw new HttpError(
+      400,
+      'Every quiz question must have exactly one answer',
+    );
   }
   if (new Set(questionIds).size !== questionIds.length) {
-    throw new HttpError(400, 'A quiz question cannot be answered more than once');
+    throw new HttpError(
+      400,
+      'A quiz question cannot be answered more than once',
+    );
   }
   const unauthorizedQuestion = questionIds.find(
     (questionId) => !session.questionIds.includes(questionId),

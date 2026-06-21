@@ -42,9 +42,10 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
             photos?: Array<{ value: string }>;
             emails?: Array<{ value: string; verified?: boolean }>;
           };
-          const email =
-            googleProfile.emails?.find((item) => item.verified !== false)
-              ?.value ?? googleProfile.emails?.[0]?.value;
+          const verifiedEmail = googleProfile.emails?.find(
+            (item) => item.verified === true,
+          );
+          const email = verifiedEmail?.value;
           if (!email) {
             done(new Error('Google did not return a verified email'), false);
             return;
@@ -59,6 +60,7 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
               email.split('@')[0] ||
               'Usuario CodeQuest',
             avatarUrl: googleProfile.photos?.[0]?.value ?? null,
+            emailVerified: true,
           });
           done(null, user);
         } catch (error) {
@@ -90,12 +92,13 @@ if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET) {
             displayName?: string;
             username?: string;
             photos?: Array<{ value: string }>;
-            emails?: Array<{ value: string }>;
+            emails?: Array<{ value: string; verified?: boolean }>;
             _json?: { email?: string | null };
           };
-          const email =
-            githubProfile.emails?.find((item) => item.value)?.value ??
-            githubProfile._json?.email;
+          const verifiedEmail = githubProfile.emails?.find(
+            (item) => item.value && item.verified === true,
+          );
+          const email = verifiedEmail?.value;
 
           if (!email) {
             done(new Error('GitHub did not return an email'), false);
@@ -112,6 +115,7 @@ if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET) {
               email.split('@')[0] ||
               'Usuario CodeQuest',
             avatarUrl: githubProfile.photos?.[0]?.value ?? null,
+            emailVerified: true,
           });
           done(null, user);
         } catch (error) {

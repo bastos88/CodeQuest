@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { calculateQuizXP, getLevelFromXP, getXPForLevel, getXPProgressToNextLevel } from './gamification';
+import {
+  calculateQuizXP,
+  getLevelFromXP,
+  getXPForLevel,
+  getXPProgressToNextLevel,
+} from './gamification';
 
 describe('gamification helpers', () => {
   it('uses the progressive square-root level formula', () => {
@@ -10,11 +15,16 @@ describe('gamification helpers', () => {
   });
 
   it('reports progress to the next level', () => {
-    expect(getXPProgressToNextLevel(250)).toMatchObject({ level: 2, percentage: 50 });
+    expect(getXPProgressToNextLevel(250)).toMatchObject({
+      level: 2,
+      percentage: 50,
+    });
   });
 
   it('never subtracts XP for wrong study answers', () => {
-    expect(calculateQuizXP([{ difficulty: 'HARD', isCorrect: false }])).toBe(45);
+    expect(calculateQuizXP([{ difficulty: 'HARD', isCorrect: false }])).toBe(
+      45,
+    );
   });
 
   it('adds base, correct answer and perfect bonuses', () => {
@@ -22,9 +32,11 @@ describe('gamification helpers', () => {
   });
 
   it('applies the hard bonus once per quiz', () => {
-    expect(calculateQuizXP([
-      { difficulty: 'HARD', isCorrect: true },
-      { difficulty: 'HARD', isCorrect: true },
-    ])).toBe(115);
+    expect(
+      calculateQuizXP([
+        { difficulty: 'HARD', isCorrect: true },
+        { difficulty: 'HARD', isCorrect: true },
+      ]),
+    ).toBe(115);
   });
 });

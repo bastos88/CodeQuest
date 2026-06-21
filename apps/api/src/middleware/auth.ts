@@ -12,29 +12,13 @@ export type AuthenticatedRequest = Request & {
   };
 };
 
-function extractBearerToken(authorization?: string) {
-  if (!authorization?.startsWith('Bearer ')) return null;
-  return authorization.slice('Bearer '.length);
-}
-
 export async function requireAuth(
   req: Request,
   _res: Response,
   next: NextFunction,
 ) {
-  const authorization =
-    req.headers.authorization ||
-    req.header('Authorization') ||
-    req.header('authorization');
-
-  const cookieToken = req.cookies?.[ACCESS_TOKEN_COOKIE] as
-    | string
-    | undefined;
-
-  const bearerToken = extractBearerToken(
-    typeof authorization === 'string' ? authorization : undefined,
-  );
-  const token = cookieToken ?? bearerToken;
+  const cookieToken = req.cookies?.[ACCESS_TOKEN_COOKIE] as string | undefined;
+  const token = cookieToken;
 
   if (!token) {
     next(new HttpError(401, 'Missing access token'));

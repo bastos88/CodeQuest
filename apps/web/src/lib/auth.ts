@@ -2,7 +2,9 @@ import { api } from './api';
 
 export type AuthMessageResponse = { message: string };
 
-export async function forgotPassword(email: string): Promise<AuthMessageResponse> {
+export async function forgotPassword(
+  email: string,
+): Promise<AuthMessageResponse> {
   return (
     await api.post<AuthMessageResponse>(
       '/auth/forgot-password',

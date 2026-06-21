@@ -16,7 +16,8 @@ vi.mock('resend', () => ({
 
 vi.mock('../src/config/env.js', () => ({ env: mockedEnv }));
 
-const { sendPasswordResetEmail } = await import('../src/services/email.service.js');
+const { sendPasswordResetEmail } =
+  await import('../src/services/email.service.js');
 
 describe('password reset email service', () => {
   beforeEach(() => {
@@ -28,7 +29,9 @@ describe('password reset email service', () => {
 
   it('accepts delivery only when Resend returns an id', async () => {
     sendEmail.mockResolvedValue({ data: { id: 'email-123' }, error: null });
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const infoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
 
     await expect(
       sendPasswordResetEmail({
@@ -55,7 +58,10 @@ describe('password reset email service', () => {
   it('rejects a provider error instead of reporting success', async () => {
     sendEmail.mockResolvedValue({
       data: null,
-      error: { name: 'validation_error', message: 'Sender domain is not verified' },
+      error: {
+        name: 'validation_error',
+        message: 'Sender domain is not verified',
+      },
     });
 
     await expect(

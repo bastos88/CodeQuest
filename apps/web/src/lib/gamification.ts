@@ -61,9 +61,12 @@ export async function getGamificationSummary() {
 }
 
 export async function getAchievements() {
-  return (await api.get<GamificationAchievement[]>('/gamification/achievements')).data;
+  return (
+    await api.get<GamificationAchievement[]>('/gamification/achievements')
+  ).data;
 }
 
 export async function getDailyMissions() {
-  return (await api.get<DailyMissionsResponse>('/gamification/daily-missions')).data;
+  return (await api.get<DailyMissionsResponse>('/gamification/daily-missions'))
+    .data;
 }

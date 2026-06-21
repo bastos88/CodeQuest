@@ -45,7 +45,8 @@ export function Contribute() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: async (payload: QuestionInput) => (await api.post('/questions', payload)).data,
+    mutationFn: async (payload: QuestionInput) =>
+      (await api.post('/questions', payload)).data,
     onSuccess: () => {
       setSubmittedTitle(form.prompt);
       setForm(initialFormState);
@@ -53,12 +54,16 @@ export function Contribute() {
     },
   });
 
-  const submitError = submitMutation.isError ? getErrorMessage(submitMutation.error) : null;
+  const submitError = submitMutation.isError
+    ? getErrorMessage(submitMutation.error)
+    : null;
 
   function updateAlternative(index: number, value: string) {
     setForm((current) => ({
       ...current,
-      alternatives: current.alternatives.map((alternative, alternativeIndex) => (alternativeIndex === index ? value : alternative)),
+      alternatives: current.alternatives.map((alternative, alternativeIndex) =>
+        alternativeIndex === index ? value : alternative,
+      ),
     }));
   }
 
@@ -83,7 +88,9 @@ export function Contribute() {
         <p className="section-kicker">question.pipeline</p>
         <h2 className="mt-3 section-title">Enviar pergunta</h2>
         <p className="mt-3 max-w-2xl text-base text-textSecondary">
-          A pergunta entra como <span className="font-mono text-primary">PENDING_REVIEW</span> e só aparece no quiz após aprovação com checklist editorial.
+          A pergunta entra como{' '}
+          <span className="font-mono text-primary">PENDING_REVIEW</span> e só
+          aparece no quiz após aprovação com checklist editorial.
         </p>
 
         {submitError ? (
@@ -96,10 +103,17 @@ export function Contribute() {
         <form className="mt-8 grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Categoria</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Categoria
+              </span>
               <select
                 value={form.categoryId}
-                onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    categoryId: event.target.value,
+                  }))
+                }
                 required
                 className="field hover:border-white/12 focus:border-primary"
               >
@@ -112,11 +126,17 @@ export function Contribute() {
               </select>
             </label>
             <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Dificuldade</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+                Dificuldade
+              </span>
               <select
                 value={form.difficulty}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, difficulty: event.target.value as QuestionInput['difficulty'] }))
+                  setForm((current) => ({
+                    ...current,
+                    difficulty: event.target
+                      .value as QuestionInput['difficulty'],
+                  }))
                 }
                 className="field hover:border-white/12 focus:border-primary"
               >
@@ -131,13 +151,17 @@ export function Contribute() {
             className="field-area"
             placeholder="Enunciado"
             value={form.prompt}
-            onChange={(event) => setForm((current) => ({ ...current, prompt: event.target.value }))}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, prompt: event.target.value }))
+            }
             required
             minLength={12}
           />
 
           <div className="grid gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">Alternativas</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+              Alternativas
+            </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {form.alternatives.map((alternative, index) => (
                 <label
@@ -153,7 +177,12 @@ export function Contribute() {
                         type="radio"
                         name="correctAlternative"
                         checked={form.correctIndex === index}
-                        onChange={() => setForm((current) => ({ ...current, correctIndex: index }))}
+                        onChange={() =>
+                          setForm((current) => ({
+                            ...current,
+                            correctIndex: index,
+                          }))
+                        }
                         className="h-4 w-4"
                       />
                       correta
@@ -162,7 +191,9 @@ export function Contribute() {
                   <Input
                     placeholder={`Alternativa ${index + 1}`}
                     value={alternative}
-                    onChange={(event) => updateAlternative(index, event.target.value)}
+                    onChange={(event) =>
+                      updateAlternative(index, event.target.value)
+                    }
                     required
                   />
                 </label>
@@ -174,7 +205,12 @@ export function Contribute() {
             className="field-area"
             placeholder="Explicação da resposta correta"
             value={form.explanation}
-            onChange={(event) => setForm((current) => ({ ...current, explanation: event.target.value }))}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                explanation: event.target.value,
+              }))
+            }
           />
 
           <div className="flex flex-wrap gap-2">
@@ -182,7 +218,12 @@ export function Contribute() {
             <Badge>Explicação</Badge>
             <Badge tone="warning">Review manual</Badge>
           </div>
-          <Button type="submit" className="mt-2 w-full sm:w-auto" loading={submitMutation.isPending} loadingText="Enviando...">
+          <Button
+            type="submit"
+            className="mt-2 w-full sm:w-auto"
+            loading={submitMutation.isPending}
+            loadingText="Enviando..."
+          >
             <Send size={17} />
             Enviar para revisão
           </Button>
@@ -192,15 +233,33 @@ export function Contribute() {
       <Card className="p-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">Minhas perguntas</h3>
-            <p className="mt-2 text-sm text-textSecondary">Acompanhe o status editorial e a aprovação final.</p>
+            <h3 className="text-xl font-bold tracking-[-0.03em] text-textPrimary">
+              Minhas perguntas
+            </h3>
+            <p className="mt-2 text-sm text-textSecondary">
+              Acompanhe o status editorial e a aprovação final.
+            </p>
           </div>
           <Badge tone="info">Queue</Badge>
         </div>
         <div className="space-y-3">
-          <QuestionStatus title="Quando usar useMemo?" status="PENDING_REVIEW" tone="warning" />
-          <QuestionStatus title="Transações SQL" status="APPROVED" tone="success" />
-          {submittedTitle ? <QuestionStatus title={submittedTitle} status="PENDING_REVIEW" tone="warning" /> : null}
+          <QuestionStatus
+            title="Quando usar useMemo?"
+            status="PENDING_REVIEW"
+            tone="warning"
+          />
+          <QuestionStatus
+            title="Transações SQL"
+            status="APPROVED"
+            tone="success"
+          />
+          {submittedTitle ? (
+            <QuestionStatus
+              title={submittedTitle}
+              status="PENDING_REVIEW"
+              tone="warning"
+            />
+          ) : null}
         </div>
       </Card>
 
@@ -218,11 +277,15 @@ export function Contribute() {
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <h3 id="question-success-title" className="text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+                  <h3
+                    id="question-success-title"
+                    className="text-2xl font-bold tracking-[-0.03em] text-textPrimary"
+                  >
                     Pergunta enviada
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-textSecondary">
-                    Pergunta enviada com sucesso. Ela será analisada pela equipe de revisão antes de entrar no banco oficial de perguntas.
+                    Pergunta enviada com sucesso. Ela será analisada pela equipe
+                    de revisão antes de entrar no banco oficial de perguntas.
                   </p>
                 </div>
               </div>
@@ -257,7 +320,11 @@ function QuestionStatus({
   return (
     <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
       <p className="text-sm font-semibold text-textPrimary">{title}</p>
-      <p className={`mt-2 font-mono text-[11px] uppercase tracking-[0.18em] ${tone === 'success' ? 'text-success' : 'text-warning'}`}>{status}</p>
+      <p
+        className={`mt-2 font-mono text-[11px] uppercase tracking-[0.18em] ${tone === 'success' ? 'text-success' : 'text-warning'}`}
+      >
+        {status}
+      </p>
     </div>
   );
 }

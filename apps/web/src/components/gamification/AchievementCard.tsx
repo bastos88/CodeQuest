@@ -55,7 +55,9 @@ const achievementVisualMap: Record<
 const lockedStyle =
   'border-white/10 bg-[linear-gradient(145deg,rgba(24,25,33,0.96),rgba(13,14,20,0.98))] opacity-80';
 
-function getVisualCategory(achievement: GamificationAchievement): AchievementVisualCategory {
+function getVisualCategory(
+  achievement: GamificationAchievement,
+): AchievementVisualCategory {
   switch (achievement.category.toUpperCase()) {
     case 'PERFORMANCE':
     case 'ACCURACY':
@@ -77,15 +79,26 @@ function getVisualCategory(achievement: GamificationAchievement): AchievementVis
   }
 }
 
-export function AchievementCard({ achievement }: { achievement: GamificationAchievement }) {
+export function AchievementCard({
+  achievement,
+}: {
+  achievement: GamificationAchievement;
+}) {
   const visual = achievementVisualMap[getVisualCategory(achievement)];
   const progressPercentage = Math.min(
     100,
-    Math.max(0, (achievement.progress.current / Math.max(1, achievement.progress.target)) * 100),
+    Math.max(
+      0,
+      (achievement.progress.current /
+        Math.max(1, achievement.progress.target)) *
+        100,
+    ),
   );
-  const recentlyUnlocked = achievement.unlocked && achievement.unlockedAt
-    ? Date.now() - Date.parse(achievement.unlockedAt) <= 7 * 24 * 60 * 60 * 1000
-    : false;
+  const recentlyUnlocked =
+    achievement.unlocked && achievement.unlockedAt
+      ? Date.now() - Date.parse(achievement.unlockedAt) <=
+        7 * 24 * 60 * 60 * 1000
+      : false;
 
   return (
     <article
@@ -114,8 +127,18 @@ export function AchievementCard({ achievement }: { achievement: GamificationAchi
               : 'border-white/8 bg-black/10 text-textMuted'
           }`}
         >
-          {recentlyUnlocked ? <Sparkles size={12} /> : achievement.unlocked ? <Check size={12} /> : <LockKeyhole size={12} />}
-          {recentlyUnlocked ? 'Nova' : achievement.unlocked ? 'Concluída' : 'Bloqueada'}
+          {recentlyUnlocked ? (
+            <Sparkles size={12} />
+          ) : achievement.unlocked ? (
+            <Check size={12} />
+          ) : (
+            <LockKeyhole size={12} />
+          )}
+          {recentlyUnlocked
+            ? 'Nova'
+            : achievement.unlocked
+              ? 'Concluída'
+              : 'Bloqueada'}
         </span>
       </div>
 
@@ -143,12 +166,22 @@ export function AchievementCard({ achievement }: { achievement: GamificationAchi
           />
         </div>
         <div className="mt-3 flex items-center justify-between gap-3 font-mono text-xs">
-          <span className={achievement.unlocked ? 'text-textSecondary' : 'text-textMuted'}>
+          <span
+            className={
+              achievement.unlocked ? 'text-textSecondary' : 'text-textMuted'
+            }
+          >
             {achievement.unlocked
               ? 'Desbloqueada'
               : `${achievement.progress.current}/${achievement.progress.target}`}
           </span>
-          <span className={achievement.unlocked ? 'font-semibold text-textPrimary' : 'text-textSecondary'}>
+          <span
+            className={
+              achievement.unlocked
+                ? 'font-semibold text-textPrimary'
+                : 'text-textSecondary'
+            }
+          >
             +{achievement.xpReward} XP
           </span>
         </div>

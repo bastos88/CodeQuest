@@ -45,8 +45,5 @@ export function clearAuthCookies(res: Response) {
 }
 
 export function getRefreshToken(req: Request) {
-  return (
-    (req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined) ??
-    (req.body?.refreshToken as string | undefined)
-  );
+  return req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
 }

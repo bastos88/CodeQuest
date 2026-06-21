@@ -2,11 +2,11 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { passport } from './config/passport.js';
-import { env } from './config/env.js';
+import { allowedWebOrigins, env } from './config/env.js';
 import { errorMiddleware } from './middleware/error.js';
+import { verifyRequestOrigin } from './middleware/origin.js';
 import { adminRoutes } from './routes/admin.routes.js';
 import { arenaRoutes } from './routes/arena.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -22,17 +22,31 @@ import { publicRoutes } from './routes/public.routes.js';
 
 export const app = express();
 
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(helmet());
-app.use(cors({ origin: env.WEB_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedWebOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+    credentials: true,
+  }),
+);
 app.use(compression());
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use(express.json({ limit: '1mb' }));
-
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 25, standardHeaders: true, legacyHeaders: false });
+app.use(verifyRequestOrigin);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-app.use('/auth', authLimiter, authRoutes);
+app.use('/auth', authRoutes);
 app.use('/public', publicRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/gamification', gamificationRoutes);

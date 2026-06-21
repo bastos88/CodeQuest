@@ -1,4 +1,8 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from 'react';
 import { Github, Linkedin, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -43,13 +47,23 @@ type SocialActionProps = SocialButton &
     variant: 'icon' | 'auth';
   };
 
-function SocialAction({ type, label, icon, href, onClick, variant, ...props }: SocialActionProps) {
+function SocialAction({
+  type,
+  label,
+  icon,
+  href,
+  onClick,
+  variant,
+  ...props
+}: SocialActionProps) {
   const iconNode = (
     <span
       aria-hidden="true"
       className={cn(
         'grid shrink-0 place-items-center',
-        variant === 'auth' ? 'h-5 w-5 [&_svg]:h-5 [&_svg]:w-5' : 'h-6 w-6 [&_svg]:h-5 [&_svg]:w-5',
+        variant === 'auth'
+          ? 'h-5 w-5 [&_svg]:h-5 [&_svg]:w-5'
+          : 'h-6 w-6 [&_svg]:h-5 [&_svg]:w-5',
       )}
     >
       {icon}
@@ -61,8 +75,16 @@ function SocialAction({ type, label, icon, href, onClick, variant, ...props }: S
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
     'disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0',
     variant === 'auth'
-      ? cn('min-h-11 w-full gap-2.5 rounded-[14px] px-4 text-sm', authStyles[type], 'hover:-translate-y-px')
-      : cn('h-12 w-12 rounded-xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)]', iconStyles[type], 'hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(91,107,255,0.18)] hover:brightness-110'),
+      ? cn(
+          'min-h-11 w-full gap-2.5 rounded-[14px] px-4 text-sm',
+          authStyles[type],
+          'hover:-translate-y-px',
+        )
+      : cn(
+          'h-12 w-12 rounded-xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)]',
+          iconStyles[type],
+          'hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(91,107,255,0.18)] hover:brightness-110',
+        ),
   );
 
   if (href) {
@@ -97,31 +119,39 @@ function SocialAction({ type, label, icon, href, onClick, variant, ...props }: S
   );
 }
 
-export default function SocialButtons({ buttons, className = '', variant = 'icon' }: SocialButtonsProps) {
-  const items: SocialButton[] =
-    buttons ?? [
-      {
-        type: 'whatsapp',
-        label: 'Abrir WhatsApp',
-        href: 'https://wa.me/351920055981',
-        icon: <MessageCircle strokeWidth={2.2} />,
-      },
-      {
-        type: 'linkedin',
-        label: 'Abrir LinkedIn',
-        href: 'https://www.linkedin.com/in/leoonardobastos/',
-        icon: <Linkedin strokeWidth={2.2} />,
-      },
-      {
-        type: 'github',
-        label: 'Abrir GitHub',
-        href: 'https://github.com/bastos88',
-        icon: <Github strokeWidth={2.2} />,
-      },
-    ];
+export default function SocialButtons({
+  buttons,
+  className = '',
+  variant = 'icon',
+}: SocialButtonsProps) {
+  const items: SocialButton[] = buttons ?? [
+    {
+      type: 'whatsapp',
+      label: 'Abrir WhatsApp',
+      href: 'https://wa.me/351920055981',
+      icon: <MessageCircle strokeWidth={2.2} />,
+    },
+    {
+      type: 'linkedin',
+      label: 'Abrir LinkedIn',
+      href: 'https://www.linkedin.com/in/leoonardobastos/',
+      icon: <Linkedin strokeWidth={2.2} />,
+    },
+    {
+      type: 'github',
+      label: 'Abrir GitHub',
+      href: 'https://github.com/bastos88',
+      icon: <Github strokeWidth={2.2} />,
+    },
+  ];
 
   return (
-    <div className={cn(variant === 'auth' ? 'grid gap-3' : 'flex flex-row flex-wrap gap-2', className)}>
+    <div
+      className={cn(
+        variant === 'auth' ? 'grid gap-3' : 'flex flex-row flex-wrap gap-2',
+        className,
+      )}
+    >
       {items.map((item) => (
         <SocialAction key={item.type} {...item} variant={variant} />
       ))}

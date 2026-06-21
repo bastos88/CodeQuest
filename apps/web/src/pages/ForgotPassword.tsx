@@ -33,7 +33,10 @@ export function ForgotPassword() {
       footer={<BackToLogin />}
     >
       {mutation.isSuccess ? (
-        <div role="status" className="flex items-start gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-4 text-sm leading-6 text-emerald-200">
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-4 text-sm leading-6 text-emerald-200"
+        >
           <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" />
           {mutation.data.message}
         </div>
@@ -54,8 +57,17 @@ export function ForgotPassword() {
             />
           </label>
           {localError ? <ErrorMessage>{localError}</ErrorMessage> : null}
-          {mutation.isError ? <ErrorMessage>Não foi possível enviar as instruções agora. Tente novamente.</ErrorMessage> : null}
-          <Button className="w-full" type="submit" loading={mutation.isPending} loadingText="Enviando...">
+          {mutation.isError ? (
+            <ErrorMessage>
+              Não foi possível enviar as instruções agora. Tente novamente.
+            </ErrorMessage>
+          ) : null}
+          <Button
+            className="w-full"
+            type="submit"
+            loading={mutation.isPending}
+            loadingText="Enviando..."
+          >
             Enviar link de recuperação
           </Button>
         </form>
@@ -65,9 +77,23 @@ export function ForgotPassword() {
 }
 
 function BackToLogin() {
-  return <Link to="/login" className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"><ArrowLeft size={16} /> Voltar para login</Link>;
+  return (
+    <Link
+      to="/login"
+      className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"
+    >
+      <ArrowLeft size={16} /> Voltar para login
+    </Link>
+  );
 }
 
 function ErrorMessage({ children }: { children: string }) {
-  return <div role="alert" className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-red-200">{children}</div>;
+  return (
+    <div
+      role="alert"
+      className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-red-200"
+    >
+      {children}
+    </div>
+  );
 }

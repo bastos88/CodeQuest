@@ -55,7 +55,7 @@ export default function ScrollBaseAnimation({
 
   const loopItems = React.useMemo(
     () => [...marqueeItems, ...marqueeItems],
-    [marqueeItems]
+    [marqueeItems],
   );
 
   React.useEffect(() => {

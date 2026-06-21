@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpError } from '../src/utils/http.js';
 
-process.env.DATABASE_URL ??= 'postgresql://codequest:test@localhost:5432/codequest_test';
+process.env.DATABASE_URL ??=
+  'postgresql://codequest:test@localhost:5432/codequest_test';
 
 vi.mock('../src/config/prisma.js', () => ({
   prisma: {

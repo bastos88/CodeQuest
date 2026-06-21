@@ -8,7 +8,13 @@ export async function start(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function submit(req: AuthenticatedRequest, res: Response) {
-  res.json(await arenaService.submitArena(req.user.id, String(req.body.matchId), Number(req.body.correctCount)));
+  res.json(
+    await arenaService.submitArena(
+      req.user.id,
+      String(req.body.matchId),
+      Number(req.body.correctCount),
+    ),
+  );
 }
 
 export async function history(req: AuthenticatedRequest, res: Response) {

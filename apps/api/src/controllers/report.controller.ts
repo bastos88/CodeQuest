@@ -8,22 +8,40 @@ export async function create(req: AuthenticatedRequest, res: Response) {
     await prisma.report.create({
       data: {
         userId: req.user.id,
-        questionId: String(req.body.questionId),
-        reason: String(req.body.reason),
+        questionId: req.body.questionId,
+        reason: req.body.reason,
       },
     }),
   );
 }
 
 export async function adminIndex(_req: AuthenticatedRequest, res: Response) {
-  res.json(await prisma.report.findMany({ include: { question: true, user: true }, orderBy: { createdAt: 'desc' } }));
+  res.json(
+    await prisma.report.findMany({
+      select: {
+        id: true,
+        reason: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        question: {
+          select: { id: true, prompt: true, status: true },
+        },
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    }),
+  );
 }
 
 export async function update(req: AuthenticatedRequest, res: Response) {
   res.json(
     await prisma.report.update({
       where: { id: requireParam(req, 'id') },
-      data: { status: String(req.body.status ?? 'TRIAGED') as 'OPEN' | 'TRIAGED' | 'RESOLVED' | 'DISMISSED' },
+      data: { status: req.body.status },
     }),
   );
 }

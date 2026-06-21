@@ -43,24 +43,7 @@ function clearStoredSession() {
 }
 
 function shouldRestoreSessionOnLoad() {
-  if (window.location.pathname === '/oauth/callback') return false;
-
-  const publicPaths = new Set([
-    '/',
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password',
-    '/sobre',
-    '/termos',
-    '/privacidade',
-    '/cookies',
-  ]);
-
-  return (
-    !publicPaths.has(window.location.pathname) ||
-    Boolean(localStorage.getItem('codequest.user'))
-  );
+  return window.location.pathname !== '/oauth/callback';
 }
 
 function normalizeUser(data: User | { user: User }) {
@@ -84,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .then(({ data }) => {
           const currentUser = normalizeUser(data);
-          localStorage.setItem('codequest.user', JSON.stringify(currentUser));
           setUser(currentUser);
           return currentUser;
         })
@@ -132,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [loadUser]);
 
   useEffect(() => {
     const handleExpiredSession = () => {
@@ -155,10 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data } = await api.post<{
         user: User;
-        accessToken: string;
-        refreshToken: string;
       }>(path, payload);
-      localStorage.setItem('codequest.user', JSON.stringify(data.user));
       setUser(data.user);
       setIsAuthReady(true);
       setLoading(false);

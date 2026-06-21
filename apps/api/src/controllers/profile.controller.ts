@@ -20,7 +20,11 @@ export async function updatePassword(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function achievements(req: AuthenticatedRequest, res: Response) {
-  res.json(await prisma.achievement.findMany({ include: { users: { where: { userId: req.user.id } } } }));
+  res.json(
+    await prisma.achievement.findMany({
+      include: { users: { where: { userId: req.user.id } } },
+    }),
+  );
 }
 
 export async function missions(req: AuthenticatedRequest, res: Response) {

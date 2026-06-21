@@ -25,8 +25,7 @@ export function Button({
       'border border-transparent bg-transparent text-textSecondary hover:-translate-y-0.5 hover:border-white/8 hover:bg-white/[0.05] hover:text-textPrimary',
     danger:
       'border border-danger/40 bg-[linear-gradient(180deg,rgba(239,68,68,0.22),rgba(239,68,68,0.14))] text-white hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(239,68,68,0.3),rgba(239,68,68,0.18))]',
-    info:
-      'border border-info/30 bg-[linear-gradient(180deg,rgba(59,130,246,0.18),rgba(59,130,246,0.12))] text-white hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(59,130,246,0.28),rgba(59,130,246,0.16))]',
+    info: 'border border-info/30 bg-[linear-gradient(180deg,rgba(59,130,246,0.18),rgba(59,130,246,0.12))] text-white hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(59,130,246,0.28),rgba(59,130,246,0.16))]',
   };
 
   return (

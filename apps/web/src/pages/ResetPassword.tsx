@@ -46,50 +46,112 @@ export function ResetPassword() {
     >
       {mutation.isSuccess ? (
         <div className="space-y-5">
-          <div role="status" className="flex items-start gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-4 text-sm text-emerald-200">
+          <div
+            role="status"
+            className="flex items-start gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-4 text-sm text-emerald-200"
+          >
             <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" />
             {mutation.data.message}
           </div>
-          <Button className="w-full" onClick={() => navigate('/login')}>Ir para o login</Button>
+          <Button className="w-full" onClick={() => navigate('/login')}>
+            Ir para o login
+          </Button>
         </div>
       ) : !token ? (
         <div className="space-y-5">
-          <ErrorMessage>Este link de recuperação é inválido ou expirou.</ErrorMessage>
+          <ErrorMessage>
+            Este link de recuperação é inválido ou expirou.
+          </ErrorMessage>
           <BackToLogin />
         </div>
       ) : (
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <PasswordField id="reset-password" label="Nova senha" value={newPassword} onChange={setNewPassword} />
-          <PasswordField id="reset-password-confirm" label="Confirmar nova senha" value={confirmPassword} onChange={setConfirmPassword} />
+          <PasswordField
+            id="reset-password"
+            label="Nova senha"
+            value={newPassword}
+            onChange={setNewPassword}
+          />
+          <PasswordField
+            id="reset-password-confirm"
+            label="Confirmar nova senha"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+          />
           {localError ? <ErrorMessage>{localError}</ErrorMessage> : null}
           {apiError ? <ErrorMessage>{apiError}</ErrorMessage> : null}
-          <Button className="w-full" type="submit" loading={mutation.isPending} loadingText="Redefinindo...">Redefinir senha</Button>
+          <Button
+            className="w-full"
+            type="submit"
+            loading={mutation.isPending}
+            loadingText="Redefinindo..."
+          >
+            Redefinir senha
+          </Button>
         </form>
       )}
     </AuthCard>
   );
 }
 
-function PasswordField({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <label htmlFor={id} className="block">
-      <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-textPrimary"><LockKeyhole size={16} className="text-indigo-300" /> {label}</span>
-      <Input id={id} type="password" autoComplete="new-password" value={value} onChange={(event) => onChange(event.target.value)} />
+      <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-textPrimary">
+        <LockKeyhole size={16} className="text-indigo-300" /> {label}
+      </span>
+      <Input
+        id={id}
+        type="password"
+        autoComplete="new-password"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
 
 function BackToLogin() {
-  return <Link to="/login" className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"><ArrowLeft size={16} /> Voltar para login</Link>;
+  return (
+    <Link
+      to="/login"
+      className="inline-flex items-center gap-2 text-sm font-medium text-textSecondary hover:text-textPrimary"
+    >
+      <ArrowLeft size={16} /> Voltar para login
+    </Link>
+  );
 }
 
 function ErrorMessage({ children }: { children: string }) {
-  return <div role="alert" className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-red-200">{children}</div>;
+  return (
+    <div
+      role="alert"
+      className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-red-200"
+    >
+      {children}
+    </div>
+  );
 }
 
 function getResetError(error: unknown) {
-  if (axios.isAxiosError<{ message?: string }>(error) && error.response?.status === 400) {
-    return error.response.data.message ?? 'Este link de recuperação é inválido ou expirou.';
+  if (
+    axios.isAxiosError<{ message?: string }>(error) &&
+    error.response?.status === 400
+  ) {
+    return (
+      error.response.data.message ??
+      'Este link de recuperação é inválido ou expirou.'
+    );
   }
   return 'Não foi possível redefinir a senha. Tente novamente.';
 }

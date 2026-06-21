@@ -137,7 +137,10 @@ export function Ranking() {
         {rankingQuery.isLoading ? (
           <RankingState message="Carregando ranking..." />
         ) : rankingQuery.isError ? (
-          <RankingState message="Não foi possível carregar o ranking." tone="danger" />
+          <RankingState
+            message="Não foi possível carregar o ranking."
+            tone="danger"
+          />
         ) : ranking.length === 0 ? (
           <RankingState message="Nenhum jogador no ranking ainda." />
         ) : (

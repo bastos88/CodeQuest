@@ -9,6 +9,9 @@ arenaRoutes.use(requireAuth);
 arenaRoutes.post('/start', asyncHandler(controller.start));
 arenaRoutes.post('/submit', asyncHandler(controller.submit));
 arenaRoutes.get('/history', asyncHandler(controller.history));
-arenaRoutes.get('/leaderboard', asyncHandler(async (_req, res) => {
-  res.redirect(307, '/ranking/arena');
-}));
+arenaRoutes.get(
+  '/leaderboard',
+  asyncHandler(async (_req, res) => {
+    res.redirect(307, '/ranking/arena');
+  }),
+);

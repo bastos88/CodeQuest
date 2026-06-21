@@ -15,7 +15,8 @@
     "test:api": "npm run test --workspace @codequest/api",
     "test:shared": "npm run test --workspace @codequest/shared",
     "lint": "npm run lint --workspaces --if-present",
-    "validate": "npm run build && npm run lint && npm run test --workspaces --if-present",
+    "format:check": "prettier --check \"apps/api/src/**/*.ts\" \"apps/api/tests/**/*.ts\" \"apps/web/src/**/*.{ts,tsx,css}\" \"packages/shared/src/**/*.ts\" package.json \"apps/*/package.json\" vercel.json",
+    "validate": "npm run build && npm run lint && npm run format:check && npm run test --workspaces --if-present",
     "db:migrate": "npm run db:migrate --workspace @codequest/api",
     "db:seed": "npm run db:seed --workspace @codequest/api"
   },
@@ -31,5 +32,9 @@
   "prisma": {
     "schema": "apps/api/prisma/schema.prisma",
     "seed": "tsx apps/api/prisma/seed.ts"
+  },
+  "dependencies": {
+    "@posthog/react": "^1.10.2",
+    "posthog-js": "^1.391.2"
   }
 }

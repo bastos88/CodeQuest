@@ -1,4 +1,8 @@
-import { calculateQuizXP, type Difficulty, type QuizSetupDifficulty } from '@codequest/shared';
+import {
+  calculateQuizXP,
+  type Difficulty,
+  type QuizSetupDifficulty,
+} from '@codequest/shared';
 
 export type QuizSetupState = {
   categoryIds: string[];
@@ -37,7 +41,12 @@ export type QuizCategoryOption = {
 
 export const difficultyCopy: Record<
   QuizSetupDifficulty,
-  { label: string; description: string; badge: string; apiDifficulty: Difficulty }
+  {
+    label: string;
+    description: string;
+    badge: string;
+    apiDifficulty: Difficulty;
+  }
 > = {
   BEGINNER: {
     label: 'Iniciante',
@@ -68,10 +77,19 @@ export const questionCountOptions = [
 
 export function estimateQuizMinutes(questionCount: number | null): string {
   if (!questionCount) return '-';
-  return questionCount <= 5 ? '~3 minutos' : questionCount <= 10 ? '~6 minutos' : questionCount <= 15 ? '~10 minutos' : '~15 minutos';
+  return questionCount <= 5
+    ? '~3 minutos'
+    : questionCount <= 10
+      ? '~6 minutos'
+      : questionCount <= 15
+        ? '~10 minutos'
+        : '~15 minutos';
 }
 
-export function estimatePotentialXP(difficulty: QuizSetupDifficulty | null, questionCount: number | null): number {
+export function estimatePotentialXP(
+  difficulty: QuizSetupDifficulty | null,
+  questionCount: number | null,
+): number {
   if (!difficulty || !questionCount) return 0;
   return calculateQuizXP(
     Array.from({ length: questionCount }, () => ({
@@ -83,13 +101,21 @@ export function estimatePotentialXP(difficulty: QuizSetupDifficulty | null, ques
 
 export function buildCategoryDescription(name: string): string {
   const normalized = name.toLowerCase();
-  if (normalized.includes('react')) return 'Componentes, fluxo, estado e composição.';
-  if (normalized.includes('typescript')) return 'Tipagem segura, unions e domínio explícito.';
-  if (normalized.includes('javascript')) return 'Linguagem, runtime e padrões de uso.';
-  if (normalized.includes('sql')) return 'Consultas, modelagem e performance de dados.';
-  if (normalized.includes('node')) return 'Back-end, APIs e arquitetura de serviços.';
-  if (normalized.includes('api')) return 'Contratos, HTTP e integração entre sistemas.';
-  if (normalized.includes('css')) return 'Layout, responsividade e acabamento visual.';
-  if (normalized.includes('html')) return 'Semântica, estrutura e acessibilidade.';
+  if (normalized.includes('react'))
+    return 'Componentes, fluxo, estado e composição.';
+  if (normalized.includes('typescript'))
+    return 'Tipagem segura, unions e domínio explícito.';
+  if (normalized.includes('javascript'))
+    return 'Linguagem, runtime e padrões de uso.';
+  if (normalized.includes('sql'))
+    return 'Consultas, modelagem e performance de dados.';
+  if (normalized.includes('node'))
+    return 'Back-end, APIs e arquitetura de serviços.';
+  if (normalized.includes('api'))
+    return 'Contratos, HTTP e integração entre sistemas.';
+  if (normalized.includes('css'))
+    return 'Layout, responsividade e acabamento visual.';
+  if (normalized.includes('html'))
+    return 'Semântica, estrutura e acessibilidade.';
   return 'Trilha selecionável para compor o desafio.';
 }

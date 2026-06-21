@@ -25,7 +25,13 @@ const icons: Record<string, LucideIcon> = {
   trophy: Trophy,
 };
 
-export function AchievementIcon({ iconKey, size = 18 }: { iconKey: string | null; size?: number }) {
+export function AchievementIcon({
+  iconKey,
+  size = 18,
+}: {
+  iconKey: string | null;
+  size?: number;
+}) {
   const Icon = (iconKey && icons[iconKey]) || Trophy;
   return <Icon size={size} aria-hidden="true" />;
 }

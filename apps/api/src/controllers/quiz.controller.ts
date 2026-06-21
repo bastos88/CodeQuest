@@ -16,5 +16,7 @@ export async function history(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function result(req: AuthenticatedRequest, res: Response) {
-  res.json(await quizService.getQuizResult(req.user.id, requireParam(req, 'id')));
+  res.json(
+    await quizService.getQuizResult(req.user.id, requireParam(req, 'id')),
+  );
 }

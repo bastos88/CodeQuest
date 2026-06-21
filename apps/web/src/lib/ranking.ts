@@ -16,7 +16,9 @@ export const rankingQueryKeys = {
 };
 
 export async function getPublicRanking(limit = 10): Promise<RankingPlayer[]> {
-  const { data } = await api.get<RankingPlayer[]>(`/public/ranking?limit=${limit}`);
+  const { data } = await api.get<RankingPlayer[]>(
+    `/public/ranking?limit=${limit}`,
+  );
 
   return data;
 }

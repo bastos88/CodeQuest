@@ -5,6 +5,21 @@ import { requireAuth } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/async-handler.js';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
+
+const credentialLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const forgotPasswordSchema = z
   .object({ email: z.string().trim().toLowerCase().email() })
@@ -20,21 +35,39 @@ const resetPasswordSchema = z
 
 export const authRoutes = Router();
 
-authRoutes.post('/register', validateBody(registerSchema), asyncHandler(controller.register));
-authRoutes.post('/login', validateBody(loginSchema), asyncHandler(controller.login));
-authRoutes.post('/refresh', asyncHandler(controller.refresh));
+authRoutes.post(
+  '/register',
+  credentialLimiter,
+  validateBody(registerSchema),
+  asyncHandler(controller.register),
+);
+authRoutes.post(
+  '/login',
+  credentialLimiter,
+  validateBody(loginSchema),
+  asyncHandler(controller.login),
+);
+authRoutes.post('/refresh', refreshLimiter, asyncHandler(controller.refresh));
 authRoutes.post('/logout', asyncHandler(controller.logout));
 authRoutes.post(
   '/forgot-password',
+  credentialLimiter,
   validateBody(forgotPasswordSchema),
   asyncHandler(controller.forgotPassword),
 );
 authRoutes.post(
   '/reset-password',
+  credentialLimiter,
   validateBody(resetPasswordSchema),
   asyncHandler(controller.resetPassword),
 );
 authRoutes.get('/debug-cookies', controller.debugCookies);
 authRoutes.get('/me', requireAuth, asyncHandler(controller.me));
-authRoutes.get('/:provider(github|google)', asyncHandler(controller.oauthStart));
-authRoutes.get('/:provider(github|google)/callback', asyncHandler(controller.oauthCallback));
+authRoutes.get(
+  '/:provider(github|google)',
+  asyncHandler(controller.oauthStart),
+);
+authRoutes.get(
+  '/:provider(github|google)/callback',
+  asyncHandler(controller.oauthCallback),
+);

@@ -34,7 +34,12 @@ export type OAuthProfile = {
   email: string;
   name: string;
   avatarUrl: string | null;
+  emailVerified: boolean;
 };
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
 
 function publicUser(user: PublicUser): PublicUser {
   return {
@@ -52,8 +57,9 @@ function daysFromNow(days: number): Date {
 }
 
 export async function register(input: RegisterInput) {
+  const email = normalizeEmail(input.email);
   const existing = await prisma.user.findUnique({
-    where: { email: input.email },
+    where: { email },
   });
   if (existing)
     throw new HttpError(
@@ -67,7 +73,7 @@ export async function register(input: RegisterInput) {
     user = await prisma.user.create({
       data: {
         name: input.name,
-        email: input.email,
+        email,
         passwordHash,
         xp: 0,
         rating: 0,
@@ -102,8 +108,9 @@ export async function register(input: RegisterInput) {
 }
 
 export async function login(input: LoginInput) {
+  const email = normalizeEmail(input.email);
   const user = await prisma.user.findUnique({
-    where: { email: input.email },
+    where: { email },
     select: {
       id: true,
       name: true,
@@ -127,8 +134,18 @@ export async function refresh(refreshToken: string) {
   const payload = verifyRefreshToken(refreshToken);
   const tokenHash = hashToken(refreshToken);
   const stored = await prisma.refreshToken.findUnique({ where: { tokenHash } });
-  if (!stored || stored.revokedAt || stored.expiresAt < new Date())
+  if (!stored || stored.expiresAt < new Date())
     throw new HttpError(401, 'Invalid refresh token');
+  if (stored.userId !== payload.sub) {
+    throw new HttpError(401, 'Invalid refresh token');
+  }
+  if (stored.revokedAt) {
+    await prisma.refreshToken.updateMany({
+      where: { userId: stored.userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    throw new HttpError(401, 'Refresh token reuse detected');
+  }
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: payload.sub },
@@ -179,8 +196,9 @@ function hashPasswordResetToken(token: string) {
 }
 
 export async function forgotPassword(email: string) {
+  const normalizedEmail = normalizeEmail(email);
   const user = await prisma.user.findFirst({
-    where: { email: { equals: email, mode: 'insensitive' } },
+    where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
     select: { id: true, name: true, email: true },
   });
 
@@ -259,7 +277,10 @@ export async function resetPassword(input: {
     });
 
     if (consumed.count !== 1) {
-      throw new HttpError(400, 'Este link de recuperação é inválido ou expirou.');
+      throw new HttpError(
+        400,
+        'Este link de recuperação é inválido ou expirou.',
+      );
     }
 
     await tx.user.update({
@@ -278,111 +299,133 @@ export async function completeOAuth(profile: OAuthProfile) {
 }
 
 export async function findOrCreateOAuthUser(profile: OAuthProfile) {
-  const linkedUser = await prisma.user.findFirst({
-    where: {
-      provider: profile.provider,
-      providerId: profile.providerId,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      xp: true,
-      rating: true,
-    },
-  });
-
-  if (linkedUser) return linkedUser;
-
-  const existingEmailUser = await prisma.user.findUnique({
-    where: { email: profile.email },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      xp: true,
-      rating: true,
-    },
-  });
-
-  if (existingEmailUser) {
-    return prisma.user.update({
-      where: { id: existingEmailUser.id },
-      data: {
-        provider: profile.provider,
-        providerId: profile.providerId,
-        ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        xp: true,
-        rating: true,
-      },
-    });
+  if (!profile.emailVerified) {
+    throw new HttpError(401, 'OAuth provider did not return a verified email');
   }
 
+  const email = normalizeEmail(profile.email);
+  const identityKey = {
+    provider: profile.provider,
+    providerId: profile.providerId,
+  };
+
+  const linkedIdentity = await prisma.oAuthIdentity.findUnique({
+    where: { provider_providerId: identityKey },
+    select: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          xp: true,
+          rating: true,
+        },
+      },
+    },
+  });
+
+  if (linkedIdentity) return linkedIdentity.user;
+
   try {
-    return await prisma.user.create({
-      data: {
-        name: profile.name,
-        email: profile.email,
-        passwordHash: null,
-        provider: profile.provider,
-        providerId: profile.providerId,
-        xp: 0,
-        rating: 1000,
-        quizzesCompleted: 0,
-        correctAnswers: 0,
-        totalAnswers: 0,
-        streakDays: 0,
-        ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        xp: true,
-        rating: true,
-      },
+    return await prisma.$transaction(async (tx) => {
+      const identity = await tx.oAuthIdentity.findUnique({
+        where: { provider_providerId: identityKey },
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              xp: true,
+              rating: true,
+            },
+          },
+        },
+      });
+      if (identity) return identity.user;
+
+      const existingEmailUser = await tx.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          xp: true,
+          rating: true,
+        },
+      });
+
+      if (existingEmailUser) {
+        await tx.oAuthIdentity.create({
+          data: {
+            ...identityKey,
+            email,
+            userId: existingEmailUser.id,
+          },
+        });
+        if (profile.avatarUrl) {
+          await tx.user.update({
+            where: { id: existingEmailUser.id },
+            data: { avatarUrl: profile.avatarUrl },
+          });
+        }
+        return existingEmailUser;
+      }
+
+      return tx.user.create({
+        data: {
+          name: profile.name.trim(),
+          email,
+          passwordHash: null,
+          xp: 0,
+          rating: 1000,
+          quizzesCompleted: 0,
+          correctAnswers: 0,
+          totalAnswers: 0,
+          streakDays: 0,
+          ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
+          oauthIdentities: {
+            create: { ...identityKey, email },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          xp: true,
+          rating: true,
+        },
+      });
     });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      const user = await prisma.user.findUnique({
-        where: { email: profile.email },
+      const oauthIdentity = await prisma.oAuthIdentity.findUnique({
+        where: { provider_providerId: identityKey },
         select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          xp: true,
-          rating: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              xp: true,
+              rating: true,
+            },
+          },
         },
       });
-      if (user) return user;
-      const oauthUser = await prisma.user.findFirst({
-        where: {
-          provider: profile.provider,
-          providerId: profile.providerId,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          xp: true,
-          rating: true,
-        },
-      });
-      if (oauthUser) return oauthUser;
+      if (oauthIdentity) return oauthIdentity.user;
+      throw new HttpError(
+        409,
+        'This OAuth provider is already linked to a different identity',
+      );
     }
     throw error;
   }

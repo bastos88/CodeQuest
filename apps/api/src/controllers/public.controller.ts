@@ -26,10 +26,19 @@ export async function stats(_req: Request, res: Response) {
         }),
       ]);
 
-    res.json({ questions, categories, users, quizzes, challenges, contributions });
+    res.json({
+      questions,
+      categories,
+      users,
+      quizzes,
+      challenges,
+      contributions,
+    });
   } catch (error) {
     console.error('[PUBLIC STATS ERROR]', error);
-    res.status(500).json({ message: 'Não foi possível carregar as estatísticas.' });
+    res
+      .status(500)
+      .json({ message: 'Não foi possível carregar as estatísticas.' });
   }
 }
 

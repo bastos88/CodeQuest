@@ -4,24 +4,32 @@ import { fileURLToPath } from 'node:url';
 import { Resend } from 'resend';
 
 dotenv.config({
-  path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env'),
+  path: path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../.env',
+  ),
 });
 
 const destination = process.argv[2]?.trim();
 const resendApiKey = process.env.RESEND_API_KEY?.trim();
 const emailFrom = process.env.EMAIL_FROM?.trim();
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const senderPattern = /^(?:[^<>]+\s*)?<[^<>\s]+@[^<>\s]+\.[^<>\s]+>$|^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const senderPattern =
+  /^(?:[^<>]+\s*)?<[^<>\s]+@[^<>\s]+\.[^<>\s]+>$|^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 if (!destination || !emailPattern.test(destination)) {
   console.error('Informe um e-mail de destino válido.');
-  console.error('Uso: npx tsx apps/api/src/scripts/test-email.ts seu-email@exemplo.com');
+  console.error(
+    'Uso: npx tsx apps/api/src/scripts/test-email.ts seu-email@exemplo.com',
+  );
   process.exitCode = 1;
 } else if (!resendApiKey) {
   console.error('Falha no envio: RESEND_API_KEY não está configurada.');
   process.exitCode = 1;
 } else if (!emailFrom || !senderPattern.test(emailFrom)) {
-  console.error('Falha no envio: EMAIL_FROM está ausente ou possui formato inválido.');
+  console.error(
+    'Falha no envio: EMAIL_FROM está ausente ou possui formato inválido.',
+  );
   process.exitCode = 1;
 } else {
   const resend = new Resend(resendApiKey);
@@ -42,7 +50,9 @@ if (!destination || !emailPattern.test(destination)) {
 
   if (error) {
     console.error('Falha no envio.');
-    console.error(`Motivo: ${error.name ?? 'provider_error'} - ${error.message}`);
+    console.error(
+      `Motivo: ${error.name ?? 'provider_error'} - ${error.message}`,
+    );
     process.exitCode = 1;
   } else if (!data?.id) {
     console.error('Falha no envio: o Resend não retornou um identificador.');

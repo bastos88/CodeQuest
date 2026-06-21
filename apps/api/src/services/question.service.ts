@@ -1,23 +1,55 @@
-import type { ApproveReviewInput, QuestionInput, RejectReviewInput } from '@codequest/shared';
+import type {
+  ApproveReviewInput,
+  QuestionInput,
+  QuestionUpdateInput,
+  RejectReviewInput,
+} from '@codequest/shared';
 import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/http.js';
 import { applyContributionGamification } from './gamification.service.js';
 
+function assertExactlyOneCorrectAlternative(
+  alternatives: Array<{ isCorrect: boolean }> | undefined,
+) {
+  if (
+    alternatives &&
+    alternatives.filter((alternative) => alternative.isCorrect).length !== 1
+  ) {
+    throw new HttpError(
+      422,
+      'A pergunta deve possuir exatamente uma alternativa correta.',
+    );
+  }
+}
+
 export async function listQuestions(includeUnapproved: boolean) {
   return prisma.question.findMany({
-    ...(includeUnapproved ? {} : { where: { status: 'APPROVED', isActive: true, archivedAt: null } }),
-    include: { category: true, alternatives: { select: { id: true, text: true } } },
+    ...(includeUnapproved
+      ? {}
+      : { where: { status: 'APPROVED', isActive: true, archivedAt: null } }),
+    include: {
+      category: true,
+      alternatives: { select: { id: true, text: true } },
+    },
     orderBy: { createdAt: 'desc' },
+    take: 200,
   });
 }
 
-export async function createQuestion(userId: string, input: QuestionInput, status: 'PENDING_REVIEW' | 'APPROVED') {
+export async function createQuestion(
+  userId: string,
+  input: QuestionInput,
+  status: 'PENDING_REVIEW' | 'APPROVED',
+) {
+  assertExactlyOneCorrectAlternative(input.alternatives);
   return prisma.question.create({
     data: {
       categoryId: input.categoryId,
       authorId: userId,
       prompt: input.prompt,
-      ...(input.explanation !== undefined ? { explanation: input.explanation } : {}),
+      ...(input.explanation !== undefined
+        ? { explanation: input.explanation }
+        : {}),
       difficulty: input.difficulty,
       status,
       isActive: status === 'APPROVED',
@@ -29,13 +61,18 @@ export async function createQuestion(userId: string, input: QuestionInput, statu
   });
 }
 
-export async function updateQuestion(id: string, input: Partial<QuestionInput>) {
+export async function updateQuestion(id: string, input: QuestionUpdateInput) {
+  assertExactlyOneCorrectAlternative(input.alternatives);
   return prisma.question.update({
     where: { id },
     data: {
-      ...(input.categoryId ? { category: { connect: { id: input.categoryId } } } : {}),
+      ...(input.categoryId
+        ? { category: { connect: { id: input.categoryId } } }
+        : {}),
       ...(input.prompt ? { prompt: input.prompt } : {}),
-      ...(input.explanation !== undefined ? { explanation: input.explanation } : {}),
+      ...(input.explanation !== undefined
+        ? { explanation: input.explanation }
+        : {}),
       ...(input.difficulty ? { difficulty: input.difficulty } : {}),
       ...(input.alternatives
         ? {
@@ -54,9 +91,14 @@ export async function deleteQuestion(id: string, actorId: string) {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) throw new HttpError(404, 'Question not found');
 
-  const answerCount = await prisma.quizAnswer.count({ where: { questionId: id } });
+  const answerCount = await prisma.quizAnswer.count({
+    where: { questionId: id },
+  });
   if (answerCount > 0) {
-    throw new HttpError(409, 'Question already has quiz history; archive it instead');
+    throw new HttpError(
+      409,
+      'Question already has quiz history; archive it instead',
+    );
   }
 
   await prisma.$transaction(async (tx) => {
@@ -77,7 +119,8 @@ export async function deleteQuestion(id: string, actorId: string) {
 export async function archiveQuestion(id: string, actorId: string) {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) throw new HttpError(404, 'Question not found');
-  if (question.status === 'ARCHIVED') throw new HttpError(409, 'Question already archived');
+  if (question.status === 'ARCHIVED')
+    throw new HttpError(409, 'Question already archived');
 
   return prisma.$transaction(async (tx) => {
     const archived = await tx.question.update({
@@ -106,7 +149,8 @@ export async function archiveQuestion(id: string, actorId: string) {
 export async function restoreQuestion(id: string, actorId: string) {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) throw new HttpError(404, 'Question not found');
-  if (question.status !== 'ARCHIVED') throw new HttpError(409, 'Only archived questions can be restored');
+  if (question.status !== 'ARCHIVED')
+    throw new HttpError(409, 'Only archived questions can be restored');
 
   return prisma.$transaction(async (tx) => {
     const restored = await tx.question.update({
@@ -139,13 +183,20 @@ export async function approveQuestion(
   input: ApproveReviewInput,
 ) {
   const { checklist, notes } = input;
-  if (!Object.values(checklist).every(Boolean)) throw new HttpError(422, 'Approval checklist must be complete');
+  if (!Object.values(checklist).every(Boolean))
+    throw new HttpError(422, 'Approval checklist must be complete');
 
   return prisma.$transaction(async (tx) => {
-    const existing = await tx.question.findUnique({ where: { id: questionId } });
+    const existing = await tx.question.findUnique({
+      where: { id: questionId },
+      include: { alternatives: { select: { isCorrect: true } } },
+    });
     if (!existing) throw new HttpError(404, 'Question not found');
-    if (existing.status === 'APPROVED' && existing.isActive) throw new HttpError(409, 'Question already approved');
-    if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be approved');
+    assertExactlyOneCorrectAlternative(existing.alternatives);
+    if (existing.status === 'APPROVED' && existing.isActive)
+      throw new HttpError(409, 'Question already approved');
+    if (existing.status === 'ARCHIVED')
+      throw new HttpError(409, 'Archived questions cannot be approved');
 
     const question = await tx.question.update({
       where: { id: questionId },
@@ -190,13 +241,19 @@ export async function rejectQuestion(
   input: RejectReviewInput,
 ) {
   const { rejectionReason, notes } = input;
-  if (!rejectionReason.trim()) throw new HttpError(422, 'Rejection reason is required');
+  if (!rejectionReason.trim())
+    throw new HttpError(422, 'Rejection reason is required');
 
   return prisma.$transaction(async (tx) => {
-    const existing = await tx.question.findUnique({ where: { id: questionId } });
+    const existing = await tx.question.findUnique({
+      where: { id: questionId },
+    });
     if (!existing) throw new HttpError(404, 'Question not found');
-    if (existing.status === 'REJECTED') throw new HttpError(409, 'Question already rejected');
-    if (existing.status === 'ARCHIVED') throw new HttpError(409, 'Archived questions cannot be rejected');
+    if (existing.status === 'REJECTED')
+      throw new HttpError(409, 'Question already rejected');
+    if (existing.status !== 'PENDING_REVIEW') {
+      throw new HttpError(409, 'Only pending questions can be rejected');
+    }
 
     const question = await tx.question.update({
       where: { id: questionId },

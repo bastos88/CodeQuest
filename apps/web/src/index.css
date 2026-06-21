@@ -29,9 +29,21 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgba(108, 99, 255, 0.16), transparent 22rem),
-    radial-gradient(circle at 88% 8%, rgba(168, 85, 247, 0.12), transparent 24rem),
-    radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.08), transparent 30rem),
+    radial-gradient(
+      circle at 12% 0%,
+      rgba(108, 99, 255, 0.16),
+      transparent 22rem
+    ),
+    radial-gradient(
+      circle at 88% 8%,
+      rgba(168, 85, 247, 0.12),
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(59, 130, 246, 0.08),
+      transparent 30rem
+    ),
     linear-gradient(180deg, #0a0b0f 0%, #0c0e13 48%, #0b0d12 100%);
   color: #f4f7fb;
 }
@@ -81,7 +93,9 @@ select:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px rgba(108, 99, 255, 0.26), 0 0 0 4px var(--focus-ring);
+  box-shadow:
+    0 0 0 1px rgba(108, 99, 255, 0.26),
+    0 0 0 4px var(--focus-ring);
 }
 
 ::selection {
@@ -100,7 +114,11 @@ a:focus-visible {
 ::-webkit-scrollbar-thumb {
   border: 2px solid rgba(10, 11, 15, 0.9);
   border-radius: 9999px;
-  background: linear-gradient(180deg, rgba(108, 99, 255, 0.65), rgba(168, 85, 247, 0.55));
+  background: linear-gradient(
+    180deg,
+    rgba(108, 99, 255, 0.65),
+    rgba(168, 85, 247, 0.55)
+  );
 }
 
 @keyframes testimonial-scroll-up {
@@ -153,7 +171,11 @@ a:focus-visible {
   }
 
   .surface-panel {
-    background: linear-gradient(180deg, rgba(30, 32, 41, 0.9), rgba(20, 21, 28, 0.76));
+    background: linear-gradient(
+      180deg,
+      rgba(30, 32, 41, 0.9),
+      rgba(20, 21, 28, 0.76)
+    );
     border: 1px solid var(--border-glass);
     box-shadow:
       0 16px 50px rgba(5, 8, 17, 0.28),

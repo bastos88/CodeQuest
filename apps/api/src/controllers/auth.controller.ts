@@ -20,13 +20,13 @@ import { HttpError } from '../utils/http.js';
 export async function register(req: Request, res: Response) {
   const session = await authService.register(req.body);
   setAuthCookies(res, session);
-  res.status(201).json(session);
+  res.status(201).json({ user: session.user });
 }
 
 export async function login(req: Request, res: Response) {
   const session = await authService.login(req.body);
   setAuthCookies(res, session);
-  res.json(session);
+  res.json({ user: session.user });
 }
 
 export async function refresh(req: Request, res: Response) {
@@ -34,7 +34,7 @@ export async function refresh(req: Request, res: Response) {
   if (!refreshToken) throw new HttpError(400, 'Missing refresh token');
   const session = await authService.refresh(refreshToken);
   setAuthCookies(res, session);
-  res.json(session);
+  res.json({ user: session.user });
 }
 
 export async function logout(req: Request, res: Response) {
@@ -59,7 +59,16 @@ export async function me(req: AuthenticatedRequest, res: Response) {
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: req.user.id },
-    select: { id: true, name: true, email: true, role: true, avatarUrl: true, xp: true, rating: true, activeTitle: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      avatarUrl: true,
+      xp: true,
+      rating: true,
+      activeTitle: true,
+    },
   });
   res.json({ user });
 }

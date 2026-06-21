@@ -1,4 +1,8 @@
-import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type { ApproveReviewInput, RejectReviewInput } from '@codequest/shared';
 import { api } from '../lib/api';
 import { adminQueryKeys } from '../lib/admin';
@@ -20,7 +24,9 @@ async function invalidateAdminData(queryClient: QueryClient) {
     queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminStats }),
     queryClient.invalidateQueries({ queryKey: adminQueryKeys.pendingReviews }),
     queryClient.invalidateQueries({ queryKey: adminQueryKeys.quizQuestions }),
-    queryClient.invalidateQueries({ queryKey: adminQueryKeys.quizSetupCategories }),
+    queryClient.invalidateQueries({
+      queryKey: adminQueryKeys.quizSetupCategories,
+    }),
   ]);
 }
 
@@ -28,8 +34,13 @@ export function useApproveQuestionMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ questionId, payload }: { questionId: string; payload: ApproveReviewInput }) =>
-      (await api.post(`/reviews/${questionId}/approve`, payload)).data,
+    mutationFn: async ({
+      questionId,
+      payload,
+    }: {
+      questionId: string;
+      payload: ApproveReviewInput;
+    }) => (await api.post(`/reviews/${questionId}/approve`, payload)).data,
     onSuccess: async () => {
       await invalidateAdminData(queryClient);
     },
@@ -40,8 +51,13 @@ export function useRejectQuestionMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ questionId, payload }: { questionId: string; payload: RejectReviewInput }) =>
-      (await api.post(`/reviews/${questionId}/reject`, payload)).data,
+    mutationFn: async ({
+      questionId,
+      payload,
+    }: {
+      questionId: string;
+      payload: RejectReviewInput;
+    }) => (await api.post(`/reviews/${questionId}/reject`, payload)).data,
     onSuccess: async () => {
       await invalidateAdminData(queryClient);
     },
@@ -52,7 +68,8 @@ export function useArchiveQuestionMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (questionId: string) => (await api.post(`/questions/${questionId}/archive`)).data,
+    mutationFn: async (questionId: string) =>
+      (await api.post(`/questions/${questionId}/archive`)).data,
     onSuccess: async () => {
       await invalidateAdminData(queryClient);
     },
@@ -63,7 +80,8 @@ export function useRestoreQuestionMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (questionId: string) => (await api.post(`/questions/${questionId}/restore`)).data,
+    mutationFn: async (questionId: string) =>
+      (await api.post(`/questions/${questionId}/restore`)).data,
     onSuccess: async () => {
       await invalidateAdminData(queryClient);
     },

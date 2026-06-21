@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-process.env.DATABASE_URL ??= 'postgresql://codequest:test@localhost:5432/codequest_test';
+process.env.DATABASE_URL ??=
+  'postgresql://codequest:test@localhost:5432/codequest_test';
 process.env.JWT_ACCESS_SECRET ??= 'test-access-secret-change-me-please';
 process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret-change-me-please';
 
@@ -15,6 +16,8 @@ vi.mock('../src/config/prisma.js', () => ({
     refreshToken: {
       create: vi.fn(),
       deleteMany: vi.fn(),
+      findUnique: vi.fn(),
+      updateMany: vi.fn(),
     },
     passwordResetToken: {
       deleteMany: vi.fn(),
@@ -31,8 +34,11 @@ vi.mock('../src/services/email.service.js', () => ({
 }));
 
 const { prisma } = await import('../src/config/prisma.js');
-const { forgotPassword, login, resetPassword } = await import('../src/services/auth.service.js');
-const { sendPasswordResetEmail } = await import('../src/services/email.service.js');
+const { forgotPassword, login, refresh, resetPassword } =
+  await import('../src/services/auth.service.js');
+const { signRefreshToken } = await import('../src/utils/tokens.js');
+const { sendPasswordResetEmail } =
+  await import('../src/services/email.service.js');
 
 const findUnique = vi.mocked(prisma.user.findUnique);
 const findUserForReset = vi.mocked(prisma.user.findFirst);
@@ -42,11 +48,15 @@ const findResetToken = vi.mocked(prisma.passwordResetToken.findUnique);
 const consumeResetToken = vi.mocked(prisma.passwordResetToken.updateMany);
 const updateUser = vi.mocked(prisma.user.update);
 const deleteRefreshTokens = vi.mocked(prisma.refreshToken.deleteMany);
+const findRefreshToken = vi.mocked(prisma.refreshToken.findUnique);
+const revokeRefreshTokens = vi.mocked(prisma.refreshToken.updateMany);
 const transaction = vi.mocked(prisma.$transaction);
 
 type MockUser = Awaited<ReturnType<typeof prisma.user.findUnique>>;
 
-function createMockUser(overrides: Partial<NonNullable<MockUser>> = {}): NonNullable<MockUser> {
+function createMockUser(
+  overrides: Partial<NonNullable<MockUser>> = {},
+): NonNullable<MockUser> {
   return {
     id: 'user-1',
     name: 'Code User',
@@ -70,7 +80,9 @@ describe('auth service login', () => {
     vi.clearAllMocks();
     transaction.mockImplementation(async (operation: unknown) => {
       if (Array.isArray(operation)) return Promise.all(operation) as never;
-      return (operation as (tx: typeof prisma) => Promise<unknown>)(prisma) as never;
+      return (operation as (tx: typeof prisma) => Promise<unknown>)(
+        prisma,
+      ) as never;
     });
   });
 
@@ -153,6 +165,32 @@ describe('auth service login', () => {
   });
 });
 
+describe('refresh token rotation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('revokes the active token family when a rotated token is reused', async () => {
+    const token = signRefreshToken({ sub: 'user-1', role: 'USER' });
+    findRefreshToken.mockResolvedValue({
+      id: 'refresh-1',
+      tokenHash: 'stored-hash',
+      userId: 'user-1',
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: new Date(),
+      replacedBy: 'replacement-hash',
+      createdAt: new Date(),
+    });
+    revokeRefreshTokens.mockResolvedValue({ count: 1 });
+
+    await expect(refresh(token)).rejects.toMatchObject({ statusCode: 401 });
+    expect(revokeRefreshTokens).toHaveBeenCalledWith({
+      where: { userId: 'user-1', revokedAt: null },
+      data: { revokedAt: expect.any(Date) },
+    });
+  });
+});
+
 describe('password recovery', () => {
   const neutralMessage =
     'Se existir uma conta com este e-mail, enviaremos instruções para redefinir sua senha.';
@@ -161,7 +199,9 @@ describe('password recovery', () => {
     vi.clearAllMocks();
     transaction.mockImplementation(async (operation: unknown) => {
       if (Array.isArray(operation)) return Promise.all(operation) as never;
-      return (operation as (tx: typeof prisma) => Promise<unknown>)(prisma) as never;
+      return (operation as (tx: typeof prisma) => Promise<unknown>)(
+        prisma,
+      ) as never;
     });
   });
 
@@ -182,8 +222,11 @@ describe('password recovery', () => {
     });
 
     const emailInput = sendResetEmail.mock.calls[0]?.[0];
-    const rawToken = new URL(emailInput?.resetUrl ?? '').searchParams.get('token');
-    const createInput = vi.mocked(prisma.passwordResetToken.create).mock.calls[0]?.[0];
+    const rawToken = new URL(emailInput?.resetUrl ?? '').searchParams.get(
+      'token',
+    );
+    const createInput = vi.mocked(prisma.passwordResetToken.create).mock
+      .calls[0]?.[0];
 
     expect(rawToken).toMatch(/^[a-f0-9]{64}$/);
     expect(createInput?.data.tokenHash).toMatch(/^[a-f0-9]{64}$/);
@@ -194,7 +237,9 @@ describe('password recovery', () => {
   it('keeps the response neutral when email delivery fails', async () => {
     findUserForReset.mockResolvedValue(createMockUser());
     sendResetEmail.mockRejectedValue(new Error('provider unavailable'));
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
 
     await expect(forgotPassword('user@example.com')).resolves.toEqual({
       message: neutralMessage,
@@ -228,8 +273,12 @@ describe('password recovery', () => {
       confirmPassword: 'NewPassword123!',
     };
 
-    await expect(resetPassword(payload)).rejects.toMatchObject({ statusCode: 400 });
-    await expect(resetPassword(payload)).rejects.toMatchObject({ statusCode: 400 });
+    await expect(resetPassword(payload)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+    await expect(resetPassword(payload)).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
 
   it('consumes the token, updates the password and revokes refresh sessions', async () => {
@@ -251,11 +300,17 @@ describe('password recovery', () => {
 
     const passwordHash = updateUser.mock.calls[0]?.[0].data.passwordHash;
     expect(typeof passwordHash).toBe('string');
-    expect(await bcrypt.compare('NewPassword123!', passwordHash as string)).toBe(true);
+    expect(
+      await bcrypt.compare('NewPassword123!', passwordHash as string),
+    ).toBe(true);
     expect(consumeResetToken).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ usedAt: null }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ usedAt: null }),
+      }),
     );
-    expect(deleteRefreshTokens).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+    expect(deleteRefreshTokens).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+    });
   });
 
   it('rejects a second concurrent consumption attempt', async () => {

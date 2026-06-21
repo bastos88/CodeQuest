@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, CheckCircle2, Layers3, Orbit, Sparkles, Target, TimerReset } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Layers3,
+  Orbit,
+  Sparkles,
+  Target,
+  TimerReset,
+} from 'lucide-react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { QuizSetupDifficulty } from '@codequest/shared';
@@ -52,9 +61,11 @@ const categoryPriority = [
   'Python',
 ];
 
-const difficultyOptions = (Object.entries(difficultyCopy) as Array<
-  [QuizSetupDifficulty, (typeof difficultyCopy)[QuizSetupDifficulty]]
->).map(([value, copy]) => ({ value, ...copy }));
+const difficultyOptions = (
+  Object.entries(difficultyCopy) as Array<
+    [QuizSetupDifficulty, (typeof difficultyCopy)[QuizSetupDifficulty]]
+  >
+).map(([value, copy]) => ({ value, ...copy }));
 
 const initialState: QuizSetupState = {
   categoryIds: [],
@@ -70,31 +81,42 @@ export function QuizSetupPage() {
 
   const categoriesQuery = useQuery({
     queryKey: ['quiz-setup-categories'],
-    queryFn: async () => (await api.get<QuestionListResponse>('/categories')).data,
+    queryFn: async () =>
+      (await api.get<QuestionListResponse>('/categories')).data,
     select: (response) =>
       response
-        .map((category): QuizCategoryOption => ({
-          id: category.id,
-          name: category.name,
-          slug: category.slug,
-          description: category.description ?? buildCategoryDescription(category.name),
-        }))
+        .map(
+          (category): QuizCategoryOption => ({
+            id: category.id,
+            name: category.name,
+            slug: category.slug,
+            description:
+              category.description ?? buildCategoryDescription(category.name),
+          }),
+        )
         .sort((left, right) => {
-        const leftIndex = categoryPriority.indexOf(left.name);
-        const rightIndex = categoryPriority.indexOf(right.name);
+          const leftIndex = categoryPriority.indexOf(left.name);
+          const rightIndex = categoryPriority.indexOf(right.name);
 
-        if (leftIndex === -1 && rightIndex === -1) return left.name.localeCompare(right.name);
-        if (leftIndex === -1) return 1;
-        if (rightIndex === -1) return -1;
-        return leftIndex - rightIndex;
-      }),
+          if (leftIndex === -1 && rightIndex === -1)
+            return left.name.localeCompare(right.name);
+          if (leftIndex === -1) return 1;
+          if (rightIndex === -1) return -1;
+          return leftIndex - rightIndex;
+        }),
     retry: false,
   });
 
   const startMutation = useMutation({
     mutationFn: async (state: QuizSetupState) => {
-      if (!state.difficulty || !state.questionCount || state.categoryIds.length === 0) {
-        throw new Error('Selecione categorias, dificuldade e quantidade antes de iniciar.');
+      if (
+        !state.difficulty ||
+        !state.questionCount ||
+        state.categoryIds.length === 0
+      ) {
+        throw new Error(
+          'Selecione categorias, dificuldade e quantidade antes de iniciar.',
+        );
       }
 
       const { data } = await api.post<StartQuizResponse>('/quizzes/start', {
@@ -126,20 +148,36 @@ export function QuizSetupPage() {
 
   const categories = categoriesQuery.data ?? [];
   const selectedCategories = useMemo(
-    () => categories.filter((category) => setup.categoryIds.includes(category.id)),
+    () =>
+      categories.filter((category) => setup.categoryIds.includes(category.id)),
     [categories, setup.categoryIds],
   );
 
   const summary = {
-    categories: selectedCategories.length > 0 ? selectedCategories.map((category) => category.name).join(' + ') : 'Selecione uma ou mais categorias',
-    difficulty: setup.difficulty ? difficultyCopy[setup.difficulty].label : 'Selecione a dificuldade',
-    questionCount: setup.questionCount ? `${setup.questionCount} perguntas` : 'Escolha a quantidade',
+    categories:
+      selectedCategories.length > 0
+        ? selectedCategories.map((category) => category.name).join(' + ')
+        : 'Selecione uma ou mais categorias',
+    difficulty: setup.difficulty
+      ? difficultyCopy[setup.difficulty].label
+      : 'Selecione a dificuldade',
+    questionCount: setup.questionCount
+      ? `${setup.questionCount} perguntas`
+      : 'Escolha a quantidade',
     estimate: estimateQuizMinutes(setup.questionCount),
     xp: estimatePotentialXP(setup.difficulty, setup.questionCount),
   };
 
-  const canStart = setup.categoryIds.length > 0 && setup.difficulty !== null && setup.questionCount !== null;
-  const notice = typeof location.state === 'object' && location.state && 'notice' in location.state ? String(location.state.notice) : null;
+  const canStart =
+    setup.categoryIds.length > 0 &&
+    setup.difficulty !== null &&
+    setup.questionCount !== null;
+  const notice =
+    typeof location.state === 'object' &&
+    location.state &&
+    'notice' in location.state
+      ? String(location.state.notice)
+      : null;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_380px]">
@@ -151,13 +189,19 @@ export function QuizSetupPage() {
               <Badge tone="info">quiz.setup</Badge>
               <Badge tone="success">Pré-configuração</Badge>
             </div>
-            <h2 className="mt-5 text-4xl font-extrabold tracking-[-0.05em] text-textPrimary">Prepare seu desafio</h2>
+            <h2 className="mt-5 text-4xl font-extrabold tracking-[-0.05em] text-textPrimary">
+              Prepare seu desafio
+            </h2>
             <p className="mt-3 max-w-3xl text-base text-textSecondary">
-              Escolha categorias, dificuldade e quantidade de perguntas antes de iniciar sua simulação.
+              Escolha categorias, dificuldade e quantidade de perguntas antes de
+              iniciar sua simulação.
             </p>
             {notice ? (
               <div className="mt-5 flex items-start gap-3 rounded-[1.25rem] border border-warning/25 bg-warning/10 px-4 py-3 text-sm text-textSecondary">
-                <AlertTriangle size={18} className="mt-0.5 shrink-0 text-warning" />
+                <AlertTriangle
+                  size={18}
+                  className="mt-0.5 shrink-0 text-warning"
+                />
                 <span>{notice}</span>
               </div>
             ) : null}
@@ -187,13 +231,18 @@ export function QuizSetupPage() {
             />
           ) : (
             <div className="grid gap-3">
-              <label htmlFor="quiz-category" className="text-xs font-semibold uppercase tracking-[0.18em] text-textMuted">
+              <label
+                htmlFor="quiz-category"
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-textMuted"
+              >
                 Categoria
               </label>
               <select
                 id="quiz-category"
                 value={setup.categoryIds[0] ?? ''}
-                aria-invalid={setupValidation !== null && setup.categoryIds.length === 0}
+                aria-invalid={
+                  setupValidation !== null && setup.categoryIds.length === 0
+                }
                 onChange={(event) => {
                   setSetupValidation(null);
                   setSetup((current) => ({
@@ -210,11 +259,17 @@ export function QuizSetupPage() {
                   </option>
                 ))}
               </select>
-              {setupValidation && setup.categoryIds.length === 0 ? <p className="text-sm text-danger">{setupValidation}</p> : null}
+              {setupValidation && setup.categoryIds.length === 0 ? (
+                <p className="text-sm text-danger">{setupValidation}</p>
+              ) : null}
               {selectedCategories[0] ? (
                 <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] px-4 py-3">
-                  <p className="text-sm font-semibold text-textPrimary">{selectedCategories[0].name}</p>
-                  <p className="mt-1 text-sm text-textSecondary">{selectedCategories[0].description}</p>
+                  <p className="text-sm font-semibold text-textPrimary">
+                    {selectedCategories[0].name}
+                  </p>
+                  <p className="mt-1 text-sm text-textSecondary">
+                    {selectedCategories[0].description}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -233,7 +288,12 @@ export function QuizSetupPage() {
               <SelectableCard
                 key={option.value}
                 selected={setup.difficulty === option.value}
-                onClick={() => setSetup((current) => ({ ...current, difficulty: option.value }))}
+                onClick={() =>
+                  setSetup((current) => ({
+                    ...current,
+                    difficulty: option.value,
+                  }))
+                }
                 title={option.label}
                 description={option.description}
                 meta={option.badge}
@@ -254,7 +314,12 @@ export function QuizSetupPage() {
               <SelectableCard
                 key={option.value}
                 selected={setup.questionCount === option.value}
-                onClick={() => setSetup((current) => ({ ...current, questionCount: option.value }))}
+                onClick={() =>
+                  setSetup((current) => ({
+                    ...current,
+                    questionCount: option.value,
+                  }))
+                }
                 title={option.label}
                 description={`Tempo estimado ${option.estimate}`}
                 meta="Ritmo sugerido"
@@ -269,7 +334,9 @@ export function QuizSetupPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="section-kicker">Resumo</p>
-              <h3 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-textPrimary">Configuração atual</h3>
+              <h3 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+                Configuração atual
+              </h3>
             </div>
             <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/12 text-primary">
               <Layers3 size={20} />
@@ -277,34 +344,66 @@ export function QuizSetupPage() {
           </div>
 
           <div className="mt-6 space-y-3">
-            <SummaryRow icon={Orbit} label="Categoria(s)" value={summary.categories} />
-            <SummaryRow icon={Sparkles} label="Dificuldade" value={summary.difficulty} />
-            <SummaryRow icon={Target} label="Quantidade" value={summary.questionCount} />
-            <SummaryRow icon={TimerReset} label="Tempo estimado" value={summary.estimate} />
+            <SummaryRow
+              icon={Orbit}
+              label="Categoria(s)"
+              value={summary.categories}
+            />
+            <SummaryRow
+              icon={Sparkles}
+              label="Dificuldade"
+              value={summary.difficulty}
+            />
+            <SummaryRow
+              icon={Target}
+              label="Quantidade"
+              value={summary.questionCount}
+            />
+            <SummaryRow
+              icon={TimerReset}
+              label="Tempo estimado"
+              value={summary.estimate}
+            />
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-success/20 bg-success/10 p-4">
-            <p className="text-sm font-semibold text-textPrimary">XP potencial</p>
-            <p className="mt-2 font-mono text-3xl font-extrabold text-success">+{summary.xp}</p>
+            <p className="text-sm font-semibold text-textPrimary">
+              XP potencial
+            </p>
+            <p className="mt-2 font-mono text-3xl font-extrabold text-success">
+              +{summary.xp}
+            </p>
             <p className="mt-2 text-sm text-textSecondary">
               Projeção baseada em acerto máximo para a configuração selecionada.
             </p>
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-4">
-            <p className="text-sm font-semibold text-textPrimary">Antes de iniciar</p>
+            <p className="text-sm font-semibold text-textPrimary">
+              Antes de iniciar
+            </p>
             <ul className="mt-3 space-y-2 text-sm text-textSecondary">
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
+                <CheckCircle2
+                  size={16}
+                  className="mt-0.5 shrink-0 text-success"
+                />
                 A seleção é validada antes de criar a sessão.
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
+                <CheckCircle2
+                  size={16}
+                  className="mt-0.5 shrink-0 text-success"
+                />
                 As respostas corretas continuam protegidas no backend.
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-success" />
-                Se faltarem perguntas, você recebe orientação para ajustar os filtros.
+                <CheckCircle2
+                  size={16}
+                  className="mt-0.5 shrink-0 text-success"
+                />
+                Se faltarem perguntas, você recebe orientação para ajustar os
+                filtros.
               </li>
             </ul>
           </div>
@@ -321,7 +420,9 @@ export function QuizSetupPage() {
             loading={startMutation.isPending}
             onClick={() => {
               if (!canStart) {
-                setSetupValidation('Selecione uma categoria, dificuldade e quantidade antes de iniciar.');
+                setSetupValidation(
+                  'Selecione uma categoria, dificuldade e quantidade antes de iniciar.',
+                );
                 return;
               }
               setSetupValidation(null);
@@ -337,11 +438,21 @@ export function QuizSetupPage() {
   );
 }
 
-function SectionHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="mb-5">
       <p className="section-kicker">{eyebrow}</p>
-      <h3 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-textPrimary">{title}</h3>
+      <h3 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-textPrimary">
+        {title}
+      </h3>
       <p className="mt-2 text-sm text-textSecondary">{description}</p>
     </div>
   );
@@ -373,16 +484,22 @@ function SelectableCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-base font-semibold text-textPrimary">{title}</p>
-          <p className="mt-2 text-sm leading-6 text-textSecondary">{description}</p>
+          <p className="mt-2 text-sm leading-6 text-textSecondary">
+            {description}
+          </p>
         </div>
         <span
           className={`mt-1 h-3.5 w-3.5 rounded-full border ${
-            selected ? 'border-primary bg-primary shadow-[0_0_18px_rgba(108,99,255,0.55)]' : 'border-white/18 bg-transparent'
+            selected
+              ? 'border-primary bg-primary shadow-[0_0_18px_rgba(108,99,255,0.55)]'
+              : 'border-white/18 bg-transparent'
           }`}
         />
       </div>
       <div className="mt-4 flex items-center justify-between">
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">{meta}</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">
+          {meta}
+        </span>
         {selected ? <Badge tone="info">Selected</Badge> : null}
       </div>
     </button>
@@ -404,7 +521,9 @@ function SummaryRow({
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs uppercase tracking-[0.18em] text-textMuted">{label}</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-textMuted">
+          {label}
+        </p>
         <p className="mt-1 text-sm font-semibold text-textPrimary">{value}</p>
       </div>
     </div>

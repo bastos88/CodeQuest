@@ -14,14 +14,27 @@ export async function pending(_req: AuthenticatedRequest, res: Response) {
         alternatives: true,
       },
       orderBy: { createdAt: 'asc' },
+      take: 100,
     }),
   );
 }
 
 export async function approve(req: AuthenticatedRequest, res: Response) {
-  res.json(await questionService.approveQuestion(requireParam(req, 'questionId'), req.user.id, req.body));
+  res.json(
+    await questionService.approveQuestion(
+      requireParam(req, 'questionId'),
+      req.user.id,
+      req.body,
+    ),
+  );
 }
 
 export async function reject(req: AuthenticatedRequest, res: Response) {
-  res.json(await questionService.rejectQuestion(requireParam(req, 'questionId'), req.user.id, req.body));
+  res.json(
+    await questionService.rejectQuestion(
+      requireParam(req, 'questionId'),
+      req.user.id,
+      req.body,
+    ),
+  );
 }

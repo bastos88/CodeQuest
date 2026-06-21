@@ -13,7 +13,9 @@ export function OAuthCallback() {
     const oauthError = params.get('error');
 
     if (oauthError) {
-      setError('Nao foi possivel concluir o login social. Verifique a configuracao OAuth.');
+      setError(
+        'Nao foi possivel concluir o login social. Verifique a configuracao OAuth.',
+      );
       return;
     }
 
@@ -53,7 +55,10 @@ export function OAuthCallback() {
           {error ?? 'Concluindo autenticacao...'}
         </p>
         {error ? (
-          <Link to="/login" className="mt-6 inline-flex text-sm font-semibold text-primary hover:text-primaryHover">
+          <Link
+            to="/login"
+            className="mt-6 inline-flex text-sm font-semibold text-primary hover:text-primaryHover"
+          >
             Voltar para login
           </Link>
         ) : null}

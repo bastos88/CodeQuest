@@ -2,6 +2,7 @@ import { calculateAccuracy, getXPProgressToNextLevel } from '@codequest/shared';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/http.js';
+import { getSkillAggregates } from './skill-metrics.service.js';
 
 export type UpdateProfileInput = {
   name?: string;
@@ -30,7 +31,8 @@ function normalizeAvatarUrl(avatarUrl: string | null) {
 
   try {
     const url = new URL(normalized);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error();
+    if (url.protocol !== 'http:' && url.protocol !== 'https:')
+      throw new Error();
     return url.toString();
   } catch {
     throw new HttpError(422, 'Informe uma URL de avatar válida.');
@@ -68,50 +70,9 @@ export async function getProfile(userId: string) {
 }
 
 export async function getSkillMap(userId: string) {
-  const answers = await prisma.quizAnswer.findMany({
-    where: { quizResult: { userId } },
-    select: {
-      isCorrect: true,
-      quizResult: { select: { createdAt: true } },
-      question: {
-        select: {
-          category: { select: { id: true, name: true, slug: true } },
-        },
-      },
-    },
-  });
+  const aggregates = await getSkillAggregates(prisma, userId);
 
-  const grouped = new Map<
-    string,
-    {
-      categoryId: string;
-      category: string;
-      slug: string;
-      answered: number;
-      correct: number;
-      lastPlayedAt: Date;
-    }
-  >();
-
-  for (const answer of answers) {
-    const { category } = answer.question;
-    const current = grouped.get(category.id) ?? {
-      categoryId: category.id,
-      category: category.name,
-      slug: category.slug,
-      answered: 0,
-      correct: 0,
-      lastPlayedAt: answer.quizResult.createdAt,
-    };
-    current.answered += 1;
-    current.correct += answer.isCorrect ? 1 : 0;
-    if (answer.quizResult.createdAt > current.lastPlayedAt) {
-      current.lastPlayedAt = answer.quizResult.createdAt;
-    }
-    grouped.set(category.id, current);
-  }
-
-  return [...grouped.values()]
+  return aggregates
     .map((value) => {
       const accuracy = calculateAccuracy(value.correct, value.answered);
       const volumeBonus = Math.min(value.answered, 40) * 0.5;
@@ -155,7 +116,10 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
   });
 }
 
-export async function updatePassword(userId: string, input: UpdatePasswordInput) {
+export async function updatePassword(
+  userId: string,
+  input: UpdatePasswordInput,
+) {
   if (input.newPassword.length < 8) {
     throw new HttpError(422, 'A nova senha deve ter no mínimo 8 caracteres.');
   }
@@ -180,14 +144,21 @@ export async function updatePassword(userId: string, input: UpdatePasswordInput)
       throw new HttpError(401, 'A senha atual está incorreta.');
     }
     if (await bcrypt.compare(input.newPassword, user.passwordHash)) {
-      throw new HttpError(422, 'A nova senha deve ser diferente da senha atual.');
+      throw new HttpError(
+        422,
+        'A nova senha deve ser diferente da senha atual.',
+      );
     }
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { passwordHash: await bcrypt.hash(input.newPassword, 12) },
-  });
+  const passwordHash = await bcrypt.hash(input.newPassword, 12);
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    }),
+    prisma.refreshToken.deleteMany({ where: { userId } }),
+  ]);
 
   return { message: 'Senha alterada com sucesso.' };
 }

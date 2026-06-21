@@ -33,19 +33,36 @@ export function getXPProgressToNextLevel(xp: number) {
     nextLevelXP,
     earnedInLevel,
     requiredForNext,
-    percentage: Math.min(100, Math.round((earnedInLevel / requiredForNext) * 100)),
+    percentage: Math.min(
+      100,
+      Math.round((earnedInLevel / requiredForNext) * 100),
+    ),
   };
 }
 
-export function calculateQuestionXP(_difficulty: Difficulty, isCorrect: boolean): number {
+export function calculateQuestionXP(
+  _difficulty: Difficulty,
+  isCorrect: boolean,
+): number {
   if (!isCorrect) return 0;
   return XP_RULES.correctAnswer;
 }
 
-export function calculateQuizXP(answers: Array<{ difficulty: Difficulty; isCorrect: boolean }>): number {
-  const questionXP = answers.reduce((total, answer) => total + calculateQuestionXP(answer.difficulty, answer.isCorrect), 0);
-  const perfectBonus = answers.length > 0 && answers.every((answer) => answer.isCorrect) ? XP_RULES.perfectQuiz : 0;
-  const hardQuizBonus = answers.some((answer) => answer.difficulty === 'HARD') ? XP_RULES.hardQuizBonus : 0;
+export function calculateQuizXP(
+  answers: Array<{ difficulty: Difficulty; isCorrect: boolean }>,
+): number {
+  const questionXP = answers.reduce(
+    (total, answer) =>
+      total + calculateQuestionXP(answer.difficulty, answer.isCorrect),
+    0,
+  );
+  const perfectBonus =
+    answers.length > 0 && answers.every((answer) => answer.isCorrect)
+      ? XP_RULES.perfectQuiz
+      : 0;
+  const hardQuizBonus = answers.some((answer) => answer.difficulty === 'HARD')
+    ? XP_RULES.hardQuizBonus
+    : 0;
   return XP_RULES.quizCompleted + questionXP + perfectBonus + hardQuizBonus;
 }
 

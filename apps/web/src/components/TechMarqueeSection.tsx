@@ -2,7 +2,7 @@ import ScrollBaseAnimation from './ScrollBaseAnimation';
 import { SectionDivider } from './ui/SectionDivider';
 
 const technologies =
-  'HTML • CSS • JavaScript • TypeScript • React • Node.js • PostgreSQL • Firebase • TailwindCSS • Git • APIs REST • Vite';
+  'HTML • CSS • JavaScript • TypeScript • React • Node.js • PostgreSQL • TailwindCSS • Git • APIs REST • Vite';
 
 export default function TechMarqueeSection() {
   return (
