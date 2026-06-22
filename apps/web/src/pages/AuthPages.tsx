@@ -37,11 +37,14 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { BrandLogo } from '../components/BrandLogo';
+import { AboutCodeQuizSection } from '../components/home/AboutCodeQuizSection';
+import { CodeQuestTechOrbit } from '../components/home/CodeQuestTechOrbit';
 import { HomeRankingSection } from '../components/home/HomeRankingSection';
 import TechMarqueeSection from '../components/TechMarqueeSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { CountUp } from '../components/ui/CountUp';
 import { HomeSection } from '../components/ui/HomeSection';
 import { IconBadge } from '../components/ui/IconBadge';
 import { Input } from '../components/ui/Input';
@@ -236,12 +239,26 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   ].join(' ');
 }
 
+function getCompactCount(value: number) {
+  if (value >= 1_000_000) {
+    return {
+      value: Number((value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)),
+      suffix: 'M',
+    };
+  }
+  if (value >= 1_000) {
+    return {
+      value: Number((value / 1_000).toFixed(value >= 10_000 ? 0 : 1)),
+      suffix: 'k',
+    };
+  }
+  return { value, suffix: '' };
+}
+
 function formatCount(value: number) {
-  if (value >= 1_000_000)
-    return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
-  if (value >= 1_000)
-    return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
-  return String(value);
+  const compactCount = getCompactCount(value);
+
+  return `${compactCount.value}${compactCount.suffix}`;
 }
 
 function getAuthUrl(provider: 'github' | 'google') {
@@ -255,6 +272,7 @@ function MarqueeSurface({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      data-scroll-reveal-item
       className={[
         'rounded-2xl border border-white/10 bg-[#14151C]/50',
         '[background:radial-gradient(circle_at_16%_50%,rgba(108,99,255,0.12),transparent_18rem),rgba(20,21,28,0.5)]',
@@ -281,10 +299,10 @@ export function Home() {
   const stats = statsData ?? fallbackStats;
   const heroMetrics = useMemo(
     () => [
-      { value: formatCount(stats.questions), label: 'perguntas' },
-      { value: formatCount(stats.challenges), label: 'desafios' },
-      { value: formatCount(stats.categories), label: 'categorias' },
-      { value: formatCount(stats.users), label: 'usuarios' },
+      { ...getCompactCount(stats.questions), label: 'perguntas' },
+      { ...getCompactCount(stats.challenges), label: 'desafios' },
+      { ...getCompactCount(stats.categories), label: 'categorias' },
+      { ...getCompactCount(stats.users), label: 'usuarios' },
     ],
     [stats],
   );
@@ -293,9 +311,9 @@ export function Home() {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(91,107,255,0.2),transparent_26rem),radial-gradient(circle_at_80%_10%,rgba(125,92,255,0.14),transparent_30rem)]" />
 
-        <header className="relative border-b border-white/6">
+        <header className="relative">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
-            <BrandLogo compact imageClassName="h-9 w-36" />
+            <BrandLogo compact />
 
             <nav className="hidden items-center gap-1 text-[11px] font-semibold lg:flex">
               {publicNavItems.map((item) => (
@@ -392,9 +410,12 @@ export function Home() {
               <div className="grid gap-3 pt-6 sm:grid-cols-4">
                 {heroMetrics.map((item) => (
                   <MarqueeSurface key={item.label} className="px-4 py-4">
-                    <div className="text-lg font-bold text-white">
-                      {item.value}
-                    </div>
+                    <CountUp
+                      to={item.value}
+                      suffix={item.suffix}
+                      duration={1.2}
+                      className="text-lg font-bold text-white"
+                    />
                     <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-textMuted">
                       {item.label}
                     </div>
@@ -418,13 +439,7 @@ export function Home() {
                   className="absolute inset-6 rounded-[1.5rem] border border-primary/25"
                 />
                 <div className="relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(91,107,255,0.16),transparent_16rem),linear-gradient(180deg,#141625_0%,#0d0f18_100%)]">
-                  <img
-                    src="/images/quiz-hero.png"
-                    alt="Ilustração de um quiz de programação com perguntas e recompensa de XP"
-                    className="block aspect-[4/3] w-full max-w-full rounded-[1.35rem] object-cover"
-                    loading="eager"
-                    decoding="async"
-                  />
+                  <CodeQuestTechOrbit />
                 </div>
               </MarqueeSurface>
             </div>
@@ -433,6 +448,8 @@ export function Home() {
       </div>
 
       <TechMarqueeSection />
+
+      <AboutCodeQuizSection isAuthenticated={isAuthenticated} />
 
       <HomeSection id="dashboard">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -748,7 +765,7 @@ export function Home() {
             <SectionDivider variant="default" className="mb-10" />
             <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
               <div>
-                <BrandLogo compact imageClassName="h-9 w-36" />
+                <BrandLogo compact />
                 <p className="mt-4 max-w-sm text-sm leading-6 text-textSecondary">
                   Treino inteligente para devs praticarem entrevistas, revisarem
                   conceitos e acompanharem evolução real.
@@ -1061,7 +1078,7 @@ export function AuthCard({
       <Card className="relative w-full max-w-[420px] border-[#2A2D38] bg-[rgba(20,21,28,0.9)] p-7 shadow-[0_32px_80px_rgba(0,0,0,0.42)] sm:p-8">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
-            <BrandLogo imageClassName="h-11 w-44 rounded-md" />
+            <BrandLogo />
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5C6170]">
               {eyebrow}
             </p>
@@ -1243,7 +1260,7 @@ function ContactForm() {
           id="contact-name"
           name="name"
           autoComplete="name"
-          placeholder="Leonardo Bastos"
+          placeholder="Seu nome"
           required
         />
       </Field>

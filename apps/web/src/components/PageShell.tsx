@@ -46,7 +46,7 @@ export function PageShell() {
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-white/6 bg-[linear-gradient(180deg,rgba(10,11,15,0.98),rgba(15,16,23,0.94))] px-5 py-6 backdrop-blur-xl xl:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(108,99,255,0.18),transparent_15rem)]" />
         <div className="relative mb-8 px-2">
-          <BrandLogo imageClassName="h-10 w-36" />
+          <BrandLogo />
         </div>
         <div className="relative mb-6 rounded-3xl border border-white/8 bg-white/[0.03] p-4 shadow-glass">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-textMuted">

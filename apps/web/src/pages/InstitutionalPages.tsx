@@ -134,7 +134,7 @@ function InstitutionalHeader() {
   return (
     <header className="border-b border-white/6 bg-[#0A0B0F]/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <BrandLogo compact imageClassName="h-9 w-36" />
+        <BrandLogo compact />
         <div className="flex items-center gap-3">
           <Link
             to="/"

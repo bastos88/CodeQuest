@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { SectionDivider } from './SectionDivider';
+import { ScrollReveal } from './ScrollReveal';
 
 type DividerVariant = 'default' | 'glow' | 'fade' | 'strong';
 
@@ -28,7 +29,7 @@ export function HomeSection({
       ].join(' ')}
     >
       {divider ? <SectionDivider variant={dividerVariant} /> : null}
-      {children}
+      <ScrollReveal>{children}</ScrollReveal>
     </section>
   );
 }
