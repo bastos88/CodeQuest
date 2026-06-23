@@ -14,8 +14,8 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { QuizSetupDifficulty } from '@codequest/shared';
 import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { NeonButton } from '../components/ui/NeonButton';
 import { api } from '../lib/api';
 import {
   buildCategoryDescription,
@@ -414,10 +414,12 @@ export function QuizSetupPage() {
             </div>
           ) : null}
 
-          <Button
-            className="mt-6 h-14 w-full justify-between rounded-[1.25rem] px-5 text-base"
+          <NeonButton
+            className="mt-6 w-full"
+            size="lg"
             disabled={categories.length === 0}
-            loading={startMutation.isPending}
+            isLoading={startMutation.isPending}
+            rightIcon={<ArrowRight size={18} />}
             onClick={() => {
               if (!canStart) {
                 setSetupValidation(
@@ -429,9 +431,8 @@ export function QuizSetupPage() {
               startMutation.mutate(setup);
             }}
           >
-            <span>Iniciar Desafio</span>
-            <ArrowRight size={18} />
-          </Button>
+            Iniciar Desafio
+          </NeonButton>
         </Card>
       </aside>
     </div>

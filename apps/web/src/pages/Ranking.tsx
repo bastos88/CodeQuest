@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { api } from '../lib/api';
+import { FEATURES } from '../config/features';
 
 type RankingPlayer = {
   id: string;
@@ -124,9 +125,11 @@ export function Ranking() {
               Geral
             </span>
 
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-textSecondary">
-              Arena
-            </span>
+            {FEATURES.arenaEnabled ? (
+              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-textSecondary">
+                Arena
+              </span>
+            ) : null}
 
             <span className="inline-flex items-center rounded-full border border-info/25 bg-info/10 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-info">
               Contribuidores

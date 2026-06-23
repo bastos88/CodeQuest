@@ -22,6 +22,8 @@ export function ScrollReveal({
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container || shouldReduceMotion) return;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobile) return;
 
     const context = gsap.context(() => {
       const markedItems = gsap.utils.toArray<HTMLElement>(
@@ -38,28 +40,23 @@ export function ScrollReveal({
       if (targets.length === 0) return;
 
       gsap.set(targets, {
-        opacity: 0.02,
-        y: 30,
-        scale: 0.98,
-        filter: 'blur(6px)',
+        opacity: 0,
+        y: 20,
       });
 
       gsap.to(targets, {
         opacity: 1,
         y: 0,
-        scale: 1,
-        filter: 'blur(0px)',
-        stagger: 0.12,
-        ease: 'none',
+        stagger: Math.min(0.08, 0.4 / targets.length),
+        duration: 0.45,
+        ease: 'power2.out',
         scrollTrigger: {
           trigger: container,
-          start: 'top 75%',
-          end: 'top 25%',
-          scrub: 1.2,
+          start: 'top 82%',
+          end: 'top 35%',
+          once: true,
         },
       });
-
-      ScrollTrigger.refresh();
     }, container);
 
     return () => context.revert();

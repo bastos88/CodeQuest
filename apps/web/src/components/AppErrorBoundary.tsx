@@ -1,6 +1,8 @@
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 
+import { NeonButton } from './ui/NeonButton';
+
 export function AppErrorBoundary() {
   const error = useRouteError();
   const message = isRouteErrorResponse(error)
@@ -21,14 +23,12 @@ export function AppErrorBoundary() {
           <p className="text-base leading-7 text-muted">{message}</p>
         </div>
 
-        <button
-          type="button"
+        <NeonButton
+          leftIcon={<RotateCcw className="h-4 w-4" />}
           onClick={() => window.location.reload()}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary/90"
         >
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
           Recarregar pagina
-        </button>
+        </NeonButton>
       </section>
     </main>
   );

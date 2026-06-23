@@ -42,7 +42,7 @@ export function Arena() {
               server-side das partidas estiverem concluídos.
             </p>
           </div>
-          <Button className="mt-6" disabled>
+          <Button className="mt-6" variant="secondary" disabled>
             <Swords className="h-4 w-4" aria-hidden="true" />
             Arena indisponível
           </Button>

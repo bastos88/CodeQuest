@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthCard } from './AuthPages';
-import { Button } from '../components/ui/Button';
+import { NeonButton } from '../components/ui/NeonButton';
 import { Input } from '../components/ui/Input';
 import { forgotPassword } from '../lib/auth';
 
@@ -62,14 +62,14 @@ export function ForgotPassword() {
               Não foi possível enviar as instruções agora. Tente novamente.
             </ErrorMessage>
           ) : null}
-          <Button
+          <NeonButton
             className="w-full"
             type="submit"
-            loading={mutation.isPending}
-            loadingText="Enviando..."
+            variant="app"
+            isLoading={mutation.isPending}
           >
             Enviar link de recuperação
-          </Button>
+          </NeonButton>
         </form>
       )}
     </AuthCard>

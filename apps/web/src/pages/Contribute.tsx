@@ -4,6 +4,7 @@ import axios from 'axios';
 import { AlertTriangle, CheckCircle2, Send, X } from 'lucide-react';
 import type { QuestionInput } from '@codequest/shared';
 import { Button } from '../components/ui/Button';
+import { NeonButton } from '../components/ui/NeonButton';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
@@ -218,15 +219,15 @@ export function Contribute() {
             <Badge>Explicação</Badge>
             <Badge tone="warning">Review manual</Badge>
           </div>
-          <Button
+          <NeonButton
             type="submit"
-            className="mt-2 w-full sm:w-auto"
-            loading={submitMutation.isPending}
-            loadingText="Enviando..."
+            className="mt-2 w-[70%] max-w-full self-start"
+            variant="app"
+            isLoading={submitMutation.isPending}
+            leftIcon={<Send size={17} />}
           >
-            <Send size={17} />
             Enviar para revisão
-          </Button>
+          </NeonButton>
         </form>
       </Card>
 
@@ -299,7 +300,12 @@ export function Contribute() {
               </Button>
             </div>
             <div className="mt-6 flex justify-end">
-              <Button onClick={() => setSuccessModalOpen(false)}>Fechar</Button>
+              <Button
+                variant="secondary"
+                onClick={() => setSuccessModalOpen(false)}
+              >
+                Fechar
+              </Button>
             </div>
           </Card>
         </div>

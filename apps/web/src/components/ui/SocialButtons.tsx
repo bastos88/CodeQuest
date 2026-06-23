@@ -5,6 +5,7 @@ import type {
 } from 'react';
 import { Github, Linkedin, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { appButtonVariantClasses } from './Button';
 
 export type SocialType = 'whatsapp' | 'linkedin' | 'github' | 'google';
 
@@ -19,7 +20,7 @@ export interface SocialButton {
 interface SocialButtonsProps {
   buttons?: SocialButton[];
   className?: string;
-  variant?: 'icon' | 'auth';
+  variant?: 'icon' | 'auth' | 'app';
 }
 
 const iconStyles: Record<SocialType, string> = {
@@ -44,7 +45,7 @@ const authStyles: Record<SocialType, string> = {
 
 type SocialActionProps = SocialButton &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
-    variant: 'icon' | 'auth';
+    variant: 'icon' | 'auth' | 'app';
   };
 
 function SocialAction({
@@ -56,12 +57,13 @@ function SocialAction({
   variant,
   ...props
 }: SocialActionProps) {
+  const isFullWidth = variant !== 'icon';
   const iconNode = (
     <span
       aria-hidden="true"
       className={cn(
         'grid shrink-0 place-items-center',
-        variant === 'auth'
+        isFullWidth
           ? 'h-5 w-5 [&_svg]:h-5 [&_svg]:w-5'
           : 'h-6 w-6 [&_svg]:h-5 [&_svg]:w-5',
       )}
@@ -74,11 +76,11 @@ function SocialAction({
     'inline-flex items-center justify-center border font-semibold transition-[background,border-color,color,transform,box-shadow,filter] duration-200 ease-in-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
     'disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0',
-    variant === 'auth'
+    isFullWidth
       ? cn(
           'min-h-11 w-full gap-2.5 rounded-[14px] px-4 text-sm',
-          authStyles[type],
-          'hover:-translate-y-px',
+          variant === 'app' ? appButtonVariantClasses : authStyles[type],
+          variant === 'auth' ? 'hover:-translate-y-px' : '',
         )
       : cn(
           'h-12 w-12 rounded-xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)]',
@@ -90,7 +92,7 @@ function SocialAction({
   if (href) {
     const anchorProps: AnchorHTMLAttributes<HTMLAnchorElement> = {
       href,
-      'aria-label': variant === 'auth' ? undefined : label,
+      'aria-label': isFullWidth ? undefined : label,
       target: '_blank',
       rel: 'noreferrer noopener',
       className,
@@ -99,7 +101,7 @@ function SocialAction({
     return (
       <a {...anchorProps}>
         {iconNode}
-        {variant === 'auth' ? <span>{label}</span> : null}
+        {isFullWidth ? <span>{label}</span> : null}
       </a>
     );
   }
@@ -107,14 +109,14 @@ function SocialAction({
   return (
     <button
       type="button"
-      aria-label={variant === 'auth' ? undefined : label}
+      aria-label={isFullWidth ? undefined : label}
       onClick={onClick}
       className={className}
       disabled={!onClick}
       {...props}
     >
       {iconNode}
-      {variant === 'auth' ? <span>{label}</span> : null}
+      {isFullWidth ? <span>{label}</span> : null}
     </button>
   );
 }
@@ -148,7 +150,7 @@ export default function SocialButtons({
   return (
     <div
       className={cn(
-        variant === 'auth' ? 'grid gap-3' : 'flex flex-row flex-wrap gap-2',
+        variant !== 'icon' ? 'grid gap-3' : 'flex flex-row flex-wrap gap-2',
         className,
       )}
     >

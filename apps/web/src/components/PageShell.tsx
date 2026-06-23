@@ -15,11 +15,14 @@ import { useAuth } from '../context/AuthContext';
 import { BrandLogo } from './BrandLogo';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
+import { FEATURES } from '../config/features';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/quiz', label: 'Quiz', icon: BookOpenCheck },
-  { to: '/arena', label: 'Arena', icon: Swords },
+  ...(FEATURES.arenaEnabled
+    ? [{ to: '/arena', label: 'Arena', icon: Swords }]
+    : []),
   { to: '/ranking', label: 'Ranking', icon: Trophy },
   { to: '/profile', label: 'Perfil', icon: Medal },
   { to: '/contribute', label: 'Contribuir', icon: Bot },

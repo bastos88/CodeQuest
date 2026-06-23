@@ -2,6 +2,8 @@ import { BarChart3, Braces, Trophy, ArrowRight } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
+import { neonButtonClassName } from '@/components/ui/NeonButton';
+
 type AboutCodeQuizSectionProps = {
   isAuthenticated: boolean;
 };
@@ -157,13 +159,15 @@ export function AboutCodeQuizSection({
               >
                 <Link
                   to={isAuthenticated ? '/quiz' : '/login'}
-                  className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_12px_32px_rgba(91,107,255,0.24)] transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-primaryHover hover:shadow-[0_16px_38px_rgba(91,107,255,0.32)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#14151C]"
+                  className={neonButtonClassName()}
                 >
-                  Explorar quizzes
-                  <ArrowRight
-                    className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
+                  <span className="relative z-10 inline-flex items-center gap-2">
+                    Explorar quizzes
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </Link>
                 <a
                   href="#dashboard"

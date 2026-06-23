@@ -42,18 +42,20 @@ import { CodeQuestTechOrbit } from '../components/home/CodeQuestTechOrbit';
 import { HomeRankingSection } from '../components/home/HomeRankingSection';
 import TechMarqueeSection from '../components/TechMarqueeSection';
 import TestimonialsSection from '../components/TestimonialsSection';
-import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { CountUp } from '../components/ui/CountUp';
 import { HomeSection } from '../components/ui/HomeSection';
 import { IconBadge } from '../components/ui/IconBadge';
 import { Input } from '../components/ui/Input';
+import { NeonButton, neonButtonClassName } from '../components/ui/NeonButton';
 import { SectionDivider } from '../components/ui/SectionDivider';
+import { StarsBackground } from '../components/ui/StarsBackground';
 import SocialButtons, {
   GithubIcon,
   GoogleIcon,
   type SocialButton,
 } from '../components/ui/SocialButtons';
+import { FEATURES } from '../config/features';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';
@@ -111,14 +113,6 @@ const features = [
     variant: 'indigo',
   },
   {
-    title: 'Arena',
-    subtitle: 'Em breve',
-    description: 'Modo competitivo em desenvolvimento e validação.',
-    accent: false,
-    icon: Swords,
-    variant: 'red',
-  },
-  {
     title: 'Ranking',
     subtitle: 'Top 10',
     description: 'Evolução visível com Elo, posições e consistência.',
@@ -140,7 +134,7 @@ const features = [
   description: string;
   accent: boolean;
   icon: LucideIcon;
-  variant: 'indigo' | 'red' | 'amber' | 'emerald';
+  variant: 'indigo' | 'amber' | 'emerald';
 }>;
 
 const contributionFlow = [
@@ -203,7 +197,6 @@ const footerSections = [
     title: 'Plataforma',
     links: [
       { label: 'Quiz', to: '/quiz' },
-      { label: 'Arena', to: '/arena' },
       { label: 'Ranking', to: '/ranking' },
       { label: 'Contribuir', to: '/contribuir' },
     ],
@@ -222,7 +215,6 @@ const footerSections = [
 const publicNavItems = [
   { label: 'Home', to: '/' },
   { label: 'Quiz', to: '/quiz' },
-  { label: 'Arena', to: '/arena' },
   { label: 'Ranking', to: '/ranking' },
   { label: 'Contribuir', to: '/contribuir' },
   { label: 'Sobre', to: '/sobre' },
@@ -308,8 +300,8 @@ export function Home() {
   );
   return (
     <div className="min-h-screen bg-background text-textPrimary">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(91,107,255,0.2),transparent_26rem),radial-gradient(circle_at_80%_10%,rgba(125,92,255,0.14),transparent_30rem)]" />
+      <div className="relative isolate overflow-hidden">
+        <StarsBackground className="rounded-none" starCount={65} />
 
         <header className="relative">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
@@ -356,13 +348,15 @@ export function Home() {
 
                   <Link
                     to="/register"
-                    className="group inline-flex h-9 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 text-xs font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/75 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    className={neonButtonClassName({ size: 'sm' })}
                   >
-                    Começar agora
-                    <ArrowRight
-                      className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
+                    <span className="relative z-10 inline-flex items-center gap-2">
+                      Começar agora
+                      <ArrowRight
+                        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </span>
                   </Link>
                 </>
               )}
@@ -387,21 +381,26 @@ export function Home() {
                 Pratique com quizzes inteligentes, suba no Ranking e evolua
                 através de XP, revisão e comunidade.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Link
                   to="/register"
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_34px_rgba(91,107,255,0.45)] transition hover:bg-primaryHover"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#5B6BFF_0%,#4263EB_55%,#22D3EE_140%)] px-6 text-base font-semibold text-white shadow-[0_8px_22px_rgba(91,107,255,0.22)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(91,107,255,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B6BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0F] active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
                 >
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  Começar agora
+                  <span className="inline-flex items-center gap-2">
+                    <Sparkles
+                      className="h-5 w-5 text-white"
+                      aria-hidden="true"
+                    />
+                    Começar agora
+                  </span>
                 </Link>
                 <a
                   href="#funcionalidades"
-                  className="group inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 text-sm font-semibold text-textPrimary transition hover:border-white/20 hover:bg-white/[0.08]"
+                  className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#2A2D38] bg-[#14151C] px-5 text-base font-semibold text-zinc-100 transition-[transform,background-color,border-color,color] duration-200 hover:-translate-y-0.5 hover:border-[#5B6BFF]/55 hover:bg-[#1E2029] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B6BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0F] active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
                 >
                   Explorar perguntas
                   <ArrowRight
-                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    className="h-5 w-5 text-zinc-200 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white"
                     aria-hidden="true"
                   />
                 </a>
@@ -570,66 +569,68 @@ export function Home() {
         </div>
       </HomeSection>
 
-      <HomeSection id="arena" dividerVariant="strong">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.82fr_1fr] lg:px-8">
-          <div className="flex flex-col justify-center">
-            <SectionHeading
-              eyebrow="Arena e competição"
-              title="Treine sob pressão e veja sua evolução pública"
-              description="Desafios, rankings por categoria, sequência de vitórias e XP dão ritmo ao aprendizado."
-            />
-          </div>
-          <MarqueeSurface className="rounded-[1.75rem] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.32)]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <ScoreBox label="Você" value="8" />
-              <ScoreBox label="Rival" value="6" />
+      {FEATURES.arenaEnabled ? (
+        <HomeSection id="arena" dividerVariant="strong">
+          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.82fr_1fr] lg:px-8">
+            <div className="flex flex-col justify-center">
+              <SectionHeading
+                eyebrow="Arena e competição"
+                title="Treine sob pressão e veja sua evolução pública"
+                description="Desafios, rankings por categoria, sequência de vitórias e XP dão ritmo ao aprendizado."
+              />
             </div>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex h-24 items-end gap-3">
-                {[72, 54, 86, 63, 76].map((height, index) => (
-                  <div
-                    key={height}
-                    className="flex-1 rounded-t-md bg-[linear-gradient(180deg,#6985ff,#5b6bff)]"
-                    style={{ height: `${height}%` }}
-                  >
-                    <div className="sr-only">Barra {index + 1}</div>
-                  </div>
-                ))}
+            <MarqueeSurface className="rounded-[1.75rem] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.32)]">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ScoreBox label="Você" value="8" />
+                <ScoreBox label="Rival" value="6" />
               </div>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-4">
-              <MetricPanel
-                label="Desafios"
-                value={formatCount(stats.challenges)}
-                note="ativos"
-                icon={Swords}
-                compact
-              />
-              <MetricPanel
-                label="Ranking global"
-                value={formatCount(stats.users)}
-                note="online"
-                icon={Trophy}
-                compact
-              />
-              <MetricPanel
-                label="Sequência"
-                value="—"
-                note="planejado"
-                icon={Target}
-                compact
-              />
-              <MetricPanel
-                label="XP"
-                value="—"
-                note="planejado"
-                icon={Zap}
-                compact
-              />
-            </div>
-          </MarqueeSurface>
-        </div>
-      </HomeSection>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex h-24 items-end gap-3">
+                  {[72, 54, 86, 63, 76].map((height, index) => (
+                    <div
+                      key={height}
+                      className="flex-1 rounded-t-md bg-[linear-gradient(180deg,#6985ff,#5b6bff)]"
+                      style={{ height: `${height}%` }}
+                    >
+                      <div className="sr-only">Barra {index + 1}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-4">
+                <MetricPanel
+                  label="Desafios"
+                  value={formatCount(stats.challenges)}
+                  note="ativos"
+                  icon={Swords}
+                  compact
+                />
+                <MetricPanel
+                  label="Ranking global"
+                  value={formatCount(stats.users)}
+                  note="online"
+                  icon={Trophy}
+                  compact
+                />
+                <MetricPanel
+                  label="Sequência"
+                  value="—"
+                  note="planejado"
+                  icon={Target}
+                  compact
+                />
+                <MetricPanel
+                  label="XP"
+                  value="—"
+                  note="planejado"
+                  icon={Zap}
+                  compact
+                />
+              </div>
+            </MarqueeSurface>
+          </div>
+        </HomeSection>
+      ) : null}
 
       <HomeSection id="contribuir">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -737,15 +738,14 @@ export function Home() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link
-                  to="/register"
-                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover"
-                >
-                  Começar agora
-                  <ArrowRight
-                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
+                <Link to="/register" className={neonButtonClassName()}>
+                  <span className="relative z-10 inline-flex items-center gap-2">
+                    Começar agora
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </Link>
                 <Link
                   to="/dashboard"
@@ -920,17 +920,17 @@ export function Login() {
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        <Button
+        <NeonButton
           className="w-full"
           type="submit"
-          loading={form.formState.isSubmitting}
-          loadingText="Entrando..."
+          variant="app"
+          isLoading={form.formState.isSubmitting}
+          leftIcon={<LogIn className="h-4 w-4" />}
         >
-          <LogIn className="h-4 w-4" aria-hidden="true" />
           Entrar
-        </Button>
+        </NeonButton>
         <Divider label="Login com redes sociais" />
-        <SocialButtons buttons={socialProviders} variant="auth" />
+        <SocialButtons buttons={socialProviders} variant="app" />
       </form>
     </AuthCard>
   );
@@ -963,7 +963,7 @@ export function Register() {
     <AuthCard
       eyebrow="Halo Dark Auth"
       title="Criar conta"
-      subtitle="Abra sua conta para acessar quizzes, ranking, arena e fluxo de contribuições."
+      subtitle="Abra sua conta para acessar quizzes, ranking e fluxo de contribuições."
       footer={
         <p className="text-sm text-textSecondary">
           Já tem conta?{' '}
@@ -1041,17 +1041,17 @@ export function Register() {
         {form.formState.errors.root?.message ? (
           <InlineError message={form.formState.errors.root.message} />
         ) : null}
-        <Button
+        <NeonButton
           className="w-full"
           type="submit"
-          loading={form.formState.isSubmitting}
-          loadingText="Criando conta..."
+          variant="app"
+          isLoading={form.formState.isSubmitting}
+          leftIcon={<UserPlus className="h-4 w-4" />}
         >
-          <UserPlus className="h-4 w-4" aria-hidden="true" />
           Criar conta
-        </Button>
+        </NeonButton>
         <Divider label="Cadastro com redes sociais" />
-        <SocialButtons buttons={socialProviders} variant="auth" />
+        <SocialButtons buttons={socialProviders} variant="app" />
       </form>
     </AuthCard>
   );
@@ -1319,14 +1319,13 @@ function ContactForm() {
           </Link>
           .
         </p>
-        <button
+        <NeonButton
           type="submit"
-          disabled={state.submitting}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(91,107,255,0.42)] transition hover:bg-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
+          isLoading={state.submitting}
+          leftIcon={<Send className="h-4 w-4" />}
         >
-          <Send className="h-4 w-4" aria-hidden="true" />
-          {state.submitting ? 'Enviando...' : 'Enviar'}
-        </button>
+          Enviar
+        </NeonButton>
       </div>
     </form>
   );

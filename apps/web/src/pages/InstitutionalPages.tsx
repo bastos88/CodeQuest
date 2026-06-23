@@ -5,13 +5,13 @@ import {
   Code2,
   GitPullRequest,
   Rocket,
-  Swords,
   Trophy,
   Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { Card } from '../components/ui/Card';
+import { neonButtonClassName } from '../components/ui/NeonButton';
 
 type InstitutionalPageProps = {
   title: string;
@@ -28,7 +28,7 @@ const pages = {
     sections: [
       {
         title: 'Uso da plataforma',
-        body: 'Ao utilizar o CodeQuest, voce concorda em usar os recursos de estudo, ranking, arena e contribuicao de forma legitima, sem automatizar abusos ou prejudicar outros usuarios.',
+        body: 'Ao utilizar o CodeQuest, voce concorda em usar os recursos de estudo, ranking e contribuicao de forma legitima, sem automatizar abusos ou prejudicar outros usuarios.',
       },
       {
         title: 'Conteudo enviado',
@@ -51,7 +51,7 @@ const pages = {
       },
       {
         title: 'Finalidade',
-        body: 'Os dados sao usados para autenticar usuarios, medir desempenho, operar a arena, moderar contribuicoes e responder contatos.',
+        body: 'Os dados sao usados para autenticar usuarios, medir desempenho, moderar contribuicoes e responder contatos.',
       },
       {
         title: 'Contato',
@@ -98,11 +98,6 @@ const platformFeatures = [
     icon: Trophy,
   },
   {
-    title: 'Arena de desafios',
-    body: 'Pratique sob pressao em disputas rapidas e compare seu desempenho com outros devs.',
-    icon: Swords,
-  },
-  {
     title: 'Contribuicao de perguntas',
     body: 'Envie novas questoes para ampliar a base colaborativa da plataforma.',
     icon: GitPullRequest,
@@ -142,11 +137,8 @@ function InstitutionalHeader() {
           >
             Home
           </Link>
-          <Link
-            to="/register"
-            className="rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)]"
-          >
-            Comecar agora
+          <Link to="/register" className={neonButtonClassName({ size: 'sm' })}>
+            <span className="relative z-10">Comecar agora</span>
           </Link>
         </div>
       </div>
@@ -214,11 +206,8 @@ export function AboutPage() {
                 meio de pratica, feedback e progressao.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/quiz"
-                  className="inline-flex h-11 items-center rounded-full bg-[linear-gradient(135deg,#5B6BFF,#7C3AED)] px-5 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(91,107,255,0.24)] transition hover:-translate-y-px hover:shadow-[0_18px_44px_rgba(91,107,255,0.32)]"
-                >
-                  Comecar Quiz
+                <Link to="/quiz" className={neonButtonClassName()}>
+                  <span className="relative z-10">Comecar Quiz</span>
                 </Link>
                 <Link
                   to="/contribuir"

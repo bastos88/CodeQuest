@@ -10,6 +10,7 @@ import {
   updateProfile,
 } from '../../lib/profile';
 import { Button } from '../ui/Button';
+import { NeonButton } from '../ui/NeonButton';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 
@@ -220,13 +221,13 @@ export function ProfileSettingsCard() {
             {profileSuccess ? (
               <StatusMessage tone="success">{profileSuccess}</StatusMessage>
             ) : null}
-            <Button
+            <NeonButton
               type="submit"
-              loading={profileMutation.isPending}
-              loadingText="Salvando..."
+              variant="app"
+              isLoading={profileMutation.isPending}
             >
-              Salvar perfil
-            </Button>
+              Salvar alterações do perfil
+            </NeonButton>
           </form>
         ) : null}
       </Card>
@@ -290,13 +291,13 @@ export function ProfileSettingsCard() {
           {passwordSuccess ? (
             <StatusMessage tone="success">{passwordSuccess}</StatusMessage>
           ) : null}
-          <Button
+          <NeonButton
             type="submit"
-            loading={passwordMutation.isPending}
-            loadingText="Alterando..."
+            variant="app"
+            isLoading={passwordMutation.isPending}
           >
-            Alterar senha
-          </Button>
+            Salvar nova senha
+          </NeonButton>
         </form>
       </Card>
     </div>

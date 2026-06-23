@@ -13,6 +13,7 @@ import { ProfileSettingsCard } from '../components/dashboard/ProfileSettingsCard
 import { AchievementCard } from '../components/gamification/AchievementCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { NeonButton } from '../components/ui/NeonButton';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import {
@@ -174,12 +175,14 @@ export function Dashboard() {
               configuração do desafio.
             </p>
           </div>
-          <Button
-            className="mt-6 w-full justify-between"
+          <NeonButton
+            className="mt-6 w-full"
+            variant="app"
+            rightIcon={<ArrowRight size={17} />}
             onClick={() => navigate('/quiz')}
           >
-            Iniciar sessão <ArrowRight size={17} />
-          </Button>
+            Iniciar quiz
+          </NeonButton>
         </Card>
 
         <SkillMapCard
@@ -328,7 +331,7 @@ function SkillMapCard({
           </p>
           <Button
             className="mt-4"
-            variant="secondary"
+            variant="app"
             onClick={() => navigate('/quiz')}
           >
             Começar um quiz

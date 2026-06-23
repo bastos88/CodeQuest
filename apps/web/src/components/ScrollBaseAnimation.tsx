@@ -7,6 +7,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useReducedMotion,
   wrap,
 } from 'framer-motion';
 import React from 'react';
@@ -26,6 +27,8 @@ export default function ScrollBaseAnimation({
 }: ScrollBaseAnimationProps) {
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
+  const shouldReduceMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = React.useState(false);
 
   const scrollVelocity = useMotionValue(0);
 
@@ -53,10 +56,15 @@ export default function ScrollBaseAnimation({
     return flattened.length > 0 ? flattened : [children];
   }, [children]);
 
-  const loopItems = React.useMemo(
-    () => [...marqueeItems, ...marqueeItems],
-    [marqueeItems],
-  );
+  React.useEffect(() => {
+    const query = window.matchMedia('(max-width: 768px)');
+    const updateMobileState = () => setIsMobile(query.matches);
+
+    updateMobileState();
+    query.addEventListener('change', updateMobileState);
+
+    return () => query.removeEventListener('change', updateMobileState);
+  }, []);
 
   React.useEffect(() => {
     const unsubscribe = scrollY.on('change', (latest) => {
@@ -75,6 +83,8 @@ export default function ScrollBaseAnimation({
   }, [smoothVelocity, velocityFactor]);
 
   useAnimationFrame((_, delta) => {
+    if (isMobile || shouldReduceMotion) return;
+
     let moveBy = baseVelocity * (delta / 5000);
 
     if (scrollDependent) {
@@ -85,6 +95,27 @@ export default function ScrollBaseAnimation({
   });
 
   const x = useTransform(baseX, (value) => `${wrap(-50, 0, value)}%`);
+
+  if (isMobile || shouldReduceMotion) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          {marqueeItems.map((item, itemIndex) => (
+            <span
+              key={itemIndex}
+              className="
+                inline-flex items-center gap-2 whitespace-nowrap
+                font-mono text-sm uppercase tracking-[0.08em] text-[#d9ddff]
+                before:text-purple-400 before:content-['•']
+              "
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -98,7 +129,7 @@ export default function ScrollBaseAnimation({
             className="flex shrink-0 items-center gap-8 pr-8"
             aria-hidden={groupIndex === 1}
           >
-            {loopItems.map((item, itemIndex) => (
+            {marqueeItems.map((item, itemIndex) => (
               <span
                 key={`${groupIndex}-${itemIndex}`}
                 className="

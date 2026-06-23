@@ -35,6 +35,8 @@ type RankStyle = {
   label: string;
 };
 
+const HOME_RANKING_LIMIT = 5;
+
 function formatXP(value: number) {
   return new Intl.NumberFormat('pt-BR').format(value);
 }
@@ -96,12 +98,15 @@ function getRankStyle(position: number): RankStyle {
 
 export function HomeRankingSection() {
   const rankingQuery = useQuery({
-    queryKey: ['home-ranking-preview'],
+    queryKey: ['home-ranking-preview', HOME_RANKING_LIMIT],
     queryFn: async () => {
       const { data } = await api.get<HomeRankingPlayer[]>('/public/ranking', {
-        params: { limit: 5 },
+        params: { limit: HOME_RANKING_LIMIT },
       });
-      return data.slice(0, 5);
+      return data
+        .slice()
+        .sort((first, second) => first.position - second.position)
+        .slice(0, HOME_RANKING_LIMIT);
     },
     staleTime: 60_000,
     retry: 1,
@@ -172,7 +177,7 @@ export function HomeRankingSection() {
 function RankingSkeleton() {
   return (
     <div className="space-y-3" aria-label="Carregando ranking">
-      {Array.from({ length: 5 }, (_, index) => (
+      {Array.from({ length: HOME_RANKING_LIMIT }, (_, index) => (
         <div
           key={index}
           className="h-[86px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.04]"

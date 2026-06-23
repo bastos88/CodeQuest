@@ -87,7 +87,7 @@ const defaultTestimonials: Testimonial[] = [
   {
     id: '5',
     description:
-      'O ranking e a arena deixam o treino mais vivo. Parece estudo, mas com sensação real de desafio.',
+      'O ranking deixa o treino mais vivo. Parece estudo, mas com sensação real de desafio.',
     name: 'Mariana Alves',
     company: 'Computer Science Student',
     image: createAvatar('Mariana Alves', '#9333ea'),

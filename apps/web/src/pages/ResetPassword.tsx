@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ArrowLeft, CheckCircle2, LockKeyhole } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthCard } from './AuthPages';
-import { Button } from '../components/ui/Button';
+import { NeonButton } from '../components/ui/NeonButton';
 import { Input } from '../components/ui/Input';
 import { resetPassword } from '../lib/auth';
 
@@ -53,9 +53,13 @@ export function ResetPassword() {
             <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" />
             {mutation.data.message}
           </div>
-          <Button className="w-full" onClick={() => navigate('/login')}>
+          <NeonButton
+            className="w-full"
+            variant="app"
+            onClick={() => navigate('/login')}
+          >
             Ir para o login
-          </Button>
+          </NeonButton>
         </div>
       ) : !token ? (
         <div className="space-y-5">
@@ -80,14 +84,14 @@ export function ResetPassword() {
           />
           {localError ? <ErrorMessage>{localError}</ErrorMessage> : null}
           {apiError ? <ErrorMessage>{apiError}</ErrorMessage> : null}
-          <Button
+          <NeonButton
             className="w-full"
             type="submit"
-            loading={mutation.isPending}
-            loadingText="Redefinindo..."
+            variant="app"
+            isLoading={mutation.isPending}
           >
             Redefinir senha
-          </Button>
+          </NeonButton>
         </form>
       )}
     </AuthCard>

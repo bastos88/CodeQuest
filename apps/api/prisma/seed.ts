@@ -48,7 +48,720 @@ const categories = [
   ["Node.js", "node"],
 ] as const;
 
-const prompts: Array<{ category: string; difficulty: Difficulty; prompt: string; correct: string; wrong: string[] }> = [
+type SeedQuestion = {
+  category: string;
+  difficulty: Difficulty;
+  prompt: string;
+  correct: string;
+  wrong: string[];
+  explanation?: string;
+};
+
+type ReviewedSeedQuestion = SeedQuestion & {
+  sourcePrompt: string;
+  explanation: string;
+};
+
+const GENERIC_DISTRACTOR = 'Um recurso usado apenas para alterar cores sem impacto funcional';
+
+const categoryGuidance: Record<string, string> = {
+  html: 'Em HTML, a escolha do elemento ou atributo certo melhora a semântica, a acessibilidade e a interoperabilidade da página.',
+  css: 'Em CSS, o comportamento final depende do modelo de layout, da cascata, da especificidade e, quando houver sobreposição, do contexto de empilhamento.',
+  javascript: 'Em JavaScript, diferencie sintaxe, comportamento em tempo de execução e efeitos de coerção ou escopo antes de concluir a resposta.',
+  typescript: 'TypeScript valida tipos durante o desenvolvimento; ele não altera os valores JavaScript em tempo de execução.',
+  react: 'No React, a interface é declarada a partir de estado e props, e atualizações devem respeitar o fluxo de dados do componente.',
+  'react-hooks': 'Hooks devem ser chamados de modo previsível e suas dependências precisam refletir os valores reativos usados pela lógica.',
+  'context-api': 'Context serve para disponibilizar valores pela árvore de componentes; ele não substitui automaticamente toda estratégia de estado global.',
+  performance: 'Otimização deve atacar um gargalo observado, medido com ferramentas apropriadas, e não ser aplicada apenas por hábito.',
+  accessibility: 'Acessibilidade começa com HTML semântico, teclado e foco previsível; ARIA complementa a semântica nativa quando necessário.',
+  'git-github': 'Git registra histórico distribuído; GitHub acrescenta colaboração, revisão e automações em torno desse histórico.',
+  'apis-rest': 'Em APIs HTTP, método, status, corpo e cabeçalhos devem comunicar claramente a intenção e o resultado da operação.',
+  security: 'Segurança depende de defesa em profundidade: validar entradas, limitar privilégios, proteger sessões e evitar expor segredos.',
+  architecture: 'Arquitetura define responsabilidades e dependências para tornar mudanças, testes e evolução do sistema mais previsíveis.',
+  oop: 'Em orientação a objetos, priorize responsabilidades coesas e composição quando ela representar melhor o domínio do que herança.',
+  database: 'Modelagem de dados envolve integridade, consistência, consultas e os custos de leitura, escrita e concorrência.',
+  programming: 'A resposta deve identificar o comportamento do programa e o custo ou efeito da abordagem, não apenas o nome do conceito.',
+  testing: 'Testes confiáveis isolam o que precisa ser controlado e verificam comportamento observável, não detalhes acidentais da implementação.',
+  graphql: 'GraphQL define um contrato tipado no schema e permite ao cliente solicitar precisamente os campos necessários.',
+  api: 'Um contrato de API deve ser explícito, evolutivo e consistente para que clientes possam integrar sem depender de detalhes internos.',
+  git: 'Antes de reescrever histórico ou descartar alterações no Git, confirme a área afetada: working tree, staging area, commit atual ou remoto.',
+  'computer-science': 'Estruturas, algoritmos e modelos de execução devem ser avaliados pelo comportamento e pela complexidade conforme a entrada cresce.',
+  'data-structures': 'A estrutura adequada depende das operações mais frequentes: acesso, busca, inserção, remoção, ordenação ou relação entre itens.',
+  'web-components': 'Web Components se baseiam principalmente em Custom Elements, Shadow DOM e templates; esses recursos funcionam sem depender de um framework específico.',
+  algorithms: 'Algoritmos devem ser avaliados pelas condições de uso, pela corretude e pela complexidade de tempo e espaço.',
+  'best-practices': 'Boas práticas reduzem ambiguidade e custo de manutenção, mas precisam ser aplicadas de acordo com o problema concreto.',
+  devops: 'DevOps automatiza entrega e operação, mantendo rastreabilidade, observabilidade e capacidade segura de reversão.',
+  angular: 'Angular organiza UI, serviços e dependências; conceitos atuais também convivem com componentes standalone e APIs reativas.',
+  'data-binding': 'Fluxos de dados claros tornam atualizações previsíveis e evitam inconsistências entre estado e interface.',
+  frameworks: 'Frameworks fazem escolhas arquiteturais diferentes; a comparação deve considerar ecossistema, modelo de renderização e necessidade do projeto.',
+  design: 'Design de interface combina hierarquia, contraste, espaçamento, estados e consistência para reduzir esforço cognitivo.',
+  sql: 'Em SQL, a ordem lógica das cláusulas e o tipo de operação determinam como linhas são filtradas, agrupadas, alteradas ou recuperadas.',
+  node: 'No Node.js, diferencie recursos do runtime, bibliotecas externas e convenções de arquitetura da aplicação.',
+};
+
+/**
+ * Correções que exigem alteração real de enunciado, resposta, alternativas,
+ * dificuldade ou categoria. sourcePrompt permite atualizar no banco a pergunta
+ * antiga sem criar uma segunda linha quando o seed é executado novamente.
+ */
+const questionRevisions: Record<string, Partial<SeedQuestion>> = {
+  "Qual tag HTML define o cabeçalho principal de uma seção?": {
+    prompt: 'Qual elemento HTML representa um título de nível 1?',
+    correct: '<h1>',
+    wrong: ['<header>', '<head>', '<title>'],
+    explanation: 'O elemento <h1> representa um título de primeiro nível no conteúdo da página. <header> agrupa conteúdo introdutório, <head> contém metadados e <title> define o título da aba/documento.',
+  },
+  'Qual a diferença entre localStorage e sessionStorage?': {
+    category: 'html',
+    difficulty: 'MEDIUM',
+    prompt: 'Para que serve o elemento HTML <template>?',
+    correct: 'Guardar markup inerte que pode ser clonado e inserido no documento posteriormente com JavaScript',
+    wrong: [
+      'Exibir automaticamente um modal antes do carregamento da página',
+      'Criar uma nova rota acessível diretamente pelo navegador',
+      'Substituir o elemento <form> em qualquer formulário HTML',
+    ],
+    explanation: 'O conteúdo de <template> não é renderizado como parte ativa do documento. Ele é útil para definir marcação reutilizável que será clonada e inserida depois, por exemplo em componentes e listas dinâmicas.',
+  },
+  "Qual a diferença entre 'position: relative' e 'position: absolute'?": {
+    prompt: 'Como position: relative e position: absolute afetam o fluxo e a referência de posicionamento?',
+    correct: 'relative mantém o espaço no fluxo normal; absolute sai do fluxo e é posicionado em relação ao ancestral posicionado mais próximo',
+    wrong: [
+      'relative sai sempre do fluxo, enquanto absolute mantém o espaço original',
+      'absolute é sempre posicionado em relação ao documento, ignorando ancestrais',
+      'Os dois valores têm comportamento idêntico e diferem apenas no nome',
+    ],
+    explanation: 'Um elemento relative continua ocupando seu espaço original. Um elemento absolute deixa o fluxo normal e usa o ancestral com position diferente de static como referência, quando existir.',
+  },
+  'O que são pseudo-elementos em CSS?': {
+    prompt: 'O que pseudo-elementos como ::before e ::after permitem fazer em CSS?',
+    correct: 'Estilizar uma parte específica ou conteúdo gerado associado a um elemento',
+    wrong: [
+      'Selecionar apenas elementos que possuem uma classe específica',
+      'Criar novas propriedades CSS que não existem no navegador',
+      'Aplicar estilos somente quando o usuário passa o mouse',
+    ],
+    explanation: 'Pseudo-elementos representam partes estiláveis, como a primeira letra ou conteúdo gerado antes e depois do conteúdo de um elemento. Estados como :hover são pseudo-classes, não pseudo-elementos.',
+  },
+  "Qual a função do 'z-index'?": {
+    prompt: 'Qual é a função de z-index em CSS?',
+    correct: 'Definir a ordem de empilhamento de elementos dentro de um mesmo contexto de empilhamento',
+    wrong: [
+      'Alterar o nível de zoom aplicado ao elemento',
+      'Definir a prioridade de carregamento do elemento',
+      'Centralizar o elemento no eixo Z do layout',
+    ],
+    explanation: 'z-index controla qual elemento aparece à frente ou atrás dentro de um contexto de empilhamento. Um valor maior não ultrapassa automaticamente um contexto de empilhamento criado por um ancestral.',
+  },
+  'O que é closure em JavaScript?': {
+    difficulty: 'MEDIUM',
+    prompt: 'O que caracteriza uma closure em JavaScript?',
+    correct: 'Uma função que continua acessando variáveis do seu escopo léxico mesmo depois que a função externa terminou',
+    wrong: [
+      'Uma função que sempre executa de forma assíncrona',
+      'Uma estrutura usada apenas para repetir instruções',
+      'Um método nativo que fecha conexões de rede',
+    ],
+    explanation: 'Closure surge porque uma função carrega a referência ao ambiente léxico onde foi criada. Isso é comum em factories, callbacks e encapsulamento de estado privado.',
+  },
+  "O que é 'closure' no JavaScript? Cite um exemplo": {
+    prompt: 'Em qual situação uma closure é especialmente útil?',
+    correct: 'Para manter estado privado entre chamadas, como em uma função que retorna outra função incrementadora',
+    wrong: [
+      'Para impedir qualquer acesso a variáveis externas',
+      'Para converter automaticamente callbacks em Promises',
+      'Para executar código em uma thread separada do navegador',
+    ],
+    explanation: 'Uma função interna pode continuar acessando variáveis da função externa. Por isso, uma factory como criarContador pode preservar o valor de contador entre chamadas.',
+  },
+  'O que é Promise?': {
+    prompt: 'O que uma Promise representa em JavaScript?',
+    correct: 'O resultado futuro de uma operação assíncrona, que pode ser resolvida ou rejeitada',
+    wrong: [
+      'Uma função que repete uma tarefa em intervalos fixos',
+      'Um objeto usado exclusivamente para armazenar variáveis globais',
+      'Uma forma de tornar toda função síncrona automaticamente',
+    ],
+    explanation: 'Promise representa um valor que ainda pode não estar disponível. Seu estado começa pendente e termina como fulfilled ou rejected; async/await é uma sintaxe sobre Promises.',
+  },
+  'O que é destructuring assignment?': {
+    difficulty: 'MEDIUM',
+    prompt: 'Para que serve destructuring assignment em JavaScript?',
+    correct: 'Extrair valores de arrays ou propriedades de objetos para variáveis de forma declarativa',
+    wrong: [
+      'Remover propriedades de um objeto em memória',
+      'Converter automaticamente qualquer valor em string',
+      'Criar uma cópia profunda de arrays e objetos',
+    ],
+    explanation: 'Destructuring permite atribuições como const { nome } = usuario ou const [primeiro] = lista. Ele apenas extrai referências ou valores; não faz cópia profunda.',
+  },
+  'O que é o operador spread (...) ?': {
+    difficulty: 'MEDIUM',
+    prompt: 'Para que serve o operador spread (...) em JavaScript?',
+    correct: 'Expandir elementos de iteráveis ou propriedades enumeráveis de objetos em um novo contexto',
+    wrong: [
+      'Executar uma função repetidamente até obter um resultado',
+      'Converter um objeto em JSON de forma automática',
+      'Comparar dois valores ignorando o tipo',
+    ],
+    explanation: 'Spread pode expandir arrays, strings iteráveis e propriedades de objetos, por exemplo [...lista] ou { ...usuario }. Ele não produz cópia profunda de objetos aninhados.',
+  },
+  'O que é strict mode?': {
+    prompt: 'Qual é o objetivo de "use strict" em JavaScript?',
+    correct: 'Ativar regras mais rigorosas que transformam alguns erros silenciosos em erros explícitos',
+    wrong: [
+      'Forçar o navegador a executar JavaScript em paralelo',
+      'Habilitar automaticamente minificação de produção',
+      'Permitir a criação implícita de variáveis globais',
+    ],
+    explanation: 'O modo estrito torna comportamentos perigosos mais visíveis, como atribuir a uma variável não declarada. Módulos ES já são executados em modo estrito.',
+  },
+  "O que faz o operador '?' em TypeScript?": {
+    prompt: 'O que o operador de optional chaining (?.) faz em TypeScript e JavaScript?',
+    correct: 'Interrompe o acesso e retorna undefined quando o valor anterior é null ou undefined',
+    wrong: [
+      'Declara obrigatoriamente uma propriedade opcional em qualquer posição',
+      'Substitui valores null ou undefined por um valor padrão',
+      'Compara dois valores sem considerar o tipo',
+    ],
+    explanation: 'Optional chaining evita erro ao acessar uma cadeia possivelmente nula, como usuario?.endereco?.cidade. O operador ??, e não ?., define valores padrão para null ou undefined.',
+  },
+  "O que significa 'never' type?": {
+    prompt: 'O que o tipo never representa em TypeScript?',
+    correct: 'Um valor que não pode existir, comum em funções que nunca retornam ou em verificações exaustivas',
+    wrong: [
+      'Um valor opcional que pode ser undefined',
+      'Um alias para qualquer tipo desconhecido',
+      'Um objeto vazio que aceita qualquer propriedade',
+    ],
+    explanation: 'never representa ausência impossível de valor. Uma função que sempre lança erro pode retornar never, e um switch exaustivo pode usar never para detectar casos esquecidos.',
+  },
+  'O que são props?': {
+    prompt: 'O que são props em um componente React?',
+    correct: 'Valores recebidos pelo componente a partir de seu pai e tratados como somente leitura pelo componente que os recebe',
+    wrong: [
+      'Estado interno que o componente altera diretamente',
+      'Dados automaticamente persistidos no navegador',
+      'Variáveis globais compartilhadas por todos os componentes',
+    ],
+    explanation: 'Props são entradas do componente e não devem ser mutadas por quem as recebe. Para alterar a interface, o componente chama callbacks ou atualiza seu próprio estado quando apropriado.',
+  },
+  'O que é o reconciliation?': {
+    prompt: 'O que é reconciliação no React?',
+    correct: 'O processo de comparar árvores de elementos entre renderizações para decidir as atualizações necessárias no DOM',
+    wrong: [
+      'A sincronização automática entre React e um banco de dados',
+      'A fusão de dois estados globais em um único objeto',
+      'A correção de conflitos entre branches do Git',
+    ],
+    explanation: 'Quando estado ou props mudam, React compara a nova árvore de elementos com a anterior e calcula as mudanças necessárias. keys ajudam o React a identificar itens em listas.',
+  },
+  'O que é React.memo?': {
+    prompt: 'Qual é a finalidade de React.memo?',
+    correct: 'Evitar nova renderização de um componente quando suas props não mudaram segundo uma comparação superficial',
+    wrong: [
+      'Guardar qualquer estado do componente permanentemente no navegador',
+      'Memorizar automaticamente todas as funções usadas pelo componente',
+      'Substituir useState por um estado global',
+    ],
+    explanation: 'React.memo pode evitar renderizações desnecessárias, mas não é uma garantia de performance. Ele é útil quando há um gargalo medido e props estáveis; objetos e funções novos quebram a comparação superficial.',
+  },
+  'O que é o React Strict Mode?': {
+    prompt: 'Qual é a finalidade de <StrictMode> no React durante o desenvolvimento?',
+    correct: 'Destacar padrões inseguros e efeitos impuros executando verificações extras apenas no desenvolvimento',
+    wrong: [
+      'Ativar automaticamente otimizações exclusivas de produção',
+      'Impedir qualquer componente de atualizar seu estado',
+      'Transformar componentes funcionais em componentes de classe',
+    ],
+    explanation: 'StrictMode ajuda a revelar efeitos impuros, APIs obsoletas e outros problemas de desenvolvimento. Ele não adiciona essa verificação extra ao build de produção.',
+  },
+  'O que é o React Portal?': {
+    prompt: 'O que um React Portal permite fazer?',
+    correct: 'Renderizar a marcação em outro nó do DOM sem sair da árvore lógica de componentes React',
+    wrong: [
+      'Mover um componente para outra rota da aplicação',
+      'Transformar um componente em modal automaticamente',
+      'Criar um novo contexto global isolado',
+    ],
+    explanation: 'Portals são usados frequentemente para modais, tooltips e overlays. Embora o HTML seja inserido em outro nó do DOM, eventos e contexto continuam seguindo a árvore React.',
+  },
+  'Como evitar loop infinito no useEffect?': {
+    prompt: 'Como evitar um loop infinito em useEffect?',
+    correct: 'Não atualizar, dentro do efeito, um estado que faz as dependências mudarem a cada renderização; mantenha dependências corretas e referências estáveis quando necessário',
+    wrong: [
+      'Usar sempre um array de dependências vazio, mesmo quando o efeito lê props ou estado',
+      'Remover todo uso de useEffect do componente',
+      'Declarar qualquer função dentro do array de dependências sem analisar sua referência',
+    ],
+    explanation: 'Um loop ocorre quando o efeito atualiza estado, essa atualização causa renderização e uma dependência muda novamente. O array vazio não é uma solução universal e pode introduzir valores desatualizados.',
+  },
+  'Qual a regra dos Hooks?': {
+    prompt: 'Qual é uma regra essencial dos Hooks do React?',
+    correct: 'Chamá-los no nível superior de componentes funcionais ou custom hooks, nunca dentro de condições, loops ou callbacks',
+    wrong: [
+      'Chamálos somente dentro de loops para reutilizar estado',
+      'Chamálos apenas em componentes de classe',
+      'Criar hooks dinamicamente após uma requisição de rede',
+    ],
+    explanation: 'React associa o estado à ordem das chamadas de Hooks. Chamá-los condicionalmente altera essa ordem e quebra a associação entre cada Hook e seu estado.',
+  },
+  'Para que serve o useRef?': {
+    prompt: 'Para que useRef é usado principalmente no React?',
+    correct: 'Guardar uma referência mutável entre renderizações, como um elemento DOM ou um valor que não deve causar novo render',
+    wrong: [
+      'Atualizar o estado e renderizar o componente imediatamente',
+      'Compartilhar dados globais sem Provider',
+      'Memorizar o resultado de um cálculo caro',
+    ],
+    explanation: 'O objeto retornado por useRef mantém a propriedade current entre renderizações, mas alterar current não provoca render. Isso o torna útil para DOM, timers e valores imperativos.',
+  },
+  'Quando NÃO usar Context API?': {
+    prompt: 'Em qual cenário Context API pode exigir uma estratégia adicional de otimização?',
+    correct: 'Quando um único valor de contexto muda muito frequentemente e muitos consumidores renderizam em resposta a cada mudança',
+    wrong: [
+      'Ao compartilhar tema visual que muda raramente',
+      'Ao disponibilizar o usuário autenticado para a árvore',
+      'Ao evitar prop drilling em dados estáveis',
+    ],
+    explanation: 'Context não é proibido para dados frequentes, mas mudanças no valor podem renderizar consumidores. Separar contextos, memoizar valores ou usar uma store com seletores pode ser mais adequado em cenários críticos.',
+  },
+  'Como otimizar renderização no React?': {
+    prompt: 'Qual é a abordagem mais segura para otimizar renderizações no React?',
+    correct: 'Medir o gargalo com o Profiler e então aplicar técnicas como memoização, divisão de estado ou virtualização onde houver ganho real',
+    wrong: [
+      'Aplicar React.memo, useMemo e useCallback em todos os componentes por padrão',
+      'Concentrar todo o estado da aplicação em um único componente gigante',
+      'Evitar componentes pequenos para reduzir o número de arquivos',
+    ],
+    explanation: 'Memoização tem custo e pode aumentar complexidade. A decisão deve partir de uma medição, usando por exemplo React DevTools Profiler, e atacar o componente ou cálculo realmente caro.',
+  },
+  'O que é contraste de cores acessível?': {
+    prompt: 'Qual relação de contraste é normalmente exigida pela WCAG AA para texto normal?',
+    correct: 'Pelo menos 4,5:1 entre texto e fundo, salvo exceções previstas pelas diretrizes',
+    wrong: ['2:1 para qualquer texto', '3:1 obrigatoriamente para todo texto normal', '10:1 como único valor permitido'],
+    explanation: 'A WCAG AA normalmente exige 4,5:1 para texto normal e 3:1 para texto grande. O contraste deve ser verificado no estado real da interface, incluindo hover, foco e texto sobre imagens.',
+  },
+  'Como criar uma nova branch?': {
+    prompt: 'Qual comando moderno cria e troca para uma nova branch no Git?',
+    correct: 'git switch -c nome-da-branch',
+    wrong: ['git branch -m nome-da-branch', 'git merge -c nome-da-branch', 'git init nome-da-branch'],
+    explanation: 'git switch -c cria e seleciona a branch. git checkout -b nome-da-branch também funciona e é comum em bases antigas, mas switch torna a intenção mais clara.',
+  },
+  'Como resolver conflitos de merge?': {
+    prompt: 'Qual sequência descreve corretamente a resolução manual de um conflito de merge?',
+    correct: 'Editar os marcadores de conflito, testar o resultado, adicionar os arquivos resolvidos e concluir o merge com commit quando necessário',
+    wrong: [
+      'Executar git resolve sem revisar o conteúdo afetado',
+      'Apagar automaticamente os dois lados do conflito e fazer push',
+      'Criar outra branch para que Git resolva o conflito sozinho',
+    ],
+    explanation: 'Git sinaliza os trechos conflitantes, mas a decisão é humana. Depois de editar e validar, use git add nos arquivos resolvidos e conclua o merge conforme o fluxo em andamento.',
+  },
+  'Quais métodos HTTP são idempotentes?': {
+    prompt: 'Qual conjunto contém apenas métodos HTTP normalmente idempotentes?',
+    correct: 'GET, PUT e DELETE',
+    wrong: ['POST, PATCH e CONNECT', 'POST e GET', 'PATCH e POST'],
+    explanation: 'Uma operação idempotente produz o mesmo efeito pretendido quando repetida. GET, PUT e DELETE são normalmente definidos assim; a resposta pode variar, por exemplo DELETE pode retornar 404 depois da primeira remoção.',
+  },
+  'O que são CORS?': {
+    prompt: 'O que CORS controla em aplicações web?',
+    correct: 'Quais origens podem ler respostas de uma API por meio de requisições feitas pelo navegador',
+    wrong: [
+      'A criptografia automática de todo tráfego HTTP',
+      'O armazenamento de sessões no banco de dados',
+      'A validação de senhas antes do login',
+    ],
+    explanation: 'CORS é um protocolo baseado em cabeçalhos que o navegador aplica a requisições cross-origin. Ele não substitui autenticação, autorização nem proteção contra CSRF.',
+  },
+  "O que é 'debouncing'?": {
+    prompt: 'O que é debouncing?',
+    correct: 'Adiar a execução de uma função até que um período sem novos eventos tenha passado',
+    wrong: [
+      'Executar uma função no máximo uma vez por intervalo fixo',
+      'Executar uma função em cada evento sem qualquer atraso',
+      'Cancelar permanentemente uma função depois da primeira chamada',
+    ],
+    explanation: 'Debounce é adequado para ações após a digitação parar, como busca. Throttle é diferente: limita a frequência e pode executar durante uma sequência contínua de eventos.',
+  },
+  'O que é o useImperativeHandle?': {
+    prompt: 'Para que serve useImperativeHandle no React?',
+    correct: 'Personalizar o valor exposto por uma ref, liberando uma API imperativa controlada para o componente pai',
+    wrong: [
+      'Criar estado global compartilhado por toda a aplicação',
+      'Substituir automaticamente callbacks por Promises',
+      'Escutar eventos do navegador sem re-renderização',
+    ],
+    explanation: 'useImperativeHandle é usado com refs para expor somente métodos necessários, como focus ou scrollTo. Em geral, fluxo declarativo por props continua sendo a primeira opção.',
+  },
+  'O que é error boundary?': {
+    prompt: 'O que um Error Boundary captura no React?',
+    correct: 'Erros durante a renderização, métodos de ciclo de vida e construtores de componentes descendentes',
+    wrong: [
+      'Todos os erros de event handlers e callbacks assíncronos automaticamente',
+      'Erros de rede de qualquer requisição feita pelo navegador',
+      'Apenas erros de sintaxe detectados pelo TypeScript',
+    ],
+    explanation: 'Error Boundaries protegem uma parte da árvore contra erros de renderização. Eles não capturam automaticamente event handlers, código assíncrono ou erros no próprio boundary.',
+  },
+  'Quais são as vantagens do NoSQL sobre o RDBMS tradicional?': {
+    prompt: 'Qual característica costuma motivar o uso de um banco NoSQL em vez de um relacional?',
+    correct: 'Flexibilidade de schema e modelos de dados específicos, como documentos, chave-valor, grafos ou colunas, quando eles se ajustam melhor ao caso de uso',
+    wrong: [
+      'Garantia de que todos os bancos NoSQL dispensam transações e consistência',
+      'Capacidade obrigatória de executar joins relacionais complexos',
+      'Substituição automática de qualquer banco relacional em sistemas financeiros',
+    ],
+    explanation: 'NoSQL não é superior por definição. A escolha depende de acesso a dados, consistência, relacionamentos, escalabilidade e operação. Muitos bancos NoSQL também oferecem transações em determinados cenários.',
+  },
+  'Diferença entre site responsivo e estratégia mobile-first?': {
+    prompt: 'Qual é a diferença entre design responsivo e a estratégia mobile-first?',
+    correct: 'Responsivo é o objetivo de adaptar a interface a diferentes telas; mobile-first é uma estratégia de começar pela menor tela e ampliar regras conforme o espaço aumenta',
+    wrong: [
+      'Responsivo significa usar apenas max-width e mobile-first significa usar apenas desktop',
+      'Mobile-first elimina a necessidade de testar em telas grandes',
+      'Os dois termos descrevem exatamente a mesma técnica CSS',
+    ],
+    explanation: 'Uma interface pode ser responsiva seguindo várias estratégias. Mobile-first normalmente prioriza estilos base para telas menores e media queries min-width para ampliar o layout.',
+  },
+  'O que são atributos defer e async em tag <script>?': {
+    prompt: 'Como defer e async diferem em scripts externos clássicos?',
+    correct: 'Ambos podem baixar em paralelo; async executa assim que termina o download, enquanto defer espera o HTML ser analisado e preserva a ordem entre scripts defer',
+    wrong: [
+      'async e defer sempre executam no fim do parsing e na mesma ordem',
+      'defer bloqueia o parser do HTML até o download terminar',
+      'async só altera o estilo do elemento script, sem mudar a execução',
+    ],
+    explanation: 'Scripts async priorizam disponibilidade e podem executar fora de ordem. Scripts defer aguardam o parsing do documento e são apropriados quando a ordem entre arquivos importa.',
+  },
+  'Desvantagens do Redux em relação ao Flux?': {
+    prompt: 'Qual trade-off é comum ao adotar Redux em uma aplicação pequena?',
+    correct: 'Pode introduzir estrutura, conceitos e código adicional que não se justificam quando o estado compartilhado é simples',
+    wrong: [
+      'Impede totalmente o uso de componentes React',
+      'Não permite depuração de mudanças de estado',
+      'Não suporta atualizações assíncronas com middlewares ou ferramentas adequadas',
+    ],
+    explanation: 'Redux oferece previsibilidade e ferramentas, mas não é obrigatório. Em aplicações pequenas, estado local, Context ou outras stores podem resolver o problema com menos estrutura.',
+  },
+  'Diferença entre Interface e Type no TypeScript?': {
+    prompt: 'Qual diferença prática existe entre interface e type em TypeScript?',
+    correct: 'Interfaces podem participar de declaration merging; type aliases são especialmente úteis para unions, tuples, mapeamentos e composições de tipos',
+    wrong: [
+      'Interfaces foram removidas e devem ser substituídas sempre por type',
+      'Type aliases só podem representar objetos com propriedades simples',
+      'Interfaces não podem ser estendidas ou compostas',
+    ],
+    explanation: 'Os dois recursos descrevem formas de valores e se sobrepõem em muitos casos. A escolha depende da necessidade: interfaces são extensíveis e type aliases modelam unions e transformações mais livremente.',
+  },
+  'O que são webcomponents?': {
+    prompt: 'Quais tecnologias formam a base moderna de Web Components?',
+    correct: 'Custom Elements, Shadow DOM e elementos template/slot para criar componentes reutilizáveis e encapsulados',
+    wrong: [
+      'HTML Imports, jQuery e CSS reset como APIs obrigatórias',
+      'Apenas componentes React compilados para HTML',
+      'Um padrão exclusivo de Angular para criar diretivas',
+    ],
+    explanation: 'Web Components são padrões da plataforma. HTML Imports não faz parte da base moderna: componentes usam módulos JavaScript, Custom Elements, Shadow DOM e templates/slots.',
+  },
+  'Explique CORS e como afeta websites': {
+    prompt: 'Como CORS afeta uma aplicação web no navegador?',
+    correct: 'Ele determina, por cabeçalhos HTTP, se o navegador permitirá que uma origem leia a resposta de outro domínio',
+    wrong: [
+      'Ele elimina automaticamente ataques XSS e CSRF',
+      'Ele substitui autenticação e autorização no servidor',
+      'Ele impede qualquer requisição entre domínios, sem exceções',
+    ],
+    explanation: 'CORS regula acesso a respostas cross-origin no navegador. Ele não impede ataques XSS, não valida permissões do usuário e não é uma defesa completa contra CSRF.',
+  },
+  'Cite vulnerabilidades de REST APIs': {
+    prompt: 'Qual conjunto reúne riscos relevantes para APIs HTTP?',
+    correct: 'Autenticação e autorização quebradas, validação insuficiente de entradas, exposição excessiva de dados, injeções, rate limiting ausente e configuração insegura',
+    wrong: [
+      'Somente erros de CSS no cliente',
+      'Apenas consultas SQL lentas',
+      'Nenhum risco quando a API usa JSON',
+    ],
+    explanation: 'Segurança de APIs inclui identidade, permissões, validação, limites, observabilidade e configuração. XSS ou CSRF podem ser relevantes em contextos específicos, mas não resumem todos os riscos de uma API.',
+  },
+  'O que é JWT? Como implementar? Alternativas?': {
+    prompt: 'O que é JWT e qual cuidado é essencial ao usá-lo para autenticação?',
+    correct: 'Um formato de token assinado com claims; sua assinatura, expiração, armazenamento e revogação devem ser projetados com cuidado',
+    wrong: [
+      'Um protocolo que substitui HTTPS em aplicações web',
+      'Um banco de dados usado para armazenar senhas em texto puro',
+      'Uma autorização automática que dispensa validação no servidor',
+    ],
+    explanation: 'JWT é um formato de token, não uma estratégia completa de segurança. OAuth 2.0 é um framework de autorização; sessões com cookies, tokens opacos e API keys atendem casos diferentes.',
+  },
+  'Exemplos de Convenções de código JavaScript': {
+    prompt: 'Qual afirmação sobre convenções JavaScript está correta?',
+    correct: 'Airbnb, Google e StandardJS são guias diferentes; a equipe deve configurar lint e formatter de modo consistente em vez de assumir regras universais',
+    wrong: [
+      'Todos os guias exigem ponto e vírgula e indentação de dois espaços',
+      'Convenções são inúteis porque compiladores ignoram estilo',
+      'Convenções substituem testes automatizados e revisão de código',
+    ],
+    explanation: 'Guias divergem em detalhes como ponto e vírgula e formatação. O valor vem de uma configuração compartilhada, aplicada por ferramentas como ESLint e Prettier.',
+  },
+  'Por que criar classes estáticas?': {
+    prompt: 'Quando métodos estáticos são apropriados em uma classe?',
+    correct: 'Quando o comportamento pertence ao tipo como um todo e não depende do estado de uma instância específica',
+    wrong: [
+      'Quando cada objeto precisa manter dados próprios e mutáveis',
+      'Quando é necessário acessar propriedades privadas de qualquer instância',
+      'Quando se deseja substituir todo uso de funções utilitárias e módulos',
+    ],
+    explanation: 'Métodos estáticos são chamados pela classe, como Math.max. Eles não têm acesso automático ao estado de uma instância e devem representar comportamento ligado ao tipo ou a uma factory.',
+  },
+  'Qual mais seguro: JWT ou OAuth2?': {
+    prompt: 'Por que a pergunta "JWT ou OAuth 2.0: qual é mais seguro?" é inadequada?',
+    correct: 'Porque JWT é um formato de token e OAuth 2.0 é um framework de autorização; a segurança depende do fluxo, da implementação e do caso de uso',
+    wrong: [
+      'Porque JWT sempre substitui OAuth 2.0 em qualquer aplicação',
+      'Porque OAuth 2.0 é um algoritmo de hashing de senha',
+      'Porque os dois termos descrevem o mesmo protocolo de banco de dados',
+    ],
+    explanation: 'Não existe comparação direta de segurança entre categorias diferentes. OAuth 2.0 pode usar JWT ou tokens opacos, e ambos exigem configuração correta de validação, expiração e armazenamento.',
+  },
+  'Como o V8 compila código JavaScript?': {
+    prompt: 'Qual descrição representa melhor o pipeline moderno de execução do V8?',
+    correct: 'O V8 analisa o código, gera bytecode para Ignition e pode promover trechos quentes por compiladores JIT como Sparkplug, Maglev e TurboFan',
+    wrong: [
+      'O V8 executa somente código-fonte sem parser, bytecode ou compilação JIT',
+      'O V8 exige compilação AOT completa antes de qualquer código rodar',
+      'O V8 executa JavaScript diretamente como instruções SQL',
+    ],
+    explanation: 'O V8 combina interpretação e compilação JIT. O pipeline evolui ao longo do tempo, por isso questões de implementação interna devem evitar apresentá-lo como uma sequência imutável.',
+  },
+  'O que é WCAG? Diferenças A, AA, AAA?': {
+    prompt: 'O que representam os níveis A, AA e AAA das WCAG?',
+    correct: 'Níveis crescentes de critérios de conformidade: A é o mínimo, AA é a meta mais comum e AAA inclui exigências adicionais nem sempre viáveis para todo conteúdo',
+    wrong: [
+      'Três linguagens de programação para leitores de tela',
+      'Três ferramentas automáticas que substituem testes com pessoas',
+      'Níveis de velocidade de carregamento definidos pelo navegador',
+    ],
+    explanation: 'WCAG reúne diretrizes de acessibilidade. AA é a referência mais adotada em produtos e legislações, enquanto AAA pode ser difícil ou inadequado de cumprir integralmente em todos os contextos.',
+  },
+  'O que é domain pre-fetching e como ajuda?': {
+    prompt: 'Para que serve a dica de recurso dns-prefetch?',
+    correct: 'Antecipar a resolução DNS de um domínio externo para reduzir parte da latência quando ele for usado depois',
+    wrong: [
+      'Baixar imediatamente todos os scripts de um domínio externo',
+      'Armazenar permanentemente respostas HTTP no navegador',
+      'Abrir uma conexão autenticada completa com qualquer API externa',
+    ],
+    explanation: 'dns-prefetch apenas antecipa a resolução de nome. preconnect é mais agressivo, pois pode iniciar DNS, TCP e TLS; ambos devem ser usados seletivamente.',
+  },
+  "O que é 'use strict';? Vantagens/desvantagens?": {
+    prompt: 'Qual é um benefício real de "use strict"?',
+    correct: 'Detectar práticas problemáticas como variáveis não declaradas e impedir alguns comportamentos silenciosos',
+    wrong: [
+      'Garantir por si só uma melhoria mensurável de performance em qualquer aplicação',
+      'Permitir usar sintaxe TypeScript diretamente no navegador',
+      'Desativar todas as verificações de erro do JavaScript',
+    ],
+    explanation: 'Modo estrito melhora previsibilidade ao restringir comportamentos históricos do JavaScript. Ganhos de performance não devem ser tratados como garantia; módulos ES já são estritos.',
+  },
+};
+
+const duplicateQuestionRevisions: Record<number, Partial<SeedQuestion>> = {
+  70: {
+    prompt: 'Quando atributos ARIA devem ser usados?',
+    correct: 'Quando HTML semântico nativo não consegue expressar a informação ou o comportamento de acessibilidade necessário',
+    wrong: [
+      'Como substituto obrigatório para todos os elementos HTML nativos',
+      'Somente para alterar a aparência visual de um componente',
+      'Para impedir a navegação por teclado em elementos interativos',
+    ],
+    explanation: 'A primeira escolha deve ser um elemento HTML nativo, como button ou input. ARIA complementa a semântica, mas usado incorretamente pode piorar a experiência com tecnologias assistivas.',
+  },
+  195: {
+    prompt: 'O que significa ARIA em acessibilidade web?',
+    correct: 'Accessible Rich Internet Applications, um conjunto de atributos que complementa a semântica para tecnologias assistivas',
+    wrong: [
+      'Uma biblioteca de estilos CSS exclusiva para leitores de tela',
+      'Um substituto completo para a estrutura semântica do HTML',
+      'Um protocolo de autenticação usado para restringir acessos',
+    ],
+    explanation: 'ARIA descreve papéis, estados e propriedades quando a semântica HTML nativa não é suficiente. Elementos semânticos continuam sendo a base preferível.',
+  },
+};
+
+const additionalDuplicateRevisions: Record<number, Partial<SeedQuestion>> = {
+  31: {
+    prompt: 'O que é um type alias em TypeScript?',
+    correct: 'Um nome para um tipo, que pode representar objetos, unions, tuples e outras composições de tipos',
+    wrong: ['Uma função executada em tempo de execução', 'Uma classe que sempre pode ser instanciada', 'Um alias apenas para imports de módulos'],
+    explanation: 'Type aliases são declarados com type e existem apenas durante a verificação de tipos. Eles são úteis para modelar unions, tuples e tipos compostos.',
+  },
+  100: {
+    prompt: 'O que expressa o princípio do menor privilégio em segurança?',
+    correct: 'Cada usuário, serviço ou processo deve receber apenas as permissões necessárias para executar sua tarefa',
+    wrong: ['Todos os serviços devem usar a mesma conta de administrador', 'Permissões devem ser ampliadas por padrão para evitar erros', 'Credenciais devem ser compartilhadas entre ambientes'],
+    explanation: 'Menor privilégio limita o impacto de uma credencial comprometida ou de uma falha. Permissões devem ser específicas, revisáveis e reduzidas ao mínimo necessário.',
+  },
+  102: {
+    prompt: 'O que box-sizing: border-box altera no cálculo de dimensões?',
+    correct: 'Faz width e height incluírem padding e border no tamanho declarado do elemento',
+    wrong: ['Remove automaticamente margin de todos os lados', 'Transforma o elemento em um container flex', 'Impede que o elemento receba bordas'],
+    explanation: 'Com border-box, o tamanho declarado já inclui conteúdo, padding e borda. A margem continua fora da caixa e não entra em width ou height.',
+  },
+  108: {
+    prompt: 'Qual é a finalidade de campos ou métodos privados em uma classe?',
+    correct: 'Restringir o acesso direto a detalhes internos para preservar invariantes e expor uma API controlada',
+    wrong: ['Permitir que qualquer código externo altere o estado livremente', 'Substituir a necessidade de construtores', 'Criar herança múltipla automaticamente'],
+    explanation: 'Membros privados ajudam a proteger o estado interno. Em TypeScript e outras linguagens, isso permite oferecer operações públicas que validam e preservam as regras do objeto.',
+  },
+  110: {
+    prompt: 'O que NaN representa em JavaScript?',
+    correct: 'Um valor numérico especial que indica que uma operação não produziu um número válido',
+    wrong: ['Um valor null usado para objetos vazios', 'Uma string que não pode ser convertida em número', 'Um erro que interrompe automaticamente a execução'],
+    explanation: 'NaN tem tipo number e pode surgir, por exemplo, de Number("texto"). Use Number.isNaN(valor) para verificá-lo de forma confiável.',
+  },
+  117: {
+    prompt: 'Qual é a função principal de um arquivo .d.ts em TypeScript?',
+    correct: 'Declarar tipos de bibliotecas ou módulos JavaScript sem fornecer a implementação em tempo de execução',
+    wrong: ['Compilar TypeScript diretamente para código de máquina', 'Armazenar variáveis de ambiente do projeto', 'Gerar automaticamente migrations do banco de dados'],
+    explanation: 'Arquivos de declaração descrevem contratos de tipos para que o editor e o compilador entendam APIs JavaScript existentes.',
+  },
+  118: {
+    prompt: 'O que a palavra-chave readonly faz em uma propriedade TypeScript?',
+    correct: 'Impede reatribuição da propriedade pelo sistema de tipos depois da inicialização',
+    wrong: ['Torna automaticamente o objeto imutável em tempo de execução', 'Converte a propriedade em um método estático', 'Permite que a propriedade aceite qualquer tipo'],
+    explanation: 'readonly é uma proteção de tempo de compilação. Ela não congela o objeto em runtime e não impede mutações internas de estruturas aninhadas por si só.',
+  },
+  119: {
+    prompt: 'O que é um fake em testes automatizados?',
+    correct: 'Uma implementação simplificada, mas funcional, usada no lugar de uma dependência real em cenários de teste',
+    wrong: ['Um teste que falha aleatoriamente para validar resiliência', 'Um relatório de cobertura de código', 'Uma ferramenta que executa apenas testes end-to-end'],
+    explanation: 'Fakes oferecem comportamento funcional reduzido, como um repositório em memória. Eles se diferenciam de mocks, spies e stubs pelo tipo de interação que simulam ou observam.',
+  },
+  120: {
+    prompt: 'O que é uma mutation no GraphQL?',
+    correct: 'Uma operação usada para executar mudanças de dados ou efeitos controlados expostos pelo schema',
+    wrong: ['Uma operação usada exclusivamente para ler dados', 'Um tipo escalar que representa números inteiros', 'Um arquivo de configuração de banco de dados'],
+    explanation: 'Queries buscam dados; mutations representam operações que alteram dados ou disparam comandos. O schema define os campos de mutation disponíveis.',
+  },
+  121: {
+    difficulty: 'MEDIUM',
+    prompt: 'O que é hydration em aplicações React renderizadas no servidor?',
+    correct: 'O processo de conectar o JavaScript do React ao HTML já renderizado para torná-lo interativo no navegador',
+    wrong: ['A conversão de componentes React em arquivos CSS', 'A limpeza automática do DOM depois de cada renderização', 'A duplicação do DOM real em uma segunda aba do navegador'],
+    explanation: 'Em SSR ou SSG, o navegador recebe HTML pronto. Hydration associa os componentes React a esse HTML para que eventos e atualizações de estado passem a funcionar.',
+  },
+  177: {
+    prompt: 'O que é tree shaking em ferramentas de build?',
+    correct: 'A remoção de código exportado, mas não utilizado, do bundle final quando a análise estática permite',
+    wrong: ['O carregamento de imagens somente quando entram na tela', 'A execução de funções em paralelo em várias threads', 'A compactação de HTML feita pelo servidor'],
+    explanation: 'Tree shaking reduz bundle removendo exports não usados, especialmente em módulos ES. Ele depende de código analisável estaticamente e de configuração adequada do bundler.',
+  },
+  235: {
+    difficulty: 'HARD',
+    prompt: 'Quando useLayoutEffect pode ser necessário no React?',
+    correct: 'Quando é preciso medir ou ajustar o layout do DOM antes de o navegador pintar a atualização na tela',
+    wrong: ['Quando se quer substituir qualquer uso de useState', 'Quando o efeito deve rodar apenas no servidor', 'Quando se deseja evitar toda manipulação de DOM'],
+    explanation: 'useLayoutEffect roda de forma síncrona após mudanças no DOM e antes da pintura. Use com parcimônia, pois pode bloquear a renderização visual; useEffect é suficiente na maioria dos efeitos.',
+  },
+  236: {
+    prompt: 'Para que serve useId no React?',
+    correct: 'Gerar identificadores estáveis para associações de acessibilidade e compatibilidade entre renderização no servidor e no cliente',
+    wrong: ['Substituir chaves de listas renderizadas com map', 'Criar IDs sequenciais persistidos no banco de dados', 'Atualizar estado sem causar renderização'],
+    explanation: 'useId é apropriado para atributos como id e htmlFor. Ele não deve ser usado como key de listas porque keys devem vir dos dados dos itens.',
+  },
+  238: {
+    difficulty: 'HARD',
+    prompt: 'Para que serve useTransition no React?',
+    correct: 'Marcar atualizações de estado como não urgentes para que interações mais importantes permaneçam responsivas',
+    wrong: ['Executar efeitos depois que o componente desmonta', 'Armazenar referências ao DOM sem renderizar', 'Criar um contexto global automaticamente'],
+    explanation: 'useTransition ajuda a diferenciar atualizações urgentes, como digitação, de atualizações custosas que podem ser interrompidas ou adiadas.',
+  },
+  240: {
+    prompt: 'Para que serve useSyncExternalStore no React?',
+    correct: 'Conectar componentes a uma store externa de forma consistente com renderização concorrente e server rendering',
+    wrong: ['Substituir useState para qualquer estado local simples', 'Executar requisições HTTP sem Promise', 'Criar um hook de efeito que roda apenas uma vez'],
+    explanation: 'useSyncExternalStore é voltado a integrações com stores externas. Em estado local comum, useState ou useReducer continuam sendo opções mais simples.',
+  },
+};
+
+function polishGenericPrompt(prompt: string): string {
+  const match = /^Em (.+), qual afirmação descreve corretamente (.+)\?$/.exec(prompt);
+
+  if (!match) {
+    return prompt;
+  }
+
+  const [, technology, concept] = match;
+  return `No contexto de ${technology}, o que melhor descreve ${concept}?`;
+}
+
+function hasGenericDistractors(question: SeedQuestion): boolean {
+  return question.wrong.includes(GENERIC_DISTRACTOR);
+}
+
+function stableHash(value: string): number {
+  let hash = 2166136261;
+
+  for (const char of value) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function buildPlausibleDistractors(question: SeedQuestion, reviewedPool: SeedQuestion[]): string[] {
+  const normalizedCorrect = question.correct.trim().toLocaleLowerCase('pt-PT');
+  const candidates = reviewedPool
+    .filter((candidate) => candidate.category === question.category)
+    .map((candidate) => candidate.correct)
+    .filter((candidate, index, all) => {
+      const normalizedCandidate = candidate.trim().toLocaleLowerCase('pt-PT');
+      return normalizedCandidate !== normalizedCorrect && all.indexOf(candidate) === index;
+    });
+
+  if (candidates.length < 3) {
+    return [
+      'Descreve um conceito diferente dentro da mesma área técnica',
+      'Representa uma operação com finalidade distinta',
+      'Indica um comportamento que não corresponde ao enunciado',
+    ];
+  }
+
+  const selected: string[] = [];
+  let cursor = stableHash(`${question.category}:${question.prompt}`) % candidates.length;
+
+  while (selected.length < 3) {
+    const candidate = candidates[cursor % candidates.length];
+
+    if (!selected.includes(candidate)) {
+      selected.push(candidate);
+    }
+
+    cursor += 7;
+  }
+
+  return selected;
+}
+
+function buildExplanation(question: SeedQuestion): string {
+  const guidance = categoryGuidance[question.category] ?? 'Leia o enunciado procurando o comportamento específico descrito, não apenas uma palavra-chave parecida.';
+  return `A resposta correta é: ${question.correct}. ${guidance}`;
+}
+
+function reviewQuestion(question: SeedQuestion, index: number): SeedQuestion & { sourcePrompt: string } {
+  const revision = duplicateQuestionRevisions[index] ?? questionRevisions[question.prompt];
+  const revised = revision ? { ...question, ...revision } : question;
+
+  return {
+    ...revised,
+    prompt: polishGenericPrompt(revised.prompt),
+    sourcePrompt: question.prompt,
+  };
+}
+
+const rawPrompts: SeedQuestion[] = [
   {
     category: 'html',
     difficulty: 'EASY',
@@ -4708,6 +5421,16 @@ const prompts: Array<{ category: string; difficulty: Difficulty; prompt: string;
   },
 ];
 
+const reviewedBase = rawPrompts.map(reviewQuestion);
+
+const prompts: ReviewedSeedQuestion[] = reviewedBase.map((question) => ({
+  ...question,
+  wrong: hasGenericDistractors(question)
+    ? buildPlausibleDistractors(question, reviewedBase)
+    : question.wrong,
+  explanation: question.explanation ?? buildExplanation(question),
+}));
+
 async function main() {
   const isProduction = process.env.NODE_ENV === 'production';
   const generatedAdminPassword = randomBytes(18).toString('base64url');
@@ -4775,6 +5498,46 @@ async function main() {
     },
   });
 
+  const leaderboardUsers = [
+    {
+      name: 'Ana Martins',
+      email: 'ana.martins@codequest.dev',
+      xp: 1760,
+      rating: 1180,
+      quizzesCompleted: 18,
+      correctAnswers: 142,
+      totalAnswers: 180,
+    },
+    {
+      name: 'Rafael Costa',
+      email: 'rafael.costa@codequest.dev',
+      xp: 1210,
+      rating: 1115,
+      quizzesCompleted: 13,
+      correctAnswers: 94,
+      totalAnswers: 125,
+    },
+  ];
+
+  for (const leaderboardUser of leaderboardUsers) {
+    await prisma.user.upsert({
+      where: { email: leaderboardUser.email },
+      update: {
+        name: leaderboardUser.name,
+        activeTitleId: starterTitle.id,
+        xp: leaderboardUser.xp,
+        rating: leaderboardUser.rating,
+        quizzesCompleted: leaderboardUser.quizzesCompleted,
+        correctAnswers: leaderboardUser.correctAnswers,
+        totalAnswers: leaderboardUser.totalAnswers,
+      },
+      create: {
+        ...leaderboardUser,
+        activeTitleId: starterTitle.id,
+      },
+    });
+  }
+
   await prisma.userTitle.upsert({
     where: { userId_titleId: { userId: user.id, titleId: starterTitle.id } },
     update: {},
@@ -4814,7 +5577,12 @@ async function main() {
     ];
 
     const existingQuestion = await prisma.question.findFirst({
-      where: { prompt: item.prompt },
+      where: {
+        OR: [
+          { prompt: item.prompt },
+          { prompt: item.sourcePrompt },
+        ],
+      },
       select: { id: true },
     });
 
@@ -4825,7 +5593,7 @@ async function main() {
           categoryId,
           authorId: admin.id,
           prompt: item.prompt,
-          explanation: `Resposta correta: ${item.correct}.`,
+          explanation: item.explanation,
           difficulty: item.difficulty,
           status: 'APPROVED',
           isActive: true,
@@ -4843,7 +5611,7 @@ async function main() {
           categoryId,
           authorId: admin.id,
           prompt: item.prompt,
-          explanation: `Resposta correta: ${item.correct}.`,
+          explanation: item.explanation,
           difficulty: item.difficulty,
           status: 'APPROVED',
           isActive: true,

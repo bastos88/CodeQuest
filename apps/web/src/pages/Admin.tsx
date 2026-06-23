@@ -17,6 +17,7 @@ import type { ApproveReviewInput } from '@codequest/shared';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { NeonButton } from '../components/ui/NeonButton';
 import { useAuth } from '../context/AuthContext';
 import {
   useApproveQuestionMutation,
@@ -463,13 +464,13 @@ export function Admin() {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    <Button
-                      loading={
+                    <NeonButton
+                      isLoading={
                         approveMutation.isPending &&
                         approveMutation.variables?.questionId ===
                           selectedQuestion.id
                       }
-                      loadingText="Aprovando..."
+                      leftIcon={<Check size={16} />}
                       onClick={async () => {
                         try {
                           setActionError(null);
@@ -487,9 +488,8 @@ export function Admin() {
                         }
                       }}
                     >
-                      <Check size={16} />
                       Aprovar
-                    </Button>
+                    </NeonButton>
                     <Button
                       variant="secondary"
                       onClick={() =>
@@ -1190,9 +1190,8 @@ export function Admin() {
             <Button variant="ghost" onClick={() => setEditState(null)}>
               Cancelar
             </Button>
-            <Button
-              loading={updateMutation.isPending}
-              loadingText="Salvando..."
+            <NeonButton
+              isLoading={updateMutation.isPending}
               disabled={!editState.prompt.trim()}
               onClick={async () => {
                 try {
@@ -1217,7 +1216,7 @@ export function Admin() {
               }}
             >
               Salvar alterações
-            </Button>
+            </NeonButton>
           </div>
         </ModalShell>
       ) : null}

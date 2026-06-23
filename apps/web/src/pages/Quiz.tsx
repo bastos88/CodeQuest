@@ -13,6 +13,7 @@ import {
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
+import { NeonButton } from '../components/ui/NeonButton';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { api } from '../lib/api';
@@ -261,13 +262,13 @@ export function Quiz() {
             >
               Configurar novo desafio
             </Button>
-            <Button
+            <NeonButton
               onClick={() => {
                 navigate('/dashboard');
               }}
             >
               Voltar ao dashboard
-            </Button>
+            </NeonButton>
           </div>
         </div>
       </Card>
@@ -389,9 +390,9 @@ export function Quiz() {
                 <ArrowLeft size={16} />
                 Reconfigurar
               </Button>
-              <Button
+              <NeonButton
                 className="sm:min-w-56"
-                loading={submitMutation.isPending}
+                isLoading={submitMutation.isPending}
                 disabled={!selectedAlternativeId}
                 onClick={() => {
                   if (!question || !selectedAlternativeId) return;
@@ -424,7 +425,7 @@ export function Quiz() {
               >
                 {isLastQuestion ? 'Finalizar desafio' : 'Próxima pergunta'}
                 {!submitMutation.isPending ? <ArrowRight size={16} /> : null}
-              </Button>
+              </NeonButton>
             </div>
           </Card>
         </section>

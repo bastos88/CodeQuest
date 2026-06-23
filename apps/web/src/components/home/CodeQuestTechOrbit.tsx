@@ -48,8 +48,6 @@ const extendedTechIcons: TechIcon[] = [
   { name: 'GitHub', icon: SiGithub, className: 'text-[#F2E2C4]' },
 ];
 
-const allTechIcons = [...outerTechIcons, ...innerTechIcons];
-
 function TechBadge({
   icon: Icon,
   name,
@@ -61,9 +59,11 @@ function TechBadge({
       title={name}
       aria-label={name}
       role="img"
-      className={`flex items-center justify-center rounded-full border border-white/10 bg-[#14151C]/95 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-[transform,border-color] duration-200 ease-out hover:scale-105 hover:border-white/25 ${
-        compact ? 'size-9' : 'size-11'
-      }`}
+      className={`flex items-center justify-center rounded-full border border-white/10 bg-[#14151C]/95 transition-[transform,border-color] duration-200 ease-out hover:scale-105 hover:border-white/25 ${
+        compact
+          ? 'shadow-[0_8px_18px_rgba(0,0,0,0.24)]'
+          : 'shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-sm'
+      } ${compact ? 'size-9' : 'size-11'}`}
     >
       <Icon className={`${compact ? 'size-4' : 'size-5'} ${className}`} />
     </div>
@@ -86,7 +86,7 @@ function CodeQuestLogo() {
 
 export function CodeQuestTechOrbit() {
   return (
-    <div className="relative flex h-[400px] w-full items-center justify-center overflow-hidden sm:h-[500px] lg:h-[520px]">
+    <div className="relative flex h-[330px] w-full items-center justify-center overflow-hidden sm:h-[500px] lg:h-[520px]">
       <div
         aria-hidden="true"
         className="absolute inset-[12%] rounded-full bg-[radial-gradient(circle,rgba(91,107,255,0.18),rgba(30,64,175,0.06)_42%,transparent_70%)]"
@@ -95,20 +95,8 @@ export function CodeQuestTechOrbit() {
       <CodeQuestLogo />
 
       <div className="contents sm:hidden">
-        <OrbitingCircles radius={150} iconSize={34} duration={32} speed={0.9}>
-          {allTechIcons.map((tech) => (
-            <TechBadge key={tech.name} {...tech} compact />
-          ))}
-        </OrbitingCircles>
-
-        <OrbitingCircles
-          radius={110}
-          iconSize={32}
-          duration={26}
-          speed={1.2}
-          reverse
-        >
-          {extendedTechIcons.map((tech) => (
+        <OrbitingCircles radius={112} iconSize={32} duration={44} speed={0.65}>
+          {outerTechIcons.map((tech) => (
             <TechBadge key={tech.name} {...tech} compact />
           ))}
         </OrbitingCircles>
